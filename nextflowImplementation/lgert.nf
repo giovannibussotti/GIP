@@ -114,6 +114,29 @@ bigWigOpt=params.bigWigOpt
 ch = Channel.from(params.sampleList)
 ch.into { ch1; ch2; ch3; ch4; ch5; ch6; ch7; ch8; ch9; ch10}
 
+
+// Configurable variables
+params.genome     = "genome.fa"
+params.annotation = "annotations.gtf"
+genome     = file(params.genome)
+annotation = file(params.annotation)
+
+query_ch = Channel.fromPath(params.annotation)
+
+process prepareGenome {
+  publishDir resultDir
+
+  output:
+  file testa into letters
+
+  """
+  echo testaaa > testa
+  """
+}
+
+
+
+
 process map {
   publishDir resultDir 
     
