@@ -116,6 +116,7 @@ ch.into { ch1; ch2; ch3; ch4; ch5; ch6; ch7; ch8; ch9; ch10}
 
 
 // Configurable variables
+// nextflow lgert.nf --genome ../inputData/dataset/Linf_test.fa -c lgert.config
 params.genome     = "genome.fa"
 params.annotation = "annotations.gtf"
 genome     = file(params.genome)
@@ -127,10 +128,10 @@ process prepareGenome {
   publishDir resultDir
 
   output:
-  file testa into letters
+  set file (prepareAssemblyOut) , file (repeatMasker) into letters
 
   """
-  echo testaaa > testa
+   A-prepareGenome.sh -f $genome
   """
 }
 
