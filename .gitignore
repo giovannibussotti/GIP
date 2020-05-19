@@ -1,3 +1,4 @@
 singularityContainer/files/
 singularityContainer/lgertContainer.simg/
 singularityContainer/manuallyDownlodedPkgs/
+.gitignore
