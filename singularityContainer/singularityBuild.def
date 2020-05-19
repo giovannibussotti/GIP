@@ -85,7 +85,6 @@ From: ubuntu:xenial
   export PERL_MM_USE_DEFAULT=1
   cpan Text::Soundex
   perl ./configure --trf_prgm /bin/ --rmblast_dir /opt/rmblast/bin/
-  mv RepeatMasker /bin/
 
   #other cpan modules needed for perl scripts
   cpan Pod::Usage
