@@ -4,7 +4,7 @@
 #here I download L-GERT (jobarray version) from github, then I clean up the bashFunctions file, I replace the MarkDuplicates and GATK commands, I export the functions to a subshell with typeset (very important, otherwise the functions are not available), I remove unneded scripts 
 #The main output is the packages.tar.gz file that is loaded by the singularity definition file
 
-#IMPORTANT!!! rpkginstall leishmaniaAndAncestralSharedRepeats.fa GenomeAnalysisTK.jar must be downloaded/provided manually and available from a local folder named: manuallyDownlodedPkgs/ 
+#IMPORTANT!!! rpkginstall leishmaniaAndAncestralSharedRepeats.fa GenomeAnalysisTK.jar A-prepareGenome.sh must be downloaded/provided manually and available from a local folder named: manuallyDownlodedPkgs/ 
 LGERTv=1.0
 SAMTOOLSv=1.8
 BWAv=0.7.17
@@ -25,7 +25,7 @@ cd files
 #copy manually downloded packages
 cp -r ../manuallyDownlodedPkgs/* .
 
-#L-GERT
+#L-GERT_jobArrays: download and convert 
 wget https://github.com/giovannibussotti/L-GERT_jobArrays/archive/v${LGERTv}.tar.gz
 tar -xzf v${LGERTv}.tar.gz
 mv L-GERT-${LGERTv} L-GERT
@@ -48,7 +48,7 @@ mv L-GERT/LSD/utility/covPerChrSummary.R L-GERT/
 mv L-GERT/LSD/utility/binCoverage2cnvs.R L-GERT/
 mv L-GERT/otherScripts/*                 L-GERT/
 mv L-GERT/LSD/*                          L-GERT/
-rm -rf L-GERT/testDeNovo.tsv L-GERT/test.tsv L-GERT/README.md L-GERT/LSDschema.png L-GERT/CHANGES.txt L-GERT/cleanLSD.sh L-GERT/test/ L-GERT/runSpades.sh L-GERT/S-recycler_noModule.sh L-GERT/S-recycler.sh L-GERT/Q-GAT.sh L-GERT/P-redundans.sh L-GERT/N-blastnContigsToRef.sh L-GERT/M-cosmidSeqMappingStats.sh L-GERT/A-collapseMultirunSamples.R L-GERT/I-spades.sh L-GERT/utility L-GERT/otherScripts/ L-GERT/sequenceOfPipelineTasks.txt L-GERT/runLSD L-GERT/runLSD L-GERT/configLSD L-GERT/description.docx L-GERT/LSD
+rm -rf L-GERT/testDeNovo.tsv L-GERT/test.tsv L-GERT/README.md L-GERT/LSDschema.png L-GERT/CHANGES.txt L-GERT/cleanLSD.sh L-GERT/test/ L-GERT/runSpades.sh L-GERT/S-recycler_noModule.sh L-GERT/S-recycler.sh L-GERT/Q-GAT.sh L-GERT/P-redundans.sh L-GERT/N-blastnContigsToRef.sh L-GERT/M-cosmidSeqMappingStats.sh L-GERT/A-collapseMultirunSamples.R L-GERT/I-spades.sh L-GERT/utility L-GERT/otherScripts/ L-GERT/sequenceOfPipelineTasks.txt L-GERT/runLSD L-GERT/runLSD L-GERT/configLSD L-GERT/description.docx L-GERT/LSD L-GERT/.gitignore
 mv L-GERT/giovanniLibrary.pl L-GERT/customPerlLib.pl
 #replace file paths
 cat L-GERT/gtf2bed12.sh | sed -e "s/\/pasteur\/entites\/HubBioIT\/gio\/apps\/my_scripts\/UCSC\///"  > _tmp ; mv _tmp L-GERT/gtf2bed12.sh
@@ -66,7 +66,8 @@ for X in `ls L-GERT/`; do cat L-GERT/$X | sed -e 's/\$GATK/\/bin\/GenomeAnalysis
 for X in `ls L-GERT/`; do cat L-GERT/$X | sed -e 's/\$TABIX/tabix/' > _tmp ; mv _tmp L-GERT/$X ; done
 for X in `ls L-GERT/`; do cat L-GERT/$X | sed -e 's/\$BGZIP/bgzip/' > _tmp ; mv _tmp L-GERT/$X ; done
 cat L-GERT/H-freebayes.sh | sed -e "s/\$FREEBAYES /freebayes /"  > _tmp ; mv _tmp L-GERT/H-freebayes.sh
-
+#add the script to pre-process the input which is not part of the github L-GERT_jobArrays version
+mv A-prepareGenome.sh L-GERT/
 
 #SAMTOOLS
 wget https://github.com/samtools/samtools/releases/download/${SAMTOOLSv}/samtools-${SAMTOOLSv}.tar.bz2
