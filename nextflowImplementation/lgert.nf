@@ -183,7 +183,7 @@ process map {
   file ("${SAMPLE.ID}.MarkDup.log") into (mapDump1)
       
   """ 
-  bash mapSample.sh $SAMPLE.ID $task.cpus $SAMPLE.FQ_DIR $fa $db $SAMPLE.R1_FQID $SAMPLE.R2_FQID $SAMPLE.MULTIRUN_R1_FQIDS $SAMPLE.MULTIRUN_R2_FQIDS .    
+  bash mapSample.sh $SAMPLE.ID $task.cpus $SAMPLE.FQ_DIR $fa $db/bwa/genome/ $SAMPLE.R1_FQID $SAMPLE.R2_FQID $SAMPLE.MULTIRUN_R1_FQIDS $SAMPLE.MULTIRUN_R2_FQIDS .    
   """
 }
 

@@ -1,7 +1,7 @@
 sampleList:
  - SAMPLE: Dog1-P2	
    ID: Dog1-P2
-   FQ_DIR: /home/gbussott/Desktop/develop_B_mapping/fqDir 
+   FQ_DIR: /home/gbussott/Desktop/L-GERT_githubRepo/inputData/fqDir
    R1_FQID: test.R1.fastq.gz
    R2_FQID: test.R2.fastq.gz
    MULTIRUN_R1_FQIDS: NA
