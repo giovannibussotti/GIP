@@ -111,31 +111,32 @@ minNormCovForDUP=params.minNormCovForDUP
 maxNormCovForDEL=params.maxNormCovForDEL
 bigWigOpt=params.bigWigOpt
 
-ch = Channel.from(params.sampleList)
-ch.into { ch1; ch2; ch3; ch4; ch5; ch6; ch7; ch8; ch9; ch10}
+
 
 
 // Configurable variables
-// nextflow lgert.nf --genome ../inputData/dataset/Linf_test.fa --annotation ../inputData/dataset/Linf_test.ge.gtf -c lgert.config
+// nextflow lgert.nf --genome ../inputData/dataset/Linf_test.fa --annotation ../inputData/dataset/Linf_test.ge.gtf -params-file sampInfo.yaml -c lgert.config
+
 params.genome        = "genome.fa"
 params.annotation    = "annotations.gtf"
 params.repeatLibrary = "default"
 genome     = file(params.genome)
 annotation = file(params.annotation)
 
-query_ch = Channel.fromPath(params.annotation)
+ch = Channel.from(params.sampleList)
+ch.into { ch1; ch2; ch3; ch4; ch5; ch6; ch7; ch8; ch9; ch10}
 
 process prepareGenome {
   publishDir resultDir
 
   output:
 
-  file ("db") into bwaDb_ch
-  file("genome.chrSize") into chrSize_ch
-  set file("genome.fa") , file("genome.fa.fai") , file("genome.dict") , file("genome.chrSize") into genome_ch
-  file("genome.gaps.gz") into gaps_ch
-  file("repeatMasker") into repeatMasker_ch
-  file("snpEff")  into snpEffDb_ch
+  file ("db") into bwaDb_ch1
+  file("genome.chrSize") into chrSize_ch1
+  set file("genome.fa") , file("genome.fa.fai") , file("genome.dict") , file("genome.chrSize") into genome_ch1
+  file("genome.gaps.gz") into gaps_ch1
+  file("repeatMasker") into repeatMasker_ch1
+  file("snpEff")  into snpEffDb_ch1
 
   script:
   if( params.repeatLibrary == 'default' )
@@ -156,7 +157,7 @@ process testa {
   
   input:
   //set file(fa) , file(fai) , file(dict) , file(size) from genome_ch
-  set fa , fai , dict , size from genome_ch
+  set fa , fai , dict , size from genome_ch1
   
   output:
 
@@ -174,13 +175,15 @@ process map {
     
   input:
   val SAMPLE from ch1
+  set fa , fai , dict , size from genome_ch1  
+  val db from bwaDb_ch1
 
   output:
-  set file ("${SAMPLE.SAMPLE_ID}.bam") , file ("${SAMPLE.SAMPLE_ID}.bam.bai") into (map1 , map2 , map3 , map4 , map5, map6 , map7 , map8)
-  file ("${SAMPLE.SAMPLE_ID}.MarkDup.log") into (mapDump1)
+  set file ("${SAMPLE.ID}.bam") , file ("${SAMPLE.ID}.bam.bai") into (map1 , map2 , map3 , map4 , map5, map6 , map7 , map8)
+  file ("${SAMPLE.ID}.MarkDup.log") into (mapDump1)
       
   """ 
-  bash mapSample.sh $SAMPLE.SAMPLE_ID $task.cpus /mnt/fq /mnt/data/$SAMPLE.ASSEMBLY /mnt/data/$SAMPLE.INDEX $SAMPLE.R1_FQID $SAMPLE.R2_FQID $SAMPLE.MULTIRUN_R1_FQIDS $SAMPLE.MULTIRUN_R2_FQIDS .    
+  bash mapSample.sh $SAMPLE.ID $task.cpus $SAMPLE.FQ_DIR $fa $db $SAMPLE.R1_FQID $SAMPLE.R2_FQID $SAMPLE.MULTIRUN_R1_FQIDS $SAMPLE.MULTIRUN_R2_FQIDS .    
   """
 }
 
