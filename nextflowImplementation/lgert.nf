@@ -117,8 +117,9 @@ ch.into { ch1; ch2; ch3; ch4; ch5; ch6; ch7; ch8; ch9; ch10}
 
 // Configurable variables
 // nextflow lgert.nf --genome ../inputData/dataset/Linf_test.fa -c lgert.config
-params.genome     = "genome.fa"
-params.annotation = "annotations.gtf"
+params.genome        = "genome.fa"
+params.annotation    = "annotations.gtf"
+params.repeatLibrary = "default"
 genome     = file(params.genome)
 annotation = file(params.annotation)
 
@@ -128,10 +129,18 @@ process prepareGenome {
   publishDir resultDir
 
   output:
-  set file (prepareAssemblyOut) , file (repeatMasker) into letters
 
+  set file (db) , file (genome.chrSize) , file(genome.dict) , file(genome.fa) , file(genome.fa.fai)  genome.gaps.gz  repeatMasker  snpEff  into (preparedGenome1,preparedGenome2,preparedGenome3,preparedGenome4,preparedGenome5)
+
+  script:
+  if( repeatLibrary == 'default' )
   """
-   A-prepareGenome.sh -f $genome
+  A-prepareGenome.sh -f $genome -x $annotation -c $task.cpus
+  """
+
+  else
+  """
+  A-prepareGenome.sh -f $genome -x $annotation -c $task.cpus -l $params.repeatLibrary
   """
 }
 

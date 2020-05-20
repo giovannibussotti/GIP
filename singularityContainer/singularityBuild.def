@@ -21,7 +21,7 @@ From: ubuntu:xenial
   cd /opt
   tar -xzf packages.tar.gz
   cd packages
-  mv bedtools2/ bwa/ htslib/ L-GERT/ samtools/ Python3/ R rpkginstall vcftools/ rmblast/ RepeatMasker snpEff MUMmer/ leishmaniaAndAncestralSharedRepeats.fa /opt/
+  mv snpEff.configTemplate bedtools2/ bwa/ htslib/ L-GERT/ samtools/ Python3/ R rpkginstall vcftools/ rmblast/ RepeatMasker snpEff MUMmer/ leishmaniaAndAncestralSharedRepeats.fa /opt/
   mv picard.jar GenomeAnalysisTK.jar delly bedGraphToBigWig genePredToBed gtfToGenePred trf409.linux64 freebayes /bin/
   cd ..
   rm -rf packages

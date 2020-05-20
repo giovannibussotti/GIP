@@ -4,7 +4,7 @@
 #here I download L-GERT (jobarray version) from github, then I clean up the bashFunctions file, I replace the MarkDuplicates and GATK commands, I export the functions to a subshell with typeset (very important, otherwise the functions are not available), I remove unneded scripts 
 #The main output is the packages.tar.gz file that is loaded by the singularity definition file
 
-#IMPORTANT!!! rpkginstall leishmaniaAndAncestralSharedRepeats.fa GenomeAnalysisTK.jar A-prepareGenome.sh must be downloaded/provided manually and available from a local folder named: manuallyDownlodedPkgs/ 
+#IMPORTANT!!! snpEff.configTemplate rpkginstall leishmaniaAndAncestralSharedRepeats.fa GenomeAnalysisTK.jar A-prepareGenome.sh must be downloaded/provided manually and available from a local folder named: manuallyDownlodedPkgs/ 
 LGERTv=1.0
 SAMTOOLSv=1.8
 BWAv=0.7.17
