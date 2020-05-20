@@ -116,7 +116,7 @@ ch.into { ch1; ch2; ch3; ch4; ch5; ch6; ch7; ch8; ch9; ch10}
 
 
 // Configurable variables
-// nextflow lgert.nf --genome ../inputData/dataset/Linf_test.fa -c lgert.config
+// nextflow lgert.nf --genome ../inputData/dataset/Linf_test.fa --annotation ../inputData/dataset/Linf_test.ge.gtf -c lgert.config
 params.genome        = "genome.fa"
 params.annotation    = "annotations.gtf"
 params.repeatLibrary = "default"
@@ -130,17 +130,17 @@ process prepareGenome {
 
   output:
 
-  set file (db) , file (genome.chrSize) , file(genome.dict) , file(genome.fa) , file(genome.fa.fai)  genome.gaps.gz  repeatMasker  snpEff  into (preparedGenome1,preparedGenome2,preparedGenome3,preparedGenome4,preparedGenome5)
+  set file ("db") , file ("genome.chrSize") , file("genome.dict") , file("genome.fa") , file("genome.fa.fai") , file("genome.gaps.gz") , file("repeatMasker") , file("snpEff")  into (preparedGenome1,preparedGenome2,preparedGenome3,preparedGenome4,preparedGenome5)
 
   script:
-  if( repeatLibrary == 'default' )
+  if( params.repeatLibrary == 'default' )
   """
   A-prepareGenome.sh -f $genome -x $annotation -c $task.cpus
   """
 
   else
   """
-  A-prepareGenome.sh -f $genome -x $annotation -c $task.cpus -l $params.repeatLibrary
+  A-prepareGenome.sh -f $genome -x $annotation -c $task.cpus -l params.repeatLibrary
   """
 }
 
