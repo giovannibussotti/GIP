@@ -130,7 +130,12 @@ process prepareGenome {
 
   output:
 
-  set file ("db") , file ("genome.chrSize") , file("genome.dict") , file("genome.fa") , file("genome.fa.fai") , file("genome.gaps.gz") , file("repeatMasker") , file("snpEff")  into (preparedGenome1,preparedGenome2,preparedGenome3,preparedGenome4,preparedGenome5)
+  file ("db") into bwaDb_ch
+  file("genome.chrSize") into chrSize_ch
+  set file("genome.fa") , file("genome.fa.fai") , file("genome.dict") , file("genome.chrSize") into genome_ch
+  file("genome.gaps.gz") into gaps_ch
+  file("repeatMasker") into repeatMasker_ch
+  file("snpEff")  into snpEffDb_ch
 
   script:
   if( params.repeatLibrary == 'default' )
@@ -145,6 +150,23 @@ process prepareGenome {
 }
 
 
+/*
+process testa {
+  publishDir resultDir
+  
+  input:
+  //set file(fa) , file(fai) , file(dict) , file(size) from genome_ch
+  set fa , fai , dict , size from genome_ch
+  
+  output:
+
+  file oraaaa into letters
+
+  """
+  cat $size > oraaaa
+  """
+}
+*/
 
 
 process map {
@@ -157,7 +179,6 @@ process map {
   set file ("${SAMPLE.SAMPLE_ID}.bam") , file ("${SAMPLE.SAMPLE_ID}.bam.bai") into (map1 , map2 , map3 , map4 , map5, map6 , map7 , map8)
   file ("${SAMPLE.SAMPLE_ID}.MarkDup.log") into (mapDump1)
       
-  script:
   """ 
   bash mapSample.sh $SAMPLE.SAMPLE_ID $task.cpus /mnt/fq /mnt/data/$SAMPLE.ASSEMBLY /mnt/data/$SAMPLE.INDEX $SAMPLE.R1_FQID $SAMPLE.R2_FQID $SAMPLE.MULTIRUN_R1_FQIDS $SAMPLE.MULTIRUN_R2_FQIDS .    
   """
