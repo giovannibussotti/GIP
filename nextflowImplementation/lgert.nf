@@ -133,7 +133,7 @@ process prepareGenome {
 
   file ("db") into bwaDb_ch1
   file("genome.chrSize") into chrSize_ch1
-  set file("genome.fa") , file("genome.fa.fai") , file("genome.dict") , file("genome.chrSize") into genome_ch1
+  set file("genome.fa") , file("genome.fa.fai") , file("genome.dict") , file("genome.chrSize") into (genome_ch1 , genome_ch2)
   file("genome.gaps.gz") into gaps_ch1
   file("repeatMasker") into repeatMasker_ch1
   file("snpEff")  into snpEffDb_ch1
@@ -193,17 +193,19 @@ process covPerChr {
   input:
   set file(bam) , file(bai) from map1
   val SAMPLE from ch2
+  set file(fa) , file(fai) , file(dict) , file(size) from genome_ch2
+  file gaps from gaps_ch1
 
   output:
   file ("chrCoverageMedians_${SAMPLE.SAMPLE_ID}") into (covPerChr1 , covPerChr2 , covPerChr3 , covPerChr4)
 
-  script:
   """
   IFS=' ' read -r -a CHRS <<< "$CHRSj"  
-  chrMedianCoverages $SAMPLE.SAMPLE_ID /mnt/data/$SAMPLE.CHRSIZE $MAPQ $BITFLAG \$CHRS . /mnt/data/$SAMPLE.GAPS
+  chrMedianCoverages $SAMPLE.ID $size $MAPQ $BITFLAG \$CHRS . $gaps
   """
 }
 
+/*
 process covPerNt {
   publishDir resultDir
 
@@ -416,29 +418,7 @@ process bigWigGenomeCov {
 }
 
 
-//NOTE1: compareGenomicCoverageBins.R works fine, but I had to replace the PNG plot to a PDF one (much bigger in size). For some reasons the PNG does not work fine. It is a problem possibly linked to ggplot2 https://stackoverflow.com/questions/51324093/error-in-grid-call   https://github.com/tidyverse/ggplot2/issues/2252
+*/
 
-//NOTE2: In covPerGe I decided to maintain just the analysis of genes, and ignore the nonGene part of the original G-covPerGe.sh
-
-//NOTE3: from freebayes I removed the option --no-indels because it is not supported anymore. Anyway, the indels are removed by the isSNV function of the VariantAnnotation library in vcf2variantsFrequency_V4. I also increased the --read-indel-limit to 1, so that the original unfiltered VCF file stores some indels in case in the future we want to develop the pipeline in that direction. I had to remove the --no-mnps --no-complex options too because no longer supported. Anyway vcf2variantsFrequency_V4 should be able to filterout  
-
-//NOTE4: For the moment I removed the spades and redundans steps. I would like to reintroduce them but (1) it should not be the default but an option since they may be time and memory consuming and (2) they should be changed to assemble just the reads that do not map anywhere
-
-//NOTE5: For the moment the dellySVref step is working fine, but it is a hack. This proces should be rewritten by (i) moving to bashFunctions.sh the function that are in the O-dellySVref.sh script (ii) updating the A-prepareper.sh file in case it is needed (since you add functions you may need to update the typeset if not automatic) and (iii) copy the rest of the O-dellySVref.sh script in the process. This would be much better instead of creating a dellySVref.sh on the fly and running it by passing the parameters. To debug is much more difficoult
-
-//NOTE6: I removes for the moment the Q-GAT.sh and the recycler steps, may reintroduce them in a second moment
-
-//NOTE7: the params have inconsistent ugly names. these should be replaced by shorter and more consistent names
-
-//NOTE8: Add a process that generates a karyoploteR plot integrating sequencing coverage and SNVs  
-
-//NOTE 9: Add a pre-process process activated by a specific params. The idea is that pre-process accepts a file like listing items this: R1.fq.gz R2.fq.gz genome.fa genomeName
-// then runs something similar to singularityContainer/files/L-GERT/otherScripts/prepareAssembly.sh in order to (i) run repeatMasker using a built-in leishmania specific repeat library (generated combying repBase and repeatModeller repeat elements) (ii) generate all the files needed by lgert in a folder and (iii) create the sampInfo.yaml params-file also needed by lgert. Then, finished the process the pipeline quit. You need to re-run it passing the sampInfo.yaml file
-
-//NOTE10: Add at the end of the pipeline a process that is executed at the end when all the processes are finished. This process should run a rmarkdown script that generates a report including (i) a table with the mapping stats of all samples (ii) a barplot with the median genome coverage of all samples (iii) a heatmap with the scaled coverage of all chromosomes (the ones in $CHRSj) across all samples (iv) a circos plot for each considered reference genome, showing all the delly SV of the various samples mapped against that reference, (v) an all VS all mummer alignment of the genome pseudo-assembly generated, the user defined reference genomes, and some leishmania genomes built-in in the container, (vi) the output of the R script to indentify gene CNVs across all samples, (vii) the output of the Rscript to identify gene CNVs across all samples, considering the low-MAPQ gene families, (viii) for each sample a list of symbolic links to relevant plots (available in the summaryDir/files/), like the faceting of all SNVs in all chromosomes, the faceting covPerBin plot, and the karyoploteR plots. 
-
-//NOTE11: Add processes activated by specific params that execute dedicated comparisons, e.g. plot the caryotype of a specific samples subset, compare the gene coverage, ternaty plot etc.. all these results should go in the summatyFolder/contrasts dir
-
-//NOTE12: Write a decent documentation explaining the available options in every step, and also providing some examples on how to run the pipeline
 
 
