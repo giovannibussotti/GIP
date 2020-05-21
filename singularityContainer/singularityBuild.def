@@ -129,6 +129,7 @@ From: ubuntu:xenial
   /opt/rpkginstall networkD3 cran
   /opt/rpkginstall psych cran
   /opt/rpkginstall session cran
+  /opt/rpkginstall ggridges cran
   #/opt/rpkginstall bisoreg cran #may need manual install since it was recently removed from CRAN
 
   #bisoreg

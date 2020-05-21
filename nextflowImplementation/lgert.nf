@@ -133,7 +133,7 @@ process prepareGenome {
 
   file ("db") into bwaDb_ch1
   file("genome.chrSize") into chrSize_ch1
-  set file("genome.fa") , file("genome.fa.fai") , file("genome.dict") , file("genome.chrSize") into (genome_ch1 , genome_ch2)
+  set file("genome.fa") , file("genome.fa.fai") , file("genome.dict") , file("genome.chrSize") into (genome_ch1 , genome_ch2 , genome_ch3)
   file("genome.gaps.gz") into gaps_ch1
   file("repeatMasker") into repeatMasker_ch1
   file("snpEff")  into snpEffDb_ch1
@@ -197,7 +197,7 @@ process covPerChr {
   file gaps from gaps_ch1
 
   output:
-  file ("chrCoverageMedians_${SAMPLE.SAMPLE_ID}") into (covPerChr1 , covPerChr2 , covPerChr3 , covPerChr4)
+  file ("chrCoverageMedians_${SAMPLE.ID}") into (covPerChr1 , covPerChr2 , covPerChr3 , covPerChr4)
 
   """
   IFS=' ' read -r -a CHRS <<< "$CHRSj"  
@@ -205,27 +205,30 @@ process covPerChr {
   """
 }
 
-/*
+
 process covPerNt {
   publishDir resultDir
 
   input:
   set file(bam) , file(bai) from map2
   val SAMPLE from ch3
+  set file(fa) , file(fai) , file(dict) , file(size) from genome_ch3
   
   output:
-  file ("${SAMPLE.SAMPLE_ID}.covPerNt.gz") into (covPerNt1 , covPerNt2)
-  file ("${SAMPLE.SAMPLE_ID}.pcMapqPerNt.gz") into (pcMapqPerNt1)
-  file ("${SAMPLE.SAMPLE_ID}.covPerNt.boxPlot.pdf") into (covPerNtDump1)
+  file ("${SAMPLE.ID}.covPerNt.gz") into (covPerNt1 , covPerNt2)
+  file ("${SAMPLE.ID}.pcMapqPerNt.gz") into (pcMapqPerNt1)
+  set file ("${SAMPLE.ID}.covPerNt.boxPlot.pdf") , file ("${SAMPLE.ID}.covPerNt.boxPlot_allMedians.tsv") into (covPerNtDump1)
 
   script:
   """
-  covPerNt $bam /mnt/data/$SAMPLE.CHRSIZE ${SAMPLE.SAMPLE_ID}.covPerNt MEDIAN $MAPQ $BITFLAG 
-  gzip ${SAMPLE.SAMPLE_ID}.covPerNt
-  pcMapqPerNt $bam $MAPQ ${SAMPLE.SAMPLE_ID}.pcMapqPerNt
-  Rscript /bin/plotGenomeCoverage_V2.R --files ${SAMPLE.SAMPLE_ID}.covPerNt.gz --NAMES ${SAMPLE.SAMPLE_ID} --DIR . --outName ${SAMPLE.SAMPLE_ID}.covPerNt.boxPlot --pcMapqFiles ${SAMPLE.SAMPLE_ID}.pcMapqPerNt.gz --chr $CHRSj $plotCovPerNtOPT
+  covPerNt $bam $size ${SAMPLE.ID}.covPerNt MEDIAN $MAPQ $BITFLAG 
+  gzip ${SAMPLE.ID}.covPerNt
+  pcMapqPerNt $bam $MAPQ ${SAMPLE.ID}.pcMapqPerNt
+  Rscript /bin/plotGenomeCoverage_V3.R --files ${SAMPLE.ID}.covPerNt.gz --NAMES ${SAMPLE.ID} --DIR . --outName ${SAMPLE.ID}.covPerNt.boxPlot --pcMapqFiles ${SAMPLE.ID}.pcMapqPerNt.gz --chr $CHRSj $plotCovPerNtOPT
   """
 }
+
+/*
 
 process covPerBin {
   publishDir resultDir
