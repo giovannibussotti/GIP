@@ -133,8 +133,8 @@ process prepareGenome {
 
   file ("db") into bwaDb_ch1
   file("genome.chrSize") into chrSize_ch1
-  set file("genome.fa") , file("genome.fa.fai") , file("genome.dict") , file("genome.chrSize") into (genome_ch1 , genome_ch2 , genome_ch3)
-  file("genome.gaps.gz") into gaps_ch1
+  set file("genome.fa") , file("genome.fa.fai") , file("genome.dict") , file("genome.chrSize") into (genome_ch1 , genome_ch2 , genome_ch3 , genome_ch4 , genome_ch5 , genome_ch6)
+  file("genome.gaps.gz") into (gaps_ch1 , gaps_ch2)
   file("repeatMasker") into repeatMasker_ch1
   file("snpEff")  into snpEffDb_ch1
 
@@ -228,7 +228,7 @@ process covPerNt {
   """
 }
 
-/*
+
 
 process covPerBin {
   publishDir resultDir
@@ -237,25 +237,27 @@ process covPerBin {
   set file(bam) , file(bai) from map3
   file(chrCoverageMedians) from covPerChr1
   val SAMPLE from ch4
-  
+  set file(fa) , file(fai) , file(dict) , file(size) from genome_ch4  
+
   output:
-  file ("${SAMPLE.SAMPLE_ID}.covPerBin.gz") into (covPerBin1)
-  set file ("${SAMPLE.SAMPLE_ID}.gcLnorm.covPerBin.pdf") , file ("${SAMPLE.SAMPLE_ID}.PLOTcovPerBin_all.pdf") , file ("${SAMPLE.SAMPLE_ID}.PLOTcovPerBin_byChr.pdf") , file ("${SAMPLE.SAMPLE_ID}.PLOTcovPerBin.df.gz") , file ("${SAMPLE.SAMPLE_ID}.PLOTcovPerBin.extremeRatio.bed.gz") , file ("${SAMPLE.SAMPLE_ID}.PLOTcovPerBin_faceting.pdf") into (covPerBinDump1)
+  file ("${SAMPLE.ID}.covPerBin.gz") into (covPerBin1)
+  set file ("${SAMPLE.ID}.gcLnorm.covPerBin.pdf") , file ("${SAMPLE.ID}.PLOTcovPerBin_all.pdf") , file ("${SAMPLE.ID}.PLOTcovPerBin_byChr.pdf") , file ("${SAMPLE.ID}.PLOTcovPerBin.df.gz") , file ("${SAMPLE.ID}.PLOTcovPerBin.extremeRatio.bed.gz") , file ("${SAMPLE.ID}.PLOTcovPerBin_faceting.pdf") into (covPerBinDump1)
 
-  script:
   """ 
-  covPerBin $bam /mnt/data/$SAMPLE.CHRSIZE /bin/gencov2intervals.pl $STEP $MAPQ $BITFLAG . $chrCoverageMedians 
+  covPerBin $bam $size /bin/gencov2intervals.pl $STEP $MAPQ $BITFLAG . $chrCoverageMedians 
 
-  Rscript /bin/covPerBin2loessGCnormalization_v2.R --ASSEMBLY /mnt/data/$SAMPLE.ASSEMBLY --DIR . --SAMPLE ${SAMPLE.SAMPLE_ID} --outName ${SAMPLE.SAMPLE_ID} 
-  mv ${SAMPLE.SAMPLE_ID}.gcLnorm.covPerBin.gz ${SAMPLE.SAMPLE_ID}.covPerBin.gz
+  Rscript /bin/covPerBin2loessGCnormalization_v2.R --ASSEMBLY $fa --DIR . --SAMPLE ${SAMPLE.ID} --outName ${SAMPLE.ID} 
+  mv ${SAMPLE.ID}.gcLnorm.covPerBin.gz ${SAMPLE.ID}.covPerBin.gz
 
-  Rscript /bin/compareGenomicCoverageBins.R --referenceName _fake_ --testName ${SAMPLE.SAMPLE_ID} --referenceFile ${SAMPLE.SAMPLE_ID}.covPerBin.gz --testFile ${SAMPLE.SAMPLE_ID}.covPerBin.gz --outName ${SAMPLE.SAMPLE_ID}.PLOTcovPerBin --chrs $CHRSj --minMAPQ $MAPQ $PLOTcovPerBinOPT 
+  Rscript /bin/compareGenomicCoverageBins.R --referenceName _fake_ --testName ${SAMPLE.ID} --referenceFile ${SAMPLE.ID}.covPerBin.gz --testFile ${SAMPLE.ID}.covPerBin.gz --outName ${SAMPLE.ID}.PLOTcovPerBin --chrs $CHRSj --minMAPQ $MAPQ $PLOTcovPerBinOPT 
 
-  Rscript /bin/covPerBin2regression.R $PLOTcovPerBinRegressionOPT --filterChrsNames $CHRSj --filterMAPQ $MAPQ --DIR . --SAMPLES ${SAMPLE.SAMPLE_ID}.covPerBin.gz  --NAMES ${SAMPLE.SAMPLE_ID} --outName ${SAMPLE.SAMPLE_ID}.PLOTcovPerBinRegression 
+  Rscript /bin/covPerBin2regression.R $PLOTcovPerBinRegressionOPT --filterChrsNames $CHRSj --filterMAPQ $MAPQ --DIR . --SAMPLES ${SAMPLE.ID}.covPerBin.gz  --NAMES ${SAMPLE.ID} --outName ${SAMPLE.ID}.PLOTcovPerBinRegression 
 
-  Rscript /bin/sigPeaks_CLT.R --input ${SAMPLE.SAMPLE_ID}.covPerBin.gz --outName ${SAMPLE.SAMPLE_ID}.covPerBin.sigPeaks --minMAPQ $MAPQ $covPerBinSigPeaksOPT 
+  Rscript /bin/sigPeaks_CLT.R --input ${SAMPLE.ID}.covPerBin.gz --outName ${SAMPLE.ID}.covPerBin.sigPeaks --minMAPQ $MAPQ $covPerBinSigPeaksOPT 
   """
 }
+
+
 
 process mappingStats {
   publishDir resultDir
@@ -263,15 +265,17 @@ process mappingStats {
   input:
   set file(bam) , file(bai) from map4
   val SAMPLE from ch5
-  
-  output:
-  file ("${SAMPLE.SAMPLE_ID}.stats") into (mappingStatsDump1)
+  set file(fa) , file(fai) , file(dict) , file(size) from genome_ch5
 
-  script:
+  output:
+  file ("${SAMPLE.ID}.stats") into (mappingStatsDump1)
+
   """ 
-  Rscript /bin/mappingStats.R --bams $bam --dir . --assembly /mnt/data/$SAMPLE.ASSEMBLY --outName NA --tmpDir ./_tmpDirCollectAlignmentSummaryMetrics_$SAMPLE.ASSEMBLY  --CollectAlignmentSummaryMetrics "java -jar /bin/picard.jar CollectAlignmentSummaryMetrics"
+  Rscript /bin/mappingStats.R --bams $bam --dir . --assembly $fa --outName NA --tmpDir ./_tmpDirCollectAlignmentSummaryMetrics_$SAMPLE.ID  --CollectAlignmentSummaryMetrics "java -jar /bin/picard.jar CollectAlignmentSummaryMetrics"
   """
 }
+
+
 
 process covPerGe {
   publishDir resultDir
@@ -280,27 +284,29 @@ process covPerGe {
   set file(bam) , file(bai) from map5
   file(chrCoverageMedians) from covPerChr2
   val SAMPLE from ch6
-  
+  set file(fa) , file(fai) , file(dict) , file(size) from genome_ch6
+  file gaps from gaps_ch2
+
   output:
-  set file("${SAMPLE.SAMPLE_ID}.covPerGe.gz") , file("${SAMPLE.SAMPLE_ID}.covPerGe.sigPeaks.pdf") , file("${SAMPLE.SAMPLE_ID}.covPerGe.sigPeaks.sigPeaks.tsv") , file("${SAMPLE.SAMPLE_ID}.covPerGe.sigPeaks.stats") , file("${SAMPLE.SAMPLE_ID}.covPerGe.stats.df.gz") , file("${SAMPLE.SAMPLE_ID}.covPerGe.stats.filtered.df.gz") , file("${SAMPLE.SAMPLE_ID}.covPerGe.stats.pdf") , file("${SAMPLE.SAMPLE_ID}.gcLnorm.covPerGe.pdf")  into (covPerGeDump1)
+  set file("${SAMPLE.ID}.covPerGe.gz") , file("${SAMPLE.ID}.covPerGe.sigPeaks.pdf") , file("${SAMPLE.ID}.covPerGe.sigPeaks.sigPeaks.tsv") , file("${SAMPLE.ID}.covPerGe.sigPeaks.stats") , file("${SAMPLE.ID}.covPerGe.stats.df.gz") , file("${SAMPLE.ID}.covPerGe.stats.filtered.df.gz") , file("${SAMPLE.ID}.covPerGe.stats.pdf") , file("${SAMPLE.ID}.gcLnorm.covPerGe.pdf")  into (covPerGeDump1)
 
-
-  script:
   """ 
-  grep -v "^#" /mnt/data/$SAMPLE.REPS | cut -f 1,4,5 > ${SAMPLE.SAMPLE_ID}_tmp_reps
+  grep -v "^#" /mnt/data/$SAMPLE.REPS | cut -f 1,4,5 > ${SAMPLE.ID}_tmp_reps
   
-  covPerGe $bam ${SAMPLE.SAMPLE_ID}.covPerGe /mnt/data/$SAMPLE.GENES $chrCoverageMedians $MAPQ $BITFLAG $covPerGeMAPQoperation /mnt/data/$SAMPLE.ASSEMBLY
+  covPerGe $bam ${SAMPLE.ID}.covPerGe $annotation $chrCoverageMedians $MAPQ $BITFLAG $covPerGeMAPQoperation $fa
 
-  Rscript /bin/covPerGe2loessGCnormalization_v2.R --ASSEMBLY /mnt/data/$SAMPLE.ASSEMBLY --DIR . --SAMPLE ${SAMPLE.SAMPLE_ID} --outName ${SAMPLE.SAMPLE_ID}
-  mv ${SAMPLE.SAMPLE_ID}.gcLnorm.covPerGe.gz ${SAMPLE.SAMPLE_ID}.covPerGe.gz
+  Rscript /bin/covPerGe2loessGCnormalization_v2.R --ASSEMBLY $fa --DIR . --SAMPLE ${SAMPLE.ID} --outName ${SAMPLE.ID}
+  mv ${SAMPLE.ID}.gcLnorm.covPerGe.gz ${SAMPLE.ID}.covPerGe.gz
 
-  Rscript /bin/compareGeneCoverage.R --NAMES fake ${SAMPLE.SAMPLE_ID} --samples ${SAMPLE.SAMPLE_ID}.covPerGe.gz ${SAMPLE.SAMPLE_ID}.covPerGe.gz --outName ${SAMPLE.SAMPLE_ID}.covPerGe.stats --repeats ${SAMPLE.SAMPLE_ID}_tmp_reps --gaps /mnt/data/$SAMPLE.GAPS --chrs $CHRSj --minMAPQ $MAPQ $plotCovPerGeOPT 
+  Rscript /bin/compareGeneCoverage.R --NAMES fake ${SAMPLE.ID} --samples ${SAMPLE.ID}.covPerGe.gz ${SAMPLE.ID}.covPerGe.gz --outName ${SAMPLE.ID}.covPerGe.stats --repeats ${SAMPLE.ID}_tmp_reps --gaps $gaps --chrs $CHRSj --minMAPQ $MAPQ $plotCovPerGeOPT 
 
-  Rscript /bin/sigPeaks_mixture.R --input ${SAMPLE.SAMPLE_ID}.covPerGe.gz --outName ${SAMPLE.SAMPLE_ID}.covPerGe.sigPeaks --minMAPQ $MAPQ $covPerGeSigPeaksOPT 
+  Rscript /bin/sigPeaks_mixture.R --input ${SAMPLE.ID}.covPerGe.gz --outName ${SAMPLE.ID}.covPerGe.sigPeaks --minMAPQ $MAPQ $covPerGeSigPeaksOPT 
 
-  rm -rf ${SAMPLE.SAMPLE_ID}_tmp_reps
+  rm -rf ${SAMPLE.ID}_tmp_reps
   """
 }
+
+/*
 
 process freebayes {
  publishDir resultDir
