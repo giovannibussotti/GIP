@@ -12,7 +12,7 @@ htslibv=1.8
 bedtoolsv=2.25.0
 picardv=2.18.9
 python3v=3.7.0
-Rv=3.3.2
+Rv=3.6.0
 dellyv=0.6.7
 RepeatMaskerv=4.1.0
 RMBlastv=2.10.0
@@ -28,7 +28,7 @@ cp -r ../manuallyDownlodedPkgs/* .
 #L-GERT_jobArrays: download and convert 
 wget https://github.com/giovannibussotti/L-GERT_jobArrays/archive/v${LGERTv}.tar.gz
 tar -xzf v${LGERTv}.tar.gz
-mv L-GERT-${LGERTv} L-GERT
+mv L-GERT_jobArrays-${LGERTv} L-GERT
 #strip off unwanted file header
 perl -e 'open(F,"L-GERT/LSD/bashFunctions.sh");$spy=0; while(<F>){if(($_=~/^function bwaMapSample/)or($spy==1)){print $_; $spy=1;}  } close F; ' > L-GERT/LSD/_tmp
 mv L-GERT/LSD/_tmp L-GERT/LSD/bashFunctions.sh
