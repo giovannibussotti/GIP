@@ -286,12 +286,14 @@ process covPerGe {
   val SAMPLE from ch6
   set file(fa) , file(fai) , file(dict) , file(size) from genome_ch6
   file gaps from gaps_ch2
+  file repeatMasker from repeatMasker_ch1
+  file (annotation)
 
   output:
   set file("${SAMPLE.ID}.covPerGe.gz") , file("${SAMPLE.ID}.covPerGe.sigPeaks.pdf") , file("${SAMPLE.ID}.covPerGe.sigPeaks.sigPeaks.tsv") , file("${SAMPLE.ID}.covPerGe.sigPeaks.stats") , file("${SAMPLE.ID}.covPerGe.stats.df.gz") , file("${SAMPLE.ID}.covPerGe.stats.filtered.df.gz") , file("${SAMPLE.ID}.covPerGe.stats.pdf") , file("${SAMPLE.ID}.gcLnorm.covPerGe.pdf")  into (covPerGeDump1)
 
   """ 
-  grep -v "^#" /mnt/data/$SAMPLE.REPS | cut -f 1,4,5 > ${SAMPLE.ID}_tmp_reps
+  grep -v "^#" $repeatMasker/genome.out.gff | cut -f 1,4,5 > ${SAMPLE.ID}_tmp_reps
   
   covPerGe $bam ${SAMPLE.ID}.covPerGe $annotation $chrCoverageMedians $MAPQ $BITFLAG $covPerGeMAPQoperation $fa
 
