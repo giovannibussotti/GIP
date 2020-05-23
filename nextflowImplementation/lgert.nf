@@ -133,9 +133,9 @@ process prepareGenome {
 
   file ("db") into bwaDb_ch1
   file("genome.chrSize") into chrSize_ch1
-  set file("genome.fa") , file("genome.fa.fai") , file("genome.dict") , file("genome.chrSize") into (genome_ch1 , genome_ch2 , genome_ch3 , genome_ch4 , genome_ch5 , genome_ch6)
-  file("genome.gaps.gz") into (gaps_ch1 , gaps_ch2)
-  file("repeatMasker") into repeatMasker_ch1
+  set file("genome.fa") , file("genome.fa.fai") , file("genome.dict") , file("genome.chrSize") into (genome_ch1 , genome_ch2 , genome_ch3 , genome_ch4 , genome_ch5 , genome_ch6 , genome_ch7 , genome_ch8)
+  file("genome.gaps.gz") into (gaps_ch1 , gaps_ch2 , gaps_ch3)
+  file("repeatMasker") into (repeatMasker_ch1 , repeatMasker_ch2 , repeatMasker_ch3)
   file("snpEff")  into snpEffDb_ch1
 
   script:
@@ -308,7 +308,6 @@ process covPerGe {
   """
 }
 
-/*
 
 process freebayes {
  publishDir resultDir
@@ -317,21 +316,24 @@ process freebayes {
   set file(bam) , file(bai) from map6
   file(chrCoverageMedians) from covPerChr3
   val SAMPLE from ch7
-  
+  set file(fa) , file(fai) , file(dict) , file(size) from genome_ch7
+  file repeatMasker from repeatMasker_ch2
+
   output:
-  set file("${SAMPLE.SAMPLE_ID}.vcf.gz") , file("${SAMPLE.SAMPLE_ID}.vcf.gz.tbi") , file("${SAMPLE.SAMPLE_ID}_freebayesFiltered")   into (freebayes1)
+  set file("${SAMPLE.ID}.vcf.gz") , file("${SAMPLE.ID}.vcf.gz.tbi") , file("${SAMPLE.ID}_freebayesFiltered") into (freebayes1)
 
   script:
   """ 
-  freebayes -f /mnt/data/$SAMPLE.ASSEMBLY --min-mapping-quality $MAPQ $freebayesOPT --vcf ${SAMPLE.SAMPLE_ID}.vcf $bam 
+  freebayes -f $fa --min-mapping-quality $MAPQ $freebayesOPT --vcf ${SAMPLE.ID}.vcf $bam 
 
-  bgzip ${SAMPLE.SAMPLE_ID}.vcf
+  bgzip ${SAMPLE.ID}.vcf
 
-  tabix -p vcf -f ${SAMPLE.SAMPLE_ID}.vcf.gz
+  tabix -p vcf -f ${SAMPLE.ID}.vcf.gz
 
-  Rscript /bin/vcf2variantsFrequency_V4.R --selectedChrs $CHRSj --vcfFile ${SAMPLE.SAMPLE_ID}.vcf.gz --chrCoverageMediansFile $chrCoverageMedians --chrSizeFile /mnt/data/$SAMPLE.CHRSIZE --outdir ./${SAMPLE.SAMPLE_ID}_freebayesFiltered --reference /mnt/data/$SAMPLE.ASSEMBLY --discardGtfRegions /mnt/data/$SAMPLE.REPS $filterFreebayesOPT
+  Rscript /bin/vcf2variantsFrequency_V4.R --selectedChrs $CHRSj --vcfFile ${SAMPLE.ID}.vcf.gz --chrCoverageMediansFile $chrCoverageMedians --chrSizeFile $size --outdir ./${SAMPLE.ID}_freebayesFiltered --reference $fa --discardGtfRegions $repeatMasker/genome.out.gff $filterFreebayesOPT
   """
 }
+
 
 process snpEff {
  publishDir resultDir
@@ -339,46 +341,48 @@ process snpEff {
   input:
   set file(vcf) , file(tbi) , file(freebayesFilteredDir) from freebayes1
   val SAMPLE from ch8
+  file(snpEff) from snpEffDb_ch1
   
   output:
-    set file("${SAMPLE.SAMPLE_ID}.vcf.gz") , file("${SAMPLE.SAMPLE_ID}.vcf.gz.tbi") , file("${SAMPLE.SAMPLE_ID}_freebayesFiltered") , file("snpEff_summary_${SAMPLE.SAMPLE_ID}.genes.txt.gz") , file("snpEff_summary_${SAMPLE.SAMPLE_ID}.html") into (snpEffDump1)
+    set file("${SAMPLE.ID}.vcf.gz") , file("${SAMPLE.ID}.vcf.gz.tbi") , file("${SAMPLE.ID}_freebayesFiltered") , file("snpEff_summary_${SAMPLE.ID}.genes.txt.gz") , file("snpEff_summary_${SAMPLE.ID}.html") into (snpEffDump1)
 
   script:
   """ 
   #run snpEff on Freebayes output
-  gunzip -c $vcf > tmpSnpEff_${SAMPLE.SAMPLE_ID}.vcf
-  java -jar /opt/snpEff/snpEff.jar -o gatk $SAMPLE.SNPEFF_DB tmpSnpEff_${SAMPLE.SAMPLE_ID}.vcf -noLog -c /mnt/data/$SAMPLE.snpEffConfig -stats snpEff_summary_${SAMPLE.SAMPLE_ID} > ${SAMPLE.SAMPLE_ID}.snpEff.vcf
-  bgzip ${SAMPLE.SAMPLE_ID}.snpEff.vcf
-  gzip snpEff_summary_${SAMPLE.SAMPLE_ID}.genes.txt
-  mv snpEff_summary_${SAMPLE.SAMPLE_ID} snpEff_summary_${SAMPLE.SAMPLE_ID}.html
-  mv ${SAMPLE.SAMPLE_ID}.snpEff.vcf.gz ${SAMPLE.SAMPLE_ID}.vcf.gz
+  gunzip -c $vcf > tmpSnpEff_${SAMPLE.ID}.vcf
+  java -jar /opt/snpEff/snpEff.jar -o gatk genome tmpSnpEff_${SAMPLE.ID}.vcf -noLog -c $snpEff/snpEff.config -stats snpEff_summary_${SAMPLE.ID} > ${SAMPLE.ID}.snpEff.vcf
+  bgzip ${SAMPLE.ID}.snpEff.vcf
+  gzip snpEff_summary_${SAMPLE.ID}.genes.txt
+  mv snpEff_summary_${SAMPLE.ID} snpEff_summary_${SAMPLE.ID}.html
+  mv ${SAMPLE.ID}.snpEff.vcf.gz ${SAMPLE.ID}.vcf.gz
   rm -rf $tbi
-  tabix -p vcf -f ${SAMPLE.SAMPLE_ID}.vcf.gz
+  tabix -p vcf -f ${SAMPLE.ID}.vcf.gz
 
   #run snpEff on the filtered SNVs
-  gunzip -c ${SAMPLE.SAMPLE_ID}_freebayesFiltered/singleVariants.vcf.gz > tmpSnpEff_${SAMPLE.SAMPLE_ID}.vcf
-  java -jar /opt/snpEff/snpEff.jar -o gatk $SAMPLE.SNPEFF_DB tmpSnpEff_${SAMPLE.SAMPLE_ID}.vcf -noLog -c /mnt/data/$SAMPLE.snpEffConfig -stats snpEff_summary_${SAMPLE.SAMPLE_ID} > ${SAMPLE.SAMPLE_ID}.snpEff.vcf
-  bgzip ${SAMPLE.SAMPLE_ID}.snpEff.vcf
-  gzip -c snpEff_summary_${SAMPLE.SAMPLE_ID}.genes.txt > ${SAMPLE.SAMPLE_ID}_freebayesFiltered/snpEff_summary_${SAMPLE.SAMPLE_ID}.genes.txt.gz
-  mv snpEff_summary_${SAMPLE.SAMPLE_ID} ${SAMPLE.SAMPLE_ID}_freebayesFiltered/snpEff_summary_${SAMPLE.SAMPLE_ID}.html
-  mv ${SAMPLE.SAMPLE_ID}.snpEff.vcf.gz ${SAMPLE.SAMPLE_ID}_freebayesFiltered/singleVariants.vcf.gz
-  rm -rf ${SAMPLE.SAMPLE_ID}_freebayesFiltered/singleVariants.vcf.gz.tbi
-  tabix -p vcf -f ${SAMPLE.SAMPLE_ID}_freebayesFiltered/singleVariants.vcf.gz
+  gunzip -c ${SAMPLE.ID}_freebayesFiltered/singleVariants.vcf.gz > tmpSnpEff_${SAMPLE.ID}.vcf
+  java -jar /opt/snpEff/snpEff.jar -o gatk genome tmpSnpEff_${SAMPLE.ID}.vcf -noLog -c $snpEff/snpEff.config -stats snpEff_summary_${SAMPLE.ID} > ${SAMPLE.ID}.snpEff.vcf
+  bgzip ${SAMPLE.ID}.snpEff.vcf
+  gzip -c snpEff_summary_${SAMPLE.ID}.genes.txt > ${SAMPLE.ID}_freebayesFiltered/snpEff_summary_${SAMPLE.ID}.genes.txt.gz
+  mv snpEff_summary_${SAMPLE.ID} ${SAMPLE.ID}_freebayesFiltered/snpEff_summary_${SAMPLE.ID}.html
+  mv ${SAMPLE.ID}.snpEff.vcf.gz ${SAMPLE.ID}_freebayesFiltered/singleVariants.vcf.gz
+  rm -rf ${SAMPLE.ID}_freebayesFiltered/singleVariants.vcf.gz.tbi
+  tabix -p vcf -f ${SAMPLE.ID}_freebayesFiltered/singleVariants.vcf.gz
 
   #extract the EFF field
-  Rscript /bin/snpEffVcf2table.R --vcfFile ${SAMPLE.SAMPLE_ID}_freebayesFiltered/singleVariants.vcf.gz --out ${SAMPLE.SAMPLE_ID}_freebayesFiltered/singleVariants.df.EFF
+  Rscript /bin/snpEffVcf2table.R --vcfFile ${SAMPLE.ID}_freebayesFiltered/singleVariants.vcf.gz --out ${SAMPLE.ID}_freebayesFiltered/singleVariants.df.EFF
 
   #update the singleVariants.df table with the EFF field
-  gunzip ${SAMPLE.SAMPLE_ID}_freebayesFiltered/singleVariants.df.gz 
-  gunzip ${SAMPLE.SAMPLE_ID}_freebayesFiltered/singleVariants.df.EFF
-  awk '{print \$NF}' ${SAMPLE.SAMPLE_ID}_freebayesFiltered/singleVariants.df.EFF > ${SAMPLE.SAMPLE_ID}_freebayesFiltered/EFF
-  paste ${SAMPLE.SAMPLE_ID}_freebayesFiltered/singleVariants.df ${SAMPLE.SAMPLE_ID}_freebayesFiltered/EFF > ${SAMPLE.SAMPLE_ID}_freebayesFiltered/singleVariants.df2
-  mv ${SAMPLE.SAMPLE_ID}_freebayesFiltered/singleVariants.df2 ${SAMPLE.SAMPLE_ID}_freebayesFiltered/singleVariants.df
-  gzip ${SAMPLE.SAMPLE_ID}_freebayesFiltered/singleVariants.df
+  gunzip ${SAMPLE.ID}_freebayesFiltered/singleVariants.df.gz 
+  gunzip ${SAMPLE.ID}_freebayesFiltered/singleVariants.df.EFF
+  awk '{print \$NF}' ${SAMPLE.ID}_freebayesFiltered/singleVariants.df.EFF > ${SAMPLE.ID}_freebayesFiltered/EFF
+  paste ${SAMPLE.ID}_freebayesFiltered/singleVariants.df ${SAMPLE.ID}_freebayesFiltered/EFF > ${SAMPLE.ID}_freebayesFiltered/singleVariants.df2
+  mv ${SAMPLE.ID}_freebayesFiltered/singleVariants.df2 ${SAMPLE.ID}_freebayesFiltered/singleVariants.df
+  gzip ${SAMPLE.ID}_freebayesFiltered/singleVariants.df
 
-  rm -rf tmpSnpEff_${SAMPLE.SAMPLE_ID}.vcf snpEff_summary_${SAMPLE.SAMPLE_ID}.genes.txt ${SAMPLE.SAMPLE_ID}_freebayesFiltered/singleVariants.df.EFF ${SAMPLE.SAMPLE_ID}_freebayesFiltered/EFF
+  rm -rf tmpSnpEff_${SAMPLE.ID}.vcf snpEff_summary_${SAMPLE.ID}.genes.txt ${SAMPLE.ID}_freebayesFiltered/singleVariants.df.EFF ${SAMPLE.ID}_freebayesFiltered/EFF
   """
 }
+
 
 process dellySVref {
  publishDir resultDir
@@ -387,15 +391,164 @@ process dellySVref {
   set file(bam) , file(bai) from map7
   file(chrCoverageMedians) from covPerChr4
   val SAMPLE from ch9
-  
-  output:
-  set file("${SAMPLE.SAMPLE_ID}.delly.DEL.filter") , file("${SAMPLE.SAMPLE_ID}.delly.DEL.filter.circosBed") , file("${SAMPLE.SAMPLE_ID}.delly.DUP.filter") , file("${SAMPLE.SAMPLE_ID}.delly.DUP.filter.circosBed") , file("${SAMPLE.SAMPLE_ID}.delly.INV.filter") , file("${SAMPLE.SAMPLE_ID}.delly.INV.filter.circosBed") , file("${SAMPLE.SAMPLE_ID}.delly.TRA.filter") , file("${SAMPLE.SAMPLE_ID}.delly.TRA.filter.circosBed") , file("${SAMPLE.SAMPLE_ID}.delly.vcf.gz") , file("${SAMPLE.SAMPLE_ID}.delly.vcf.gz.tbi")  into (dellySVrefDump1)
+  set file(fa) , file(fai) , file(dict) , file(size) from genome_ch8
+  file repeatMasker from repeatMasker_ch3
+  file gaps from gaps_ch3
 
-  script:
+  output:
+  file("*") into dump
+
   """
-  bash /bin/dellySVref.sh ${SAMPLE.SAMPLE_ID} /mnt/data/$SAMPLE.REPS /mnt/data/$SAMPLE.ASSEMBLY . /mnt/data/$SAMPLE.CHRSIZE $MAPQ $BITFLAG /mnt/data/$SAMPLE.GAPS '$CHRSj' '$filterDellyOPT' $covPerGeMAPQoperation $minNormCovForDUP $maxNormCovForDEL /mnt/data/$SAMPLE.GENES
+  #####
+  #RUN#
+  #####
+  #prepare tmp bam with good HQ reads
+  mkdir -p _tmpHQbam 
+  samtools view -b -q $MAPQ -F $BITFLAG $bam > _tmpHQbam/${SAMPLE.ID}.bam
+  samtools index _tmpHQbam/${SAMPLE.ID}.bam
+
+  TYPES=(DEL DUP INV TRA)
+  for T in "\${TYPES[@]}"; do
+    delly -q $MAPQ -t \$T -g $fa -o ${SAMPLE.ID}_\${T}.vcf _tmpHQbam/${SAMPLE.ID}.bam
+    bgzip ${SAMPLE.ID}_\${T}.vcf
+    tabix -p vcf -f ${SAMPLE.ID}_\${T}.vcf.gz
+  done
+  rm -rf _tmpHQbam
+  #concatenate SVs if they exist
+  CONC=""
+  for T in "\${TYPES[@]}"; do
+    if [ -e ${SAMPLE.ID}_\${T}.vcf.gz ]; then
+      CONC="\$CONC ${SAMPLE.ID}_\${T}.vcf.gz"
+    fi
+  done
+  if [ -z \$CONC ]; then 
+    touch ${SAMPLE.ID}.delly.vcf
+  else 
+    vcf-concat \$CONC > ${SAMPLE.ID}.delly.vcf
+  fi
+
+  rm -rf ${SAMPLE.ID}_DEL.vcf.gz ${SAMPLE.ID}_DUP.vcf.gz ${SAMPLE.ID}_INV.vcf.gz ${SAMPLE.ID}_TRA.vcf.gz ${SAMPLE.ID}_DEL.vcf.gz.tbi ${SAMPLE.ID}_DUP.vcf.gz.tbi ${SAMPLE.ID}_INV.vcf.gz.tbi ${SAMPLE.ID}_TRA.vcf.gz.tbi
+  #sort and compress again
+  cat ${SAMPLE.ID}.delly.vcf | vcf-sort > ${SAMPLE.ID}.delly.vcf.tmp
+  mv ${SAMPLE.ID}.delly.vcf.tmp ${SAMPLE.ID}.delly.vcf 
+  bgzip ${SAMPLE.ID}.delly.vcf 
+  tabix -p vcf -f ${SAMPLE.ID}.delly.vcf.gz
+  
+  ########
+  #Filter#
+  ########
+  DF=${SAMPLE.ID}.delly.filter
+  mkdir -p \$DF
+  grep -v "^#" $repeatMasker/genome.out.gff | cut -f 1,4,5 > ${SAMPLE.ID}.tabu.bed
+  zcat $gaps >> ${SAMPLE.ID}.tabu.bed
+  SVTYPES=(DEL DUP INV)
+  for SV in "\${SVTYPES[@]}"; do
+    Rscript /bin/filterDelly.R --SVTYPE \$SV --test $SAMPLE.ID --reference $SAMPLE.ID --vcfFile ${SAMPLE.ID}.delly.vcf.gz --chrSizeFile $size --badSequencesBed ${SAMPLE.ID}.tabu.bed --useENDfield yes --outName \${DF}/${SAMPLE.ID}.delly.\$SV
+  done
+  Rscript /bin/filterDelly.R --SVTYPE TRA --test $SAMPLE.ID --reference $SAMPLE.ID --vcfFile ${SAMPLE.ID}.delly.vcf.gz --chrSizeFile $size --badSequencesBed ${SAMPLE.ID}.tabu.bed --useENDfield no --outName \${DF}/${SAMPLE.ID}.delly.TRA
+  rm ${SAMPLE.ID}.tabu.bed
+  #add coverage
+  mkdir -p \${DF}/coverages
+  for X in `ls \$DF | grep ".bed\$" | sed -e 's/.bed\$//'`; do
+    cat \$DF/\${X}.bed | perl -ne 'if(\$_=~/^(\\S+)\\s+(\\S+)\\s+(\\S+)/){\$chr=\$1;\$start=\$2;\$end=\$3;\$ge="\${chr}_\${start}_\${end}"; print \"\${chr}\\tdelly\\tSV\\t\${start}\\t\${end}\\t.\\t.\\t.\\tgene_id \\"\$ge\\"; transcript_id \\"\$ge\\";\\n\"} ' > \$DF/_tmp.gtf
+    covPerGe $bam \$DF/coverages/\${X}.cov \$DF/_tmp.gtf chrCoverageMedians_${SAMPLE.ID} $MAPQ $BITFLAG $covPerGeMAPQoperation $fa
+    rm \$DF/_tmp.gtf
+    #filter by coverage
+    filterByCov \$X \$DF/coverages/\${X}.fbc
+    #ov with genes
+    ovWithGenes \$X
+    mv \$DF/coverages/\${X}.ov \${X}.filter
+    bedForCircos \${X}.filter \${X}.filter.circosBed
+  done
+  rm -rf \$DF
   """
 }
+
+/*
+process dellySVref {
+ publishDir resultDir
+
+  input:
+  set file(bam) , file(bai) from map7
+  file(chrCoverageMedians) from covPerChr4
+  val SAMPLE from ch9
+  set file(fa) , file(fai) , file(dict) , file(size) from genome_ch8
+  file repeatMasker from repeatMasker_ch3
+  file gaps from gaps_ch3
+
+  output:
+  set file("${SAMPLE.ID}.delly.DEL.filter") , file("${SAMPLE.ID}.delly.DEL.filter.circosBed") , file("${SAMPLE.ID}.delly.DUP.filter") , file("${SAMPLE.ID}.delly.DUP.filter.circosBed") , file("${SAMPLE.ID}.delly.INV.filter") , file("${SAMPLE.ID}.delly.INV.filter.circosBed") , file("${SAMPLE.ID}.delly.TRA.filter") , file("${SAMPLE.ID}.delly.TRA.filter.circosBed") , file("${SAMPLE.ID}.delly.vcf.gz") , file("${SAMPLE.ID}.delly.vcf.gz.tbi")  into (dellySVrefDump1)
+
+  
+  """
+  #bash /bin/dellySVref.sh ${SAMPLE.SAMPLE_ID} /mnt/data/$SAMPLE.REPS /mnt/data/$SAMPLE.ASSEMBLY . /mnt/data/$SAMPLE.CHRSIZE $MAPQ $BITFLAG /mnt/data/$SAMPLE.GAPS '$CHRSj' '$filterDellyOPT' $covPerGeMAPQoperation $minNormCovForDUP $maxNormCovForDEL /mnt/data/$SAMPLE.GENES
+
+  #####
+  #RUN#
+  #####
+  #prepare tmp bam with good HQ reads
+  mkdir -p _tmpHQbam 
+  samtools view -b -q $MAPQ -F $BITFLAG $bam > _tmpHQbam/${SAMPLE.ID}.bam
+  samtools index _tmpHQbam/${SAMPLE.ID}.bam
+
+  TYPES=(DEL DUP INV TRA)
+  for T in "${TYPES[\@]}"; do
+    delly -q $MAPQ -t \$T -g $fa -o ${SAMPLE.ID}_\${T}.vcf _tmpHQbam/${SAMPLE.ID}.bam
+    bgzip ${SAMPLE.ID}_\${T}.vcf
+    tabix -p vcf -f ${SAMPLE.ID}_${T}.vcf.gz
+  done
+  rm -rf _tmpHQbam
+  #concatenate SVs if they exist
+  CONC=""
+  for T in "\${TYPES[@]}"; do
+    if [ -e ${SAMPLE.ID}_${T}.vcf.gz ]; then
+      CONC="$CONC ${SAMPLE.ID}_${T}.vcf.gz"
+    fi
+  done
+  if [ -z $CONC ]; then 
+    touch ${SAMPLE.ID}.delly.vcf
+  else 
+    vcf-concat $CONC > ${SAMPLE.ID}.delly.vcf
+  fi
+
+  rm -rf ${SAMPLE.ID}_DEL.vcf.gz ${SAMPLE.ID}_DUP.vcf.gz ${SAMPLE.ID}_INV.vcf.gz ${SAMPLE.ID}_TRA.vcf.gz ${SAMPLE.ID}_DEL.vcf.gz.tbi ${SAMPLE.ID}_DUP.vcf.gz.tbi ${SAMPLE.ID}_INV.vcf.gz.tbi ${SAMPLE.ID}_TRA.vcf.gz.tbi
+  #sort and compress again
+  cat ${SAMPLE.ID}.delly.vcf | vcf-sort > ${SAMPLE.ID}.delly.vcf.tmp
+  mv ${SAMPLE.ID}.delly.vcf.tmp ${SAMPLE.ID}.delly.vcf 
+  bgzip ${SAMPLE.ID}.delly.vcf 
+  tabix -p vcf -f ${SAMPLE.ID}.delly.vcf.gz
+
+  ########
+  #Filter#
+  ########
+  DF=${SAMPLE.ID}.delly.filter
+  mkdir -p $DF
+  grep -v "^#" $repeatMasker/genome.out.gff | cut -f 1,4,5 > ${SAMPLE.ID}.tabu.bed
+  zcat $gaps >> ${SAMPLE.ID}.tabu.bed
+  SVTYPES=(DEL DUP INV)
+  for SV in "\${SVTYPES[@]}"; do
+    $runFilterDelly --SVTYPE $SV --test $SAMPLE.ID --reference $SAMPLE.ID --vcfFile ${SAMPLE.ID}.delly.vcf.gz --chrSizeFile $size --badSequencesBed ${SAMPLE.ID}.tabu.bed --useENDfield yes --outName ${DF}/${SAMPLE.ID}.delly.${SV}
+  done
+  $runFilterDelly --SVTYPE TRA --test $SAMPLE.ID --reference $SAMPLE.ID --vcfFile ${SAMPLE.ID}.delly.vcf.gz --chrSizeFile $size --badSequencesBed ${SAMPLE.ID}.tabu.bed --useENDfield no --outName ${DF}/${SAMPLE.ID}.delly.TRA
+  rm ${SAMPLE_ID}.tabu.bed
+  #add coverage
+  mkdir -p ${DF}/coverages
+  for X in `ls $DF | grep ".bed\$" | sed -e 's/.bed\$//'`; do
+    cat ${DF}/${X}.bed | perl -ne 'if($_=~/^(\\S+)\\s+(\\S+)\\s+(\\S+)/){$chr=\$1;$start=\$2;$end=\$3;$ge="${chr}_${start}_${end}"; print "${chr}\tdelly\tSV\t${start}\t${end}\t.\t.\t.\tgene_id \"$ge\"; transcript_id \"$ge\";\n"} ' > ${DF}/_tmp.gtf
+    covPerGe ${SAMPLE_ID}.bam ${DF}/coverages/${X}.cov ${DF}/_tmp.gtf chrCoverageMedians_${SAMPLE.ID} $MAPQ $BITFLAG $covPerGeMAPQoperation $fa
+    rm ${DF}/_tmp.gtf
+    #filter by coverage
+    filterByCov $X ${DF}/coverages/${X}.fbc
+    #ov with genes
+    ovWithGenes $X
+    mv ${DF}/coverages/${X}.ov ${X}.filter
+    bedForCircos ${X}.filter ${X}.filter.circosBed
+  done
+  rm -rf $DF
+  """
+}
+
+
 
 process bigWigGenomeCov {
  publishDir resultDir
