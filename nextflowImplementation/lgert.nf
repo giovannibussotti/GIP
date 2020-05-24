@@ -454,9 +454,9 @@ process dellySVref {
     covPerGe $bam \$DF/coverages/\${X}.cov \$DF/_tmp.gtf chrCoverageMedians_${SAMPLE.ID} $MAPQ $BITFLAG $covPerGeMAPQoperation $fa
     rm \$DF/_tmp.gtf
     #filter by coverage
-    filterByCov \$X \$DF/coverages/\${X}.fbc
+    filterByCov \$X \$DF/coverages/\${X}.fbc minNormCovForDUP maxNormCovForDEL
     #ov with genes
-    ovWithGenes \$X
+    ovWithGenes \$X \$DF
     mv \$DF/coverages/\${X}.ov \${X}.filter
     bedForCircos \${X}.filter \${X}.filter.circosBed
   done
@@ -538,9 +538,9 @@ process dellySVref {
     covPerGe ${SAMPLE_ID}.bam ${DF}/coverages/${X}.cov ${DF}/_tmp.gtf chrCoverageMedians_${SAMPLE.ID} $MAPQ $BITFLAG $covPerGeMAPQoperation $fa
     rm ${DF}/_tmp.gtf
     #filter by coverage
-    filterByCov $X ${DF}/coverages/${X}.fbc
+    filterByCov $X ${DF}/coverages/${X}.fbc $minNormCovForDUP $maxNormCovForDEL
     #ov with genes
-    ovWithGenes $X
+    ovWithGenes $X \$DF
     mv ${DF}/coverages/${X}.ov ${X}.filter
     bedForCircos ${X}.filter ${X}.filter.circosBed
   done
