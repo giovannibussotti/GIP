@@ -443,18 +443,18 @@ process dellySVref {
   zcat $gaps >> ${SAMPLE.ID}.tabu.bed
   SVTYPES=(DEL DUP INV)
   for SV in "\${SVTYPES[@]}"; do
-    Rscript /bin/filterDelly.R --SVTYPE \$SV --test $SAMPLE.ID --reference $SAMPLE.ID --vcfFile ${SAMPLE.ID}.delly.vcf.gz --chrSizeFile $size --badSequencesBed ${SAMPLE.ID}.tabu.bed --useENDfield yes --outName \${DF}/${SAMPLE.ID}.delly.\$SV
+    Rscript /bin/filterDelly.R --SVTYPE \$SV --test $SAMPLE.ID --reference $SAMPLE.ID --vcfFile ${SAMPLE.ID}.delly.vcf.gz --chrSizeFile $size --badSequencesBed ${SAMPLE.ID}.tabu.bed --useENDfield yes --outName \$DF/${SAMPLE.ID}.delly.\$SV
   done
-  Rscript /bin/filterDelly.R --SVTYPE TRA --test $SAMPLE.ID --reference $SAMPLE.ID --vcfFile ${SAMPLE.ID}.delly.vcf.gz --chrSizeFile $size --badSequencesBed ${SAMPLE.ID}.tabu.bed --useENDfield no --outName \${DF}/${SAMPLE.ID}.delly.TRA
+  Rscript /bin/filterDelly.R --SVTYPE TRA --test $SAMPLE.ID --reference $SAMPLE.ID --vcfFile ${SAMPLE.ID}.delly.vcf.gz --chrSizeFile $size --badSequencesBed ${SAMPLE.ID}.tabu.bed --useENDfield no --outName \$DF/${SAMPLE.ID}.delly.TRA
   rm ${SAMPLE.ID}.tabu.bed
   #add coverage
   mkdir -p \${DF}/coverages
   for X in `ls \$DF | grep ".bed\$" | sed -e 's/.bed\$//'`; do
     cat \$DF/\${X}.bed | perl -ne 'if(\$_=~/^(\\S+)\\s+(\\S+)\\s+(\\S+)/){\$chr=\$1;\$start=\$2;\$end=\$3;\$ge="\${chr}_\${start}_\${end}"; print \"\${chr}\\tdelly\\tSV\\t\${start}\\t\${end}\\t.\\t.\\t.\\tgene_id \\"\$ge\\"; transcript_id \\"\$ge\\";\\n\"} ' > \$DF/_tmp.gtf
-    covPerGe $bam \$DF/coverages/\${X}.cov \$DF/_tmp.gtf chrCoverageMedians_${SAMPLE.ID} $MAPQ $BITFLAG $covPerGeMAPQoperation $fa
+    covPerGe $bam \$DF/coverages/\${X}.cov \$DF/_tmp.gtf chrCoverageMedians_$SAMPLE.ID $MAPQ $BITFLAG $covPerGeMAPQoperation $fa
     rm \$DF/_tmp.gtf
     #filter by coverage
-    filterByCov \$X \$DF/coverages/\${X}.fbc minNormCovForDUP maxNormCovForDEL
+    filterByCov \$X \$DF/coverages/\${X}.fbc $minNormCovForDUP $maxNormCovForDEL $SAMPLE.ID
     #ov with genes
     ovWithGenes \$X \$DF
     mv \$DF/coverages/\${X}.ov \${X}.filter
@@ -465,90 +465,6 @@ process dellySVref {
 }
 
 /*
-process dellySVref {
- publishDir resultDir
-
-  input:
-  set file(bam) , file(bai) from map7
-  file(chrCoverageMedians) from covPerChr4
-  val SAMPLE from ch9
-  set file(fa) , file(fai) , file(dict) , file(size) from genome_ch8
-  file repeatMasker from repeatMasker_ch3
-  file gaps from gaps_ch3
-
-  output:
-  set file("${SAMPLE.ID}.delly.DEL.filter") , file("${SAMPLE.ID}.delly.DEL.filter.circosBed") , file("${SAMPLE.ID}.delly.DUP.filter") , file("${SAMPLE.ID}.delly.DUP.filter.circosBed") , file("${SAMPLE.ID}.delly.INV.filter") , file("${SAMPLE.ID}.delly.INV.filter.circosBed") , file("${SAMPLE.ID}.delly.TRA.filter") , file("${SAMPLE.ID}.delly.TRA.filter.circosBed") , file("${SAMPLE.ID}.delly.vcf.gz") , file("${SAMPLE.ID}.delly.vcf.gz.tbi")  into (dellySVrefDump1)
-
-  
-  """
-  #bash /bin/dellySVref.sh ${SAMPLE.SAMPLE_ID} /mnt/data/$SAMPLE.REPS /mnt/data/$SAMPLE.ASSEMBLY . /mnt/data/$SAMPLE.CHRSIZE $MAPQ $BITFLAG /mnt/data/$SAMPLE.GAPS '$CHRSj' '$filterDellyOPT' $covPerGeMAPQoperation $minNormCovForDUP $maxNormCovForDEL /mnt/data/$SAMPLE.GENES
-
-  #####
-  #RUN#
-  #####
-  #prepare tmp bam with good HQ reads
-  mkdir -p _tmpHQbam 
-  samtools view -b -q $MAPQ -F $BITFLAG $bam > _tmpHQbam/${SAMPLE.ID}.bam
-  samtools index _tmpHQbam/${SAMPLE.ID}.bam
-
-  TYPES=(DEL DUP INV TRA)
-  for T in "${TYPES[\@]}"; do
-    delly -q $MAPQ -t \$T -g $fa -o ${SAMPLE.ID}_\${T}.vcf _tmpHQbam/${SAMPLE.ID}.bam
-    bgzip ${SAMPLE.ID}_\${T}.vcf
-    tabix -p vcf -f ${SAMPLE.ID}_${T}.vcf.gz
-  done
-  rm -rf _tmpHQbam
-  #concatenate SVs if they exist
-  CONC=""
-  for T in "\${TYPES[@]}"; do
-    if [ -e ${SAMPLE.ID}_${T}.vcf.gz ]; then
-      CONC="$CONC ${SAMPLE.ID}_${T}.vcf.gz"
-    fi
-  done
-  if [ -z $CONC ]; then 
-    touch ${SAMPLE.ID}.delly.vcf
-  else 
-    vcf-concat $CONC > ${SAMPLE.ID}.delly.vcf
-  fi
-
-  rm -rf ${SAMPLE.ID}_DEL.vcf.gz ${SAMPLE.ID}_DUP.vcf.gz ${SAMPLE.ID}_INV.vcf.gz ${SAMPLE.ID}_TRA.vcf.gz ${SAMPLE.ID}_DEL.vcf.gz.tbi ${SAMPLE.ID}_DUP.vcf.gz.tbi ${SAMPLE.ID}_INV.vcf.gz.tbi ${SAMPLE.ID}_TRA.vcf.gz.tbi
-  #sort and compress again
-  cat ${SAMPLE.ID}.delly.vcf | vcf-sort > ${SAMPLE.ID}.delly.vcf.tmp
-  mv ${SAMPLE.ID}.delly.vcf.tmp ${SAMPLE.ID}.delly.vcf 
-  bgzip ${SAMPLE.ID}.delly.vcf 
-  tabix -p vcf -f ${SAMPLE.ID}.delly.vcf.gz
-
-  ########
-  #Filter#
-  ########
-  DF=${SAMPLE.ID}.delly.filter
-  mkdir -p $DF
-  grep -v "^#" $repeatMasker/genome.out.gff | cut -f 1,4,5 > ${SAMPLE.ID}.tabu.bed
-  zcat $gaps >> ${SAMPLE.ID}.tabu.bed
-  SVTYPES=(DEL DUP INV)
-  for SV in "\${SVTYPES[@]}"; do
-    $runFilterDelly --SVTYPE $SV --test $SAMPLE.ID --reference $SAMPLE.ID --vcfFile ${SAMPLE.ID}.delly.vcf.gz --chrSizeFile $size --badSequencesBed ${SAMPLE.ID}.tabu.bed --useENDfield yes --outName ${DF}/${SAMPLE.ID}.delly.${SV}
-  done
-  $runFilterDelly --SVTYPE TRA --test $SAMPLE.ID --reference $SAMPLE.ID --vcfFile ${SAMPLE.ID}.delly.vcf.gz --chrSizeFile $size --badSequencesBed ${SAMPLE.ID}.tabu.bed --useENDfield no --outName ${DF}/${SAMPLE.ID}.delly.TRA
-  rm ${SAMPLE_ID}.tabu.bed
-  #add coverage
-  mkdir -p ${DF}/coverages
-  for X in `ls $DF | grep ".bed\$" | sed -e 's/.bed\$//'`; do
-    cat ${DF}/${X}.bed | perl -ne 'if($_=~/^(\\S+)\\s+(\\S+)\\s+(\\S+)/){$chr=\$1;$start=\$2;$end=\$3;$ge="${chr}_${start}_${end}"; print "${chr}\tdelly\tSV\t${start}\t${end}\t.\t.\t.\tgene_id \"$ge\"; transcript_id \"$ge\";\n"} ' > ${DF}/_tmp.gtf
-    covPerGe ${SAMPLE_ID}.bam ${DF}/coverages/${X}.cov ${DF}/_tmp.gtf chrCoverageMedians_${SAMPLE.ID} $MAPQ $BITFLAG $covPerGeMAPQoperation $fa
-    rm ${DF}/_tmp.gtf
-    #filter by coverage
-    filterByCov $X ${DF}/coverages/${X}.fbc $minNormCovForDUP $maxNormCovForDEL
-    #ov with genes
-    ovWithGenes $X \$DF
-    mv ${DF}/coverages/${X}.ov ${X}.filter
-    bedForCircos ${X}.filter ${X}.filter.circosBed
-  done
-  rm -rf $DF
-  """
-}
-
-
 
 process bigWigGenomeCov {
  publishDir resultDir
@@ -558,7 +474,7 @@ process bigWigGenomeCov {
   val SAMPLE from ch10
   
   output:
-  file("${SAMPLE.SAMPLE_ID}.bw") into (bigWigGenomeCovDump1)
+  file("${SAMPLE.SAMPLE.ID}.bw") into (bigWigGenomeCovDump1)
 
   script:
   """
@@ -573,10 +489,10 @@ process bigWigGenomeCov {
 
   #combine chrs and turn to bigWig
   mkdir -p \${TMP}/sort
-  cat \${TMP}/*.bg | sort -k1,1 -k2,2n -T \${TMP}/sort > \${TMP}/${SAMPLE.SAMPLE_ID}.bg
-  samtools idxstats ${SAMPLE.SAMPLE_ID}.bam | cut -f 1,2 | head -n -2 > \${TMP}/chrSize
-  /bin/bedGraphToBigWig \${TMP}/${SAMPLE.SAMPLE_ID}.bg \${TMP}/chrSize \${TMP}/${SAMPLE.SAMPLE_ID}.bw
-  mv \${TMP}/${SAMPLE.SAMPLE_ID}.bw .
+  cat \${TMP}/*.bg | sort -k1,1 -k2,2n -T \${TMP}/sort > \${TMP}/${SAMPLE.ID}.bg
+  samtools idxstats $bam | cut -f 1,2 | head -n -2 > \${TMP}/chrSize
+  /bin/bedGraphToBigWig \${TMP}/${SAMPLE.ID}.bg \${TMP}/chrSize \${TMP}/${SAMPLE.ID}.bw
+  mv \${TMP}/${SAMPLE.ID}.bw .
   rm -rf \$TMP
   """
 }
