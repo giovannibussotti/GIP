@@ -1,0 +1,1 @@
+2020-05-24 12:24:27	4m 6s	pensive_ptolemy	OK	422126429017da280e98078be942118c	62930b4e-468f-4a37-aa41-4c6d7bf65764	nextflow lgert.nf --genome ../inputData/dataset/Linf_test.fa --annotation ../inputData/dataset/Linf_test.ge.gtf -c lgert.config -params-file sampleInfo.yaml -resume

@@ -454,7 +454,7 @@ process dellySVref {
     covPerGe $bam \$DF/coverages/\${X}.cov \$DF/_tmp.gtf chrCoverageMedians_$SAMPLE.ID $MAPQ $BITFLAG $covPerGeMAPQoperation $fa
     rm \$DF/_tmp.gtf
     #filter by coverage
-    filterByCov \$X \$DF/coverages/\${X}.fbc $minNormCovForDUP $maxNormCovForDEL $SAMPLE.ID
+    filterByCov \$X \$DF/coverages/\${X}.fbc $minNormCovForDUP $maxNormCovForDEL $SAMPLE.ID \$DF
     #ov with genes
     ovWithGenes \$X \$DF
     mv \$DF/coverages/\${X}.ov \${X}.filter
