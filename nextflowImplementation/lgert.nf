@@ -464,7 +464,6 @@ process dellySVref {
   """
 }
 
-/*
 
 process bigWigGenomeCov {
  publishDir resultDir
@@ -474,9 +473,8 @@ process bigWigGenomeCov {
   val SAMPLE from ch10
   
   output:
-  file("${SAMPLE.SAMPLE.ID}.bw") into (bigWigGenomeCovDump1)
+  file("${SAMPLE.ID}.bw") into (bigWigGenomeCovDump1)
 
-  script:
   """
   #generate a bedGraph per chr
   TMP=tmpbw
@@ -484,21 +482,20 @@ process bigWigGenomeCov {
   for CHR in `samtools idxstats $bam | cut -f1 | head -n -2`; do
     samtools view  -b $bam \$CHR > \$TMP/\${CHR}.bam    
     samtools index \$TMP/\${CHR}.bam
-    bamCoverage -b \$TMP/\${CHR}.bam --outFileName \$TMP/\${CHR}.bg --numberOfProcessors $task.cpus --outFileFormat bedgraph --normalizeUsing RPKM --ignoreDuplicates -r \$CHR $bigWigOpt
+    bamCoverage -b \$TMP/\${CHR}.bam --outFileName \$TMP/\${CHR}.bg --numberOfProcessors $task.cpus --outFileFormat bedgraph --normalizeUsingRPKM --ignoreDuplicates -r \$CHR $bigWigOpt
   done
 
   #combine chrs and turn to bigWig
-  mkdir -p \${TMP}/sort
-  cat \${TMP}/*.bg | sort -k1,1 -k2,2n -T \${TMP}/sort > \${TMP}/${SAMPLE.ID}.bg
-  samtools idxstats $bam | cut -f 1,2 | head -n -2 > \${TMP}/chrSize
-  /bin/bedGraphToBigWig \${TMP}/${SAMPLE.ID}.bg \${TMP}/chrSize \${TMP}/${SAMPLE.ID}.bw
-  mv \${TMP}/${SAMPLE.ID}.bw .
+  mkdir -p \$TMP/sort
+  cat \$TMP/*.bg | sort -k1,1 -k2,2n -T \$TMP/sort > \$TMP/${SAMPLE.ID}.bg
+  samtools idxstats $bam | cut -f 1,2 | head -n -2 > \$TMP/chrSize
+  /bin/bedGraphToBigWig \$TMP/${SAMPLE.ID}.bg \$TMP/chrSize \$TMP/${SAMPLE.ID}.bw
+  mv \$TMP/${SAMPLE.ID}.bw .
   rm -rf \$TMP
   """
 }
 
 
-*/
 
 
 
