@@ -151,25 +151,6 @@ process prepareGenome {
 }
 
 
-/*
-process testa {
-  publishDir resultDir
-  
-  input:
-  //set file(fa) , file(fai) , file(dict) , file(size) from genome_ch
-  set fa , fai , dict , size from genome_ch1
-  
-  output:
-
-  file oraaaa into letters
-
-  """
-  cat $size > oraaaa
-  """
-}
-*/
-
-
 process map {
   publishDir resultDir 
     
@@ -228,8 +209,6 @@ process covPerNt {
   """
 }
 
-
-
 process covPerBin {
   publishDir resultDir
 
@@ -257,8 +236,6 @@ process covPerBin {
   """
 }
 
-
-
 process mappingStats {
   publishDir resultDir
 
@@ -268,14 +245,16 @@ process mappingStats {
   set file(fa) , file(fai) , file(dict) , file(size) from genome_ch5
 
   output:
-  file ("${SAMPLE.ID}.stats") into (mappingStatsDump1)
+  set file ("${SAMPLE.ID}.stats") , file ("${SAMPLE.ID}.insertSize.metrics") , file ("${SAMPLE.ID}.insertSize.pdf") into (mappingStatsDump1)
 
   """ 
   Rscript /bin/mappingStats.R --bams $bam --dir . --assembly $fa --outName NA --tmpDir ./_tmpDirCollectAlignmentSummaryMetrics_$SAMPLE.ID  --CollectAlignmentSummaryMetrics "java -jar /bin/picard.jar CollectAlignmentSummaryMetrics"
+
+  mkdir -p \$PWD/tmpDir
+  java -jar /bin/picard.jar CollectInsertSizeMetrics I=$bam O=${SAMPLE.ID}.insertSize.metrics H=${SAMPLE.ID}.insertSize.pdf REFERENCE_SEQUENCE=$fa TMP_DIR=\$PWD/tmpDir
+  rm -rf \$PWD/tmpDir
   """
 }
-
-
 
 process covPerGe {
   publishDir resultDir
