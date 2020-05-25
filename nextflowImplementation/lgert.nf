@@ -198,7 +198,7 @@ process covPerNt {
   output:
   file ("${SAMPLE.ID}.covPerNt.gz") into (covPerNt1 , covPerNt2)
   file ("${SAMPLE.ID}.pcMapqPerNt.gz") into (pcMapqPerNt1)
-  set file ("${SAMPLE.ID}.covPerNt.boxPlot.pdf") , file ("${SAMPLE.ID}.covPerNt.boxPlot_allMedians.tsv") into (covPerNtDump1)
+  set file ("${SAMPLE.ID}.covPerNt.boxPlot.pdf") , file ("${SAMPLE.ID}.covPerNt.boxPlot_allMedians.tsv") , file ("${SAMPLE.ID}.medianGenomeCoverage") into (covPerNtDump1)
 
   script:
   """
