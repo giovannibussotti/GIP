@@ -193,7 +193,8 @@ process covPerBin {
 
   output:
   file ("${SAMPLE.ID}.covPerBin.gz") into (covPerBin1)
-  set file ("${SAMPLE.ID}.gcLnorm.covPerBin.pdf") , file ("${SAMPLE.ID}.PLOTcovPerBin_all.pdf") , file ("${SAMPLE.ID}.PLOTcovPerBin_byChr.pdf") , file ("${SAMPLE.ID}.PLOTcovPerBin.df.gz") , file ("${SAMPLE.ID}.PLOTcovPerBin.extremeRatio.bed.gz") , file ("${SAMPLE.ID}.PLOTcovPerBin_faceting.pdf") into (covPerBinDump1)
+  set file ("${SAMPLE.ID}.covPerBin_all.pdf") , file ("${SAMPLE.ID}.covPerBin_byChr.pdf") , file ("${SAMPLE.ID}.covPerBin.df.gz") , file ("${SAMPLE.ID}.covPerBin.extremeRatio.bed.gz") , file ("${SAMPLE.ID}.covPerBin_faceting.pdf") , file("${SAMPLE.ID}.covPerBin.sigPeaks.tsv.gz") , file("${SAMPLE.ID}.covPerBin.sigPeaks.stats") into (covPerBinDump1)
+  //file ("${SAMPLE.ID}.gcLnorm.covPerBin.pdf") 
 
   """ 
   covPerBin $bam $size /bin/gencov2intervals.pl $STEP $MAPQ $BITFLAG . $chrCoverageMedians 
@@ -201,9 +202,9 @@ process covPerBin {
   Rscript /bin/covPerBin2loessGCnormalization_v2.R --ASSEMBLY $fa --DIR . --SAMPLE ${SAMPLE.ID} --outName ${SAMPLE.ID} 
   mv ${SAMPLE.ID}.gcLnorm.covPerBin.gz ${SAMPLE.ID}.covPerBin.gz
 
-  Rscript /bin/compareGenomicCoverageBins.R --referenceName _fake_ --testName ${SAMPLE.ID} --referenceFile ${SAMPLE.ID}.covPerBin.gz --testFile ${SAMPLE.ID}.covPerBin.gz --outName ${SAMPLE.ID}.PLOTcovPerBin --chrs $CHRSj --minMAPQ $MAPQ $PLOTcovPerBinOPT 
+  Rscript /bin/compareGenomicCoverageBins.R --referenceName _fake_ --testName ${SAMPLE.ID} --referenceFile ${SAMPLE.ID}.covPerBin.gz --testFile ${SAMPLE.ID}.covPerBin.gz --outName ${SAMPLE.ID}.covPerBin --chrs $CHRSj --minMAPQ $MAPQ $PLOTcovPerBinOPT 
 
-  Rscript /bin/covPerBin2regression.R $PLOTcovPerBinRegressionOPT --filterChrsNames $CHRSj --filterMAPQ $MAPQ --DIR . --SAMPLES ${SAMPLE.ID}.covPerBin.gz  --NAMES ${SAMPLE.ID} --outName ${SAMPLE.ID}.PLOTcovPerBinRegression 
+  #Rscript /bin/covPerBin2regression.R $PLOTcovPerBinRegressionOPT --filterChrsNames $CHRSj --filterMAPQ $MAPQ --DIR . --SAMPLES ${SAMPLE.ID}.covPerBin.gz  --NAMES ${SAMPLE.ID} --outName ${SAMPLE.ID}.PLOTcovPerBinRegression 
 
   Rscript /bin/sigPeaks_CLT.R --input ${SAMPLE.ID}.covPerBin.gz --outName ${SAMPLE.ID}.covPerBin.sigPeaks --minMAPQ $MAPQ $covPerBinSigPeaksOPT 
   """
@@ -242,7 +243,8 @@ process covPerGe {
   file (annotation)
 
   output:
-  set file("${SAMPLE.ID}.covPerGe.gz") , file("${SAMPLE.ID}.covPerGe.sigPeaks.pdf") , file("${SAMPLE.ID}.covPerGe.sigPeaks.sigPeaks.tsv") , file("${SAMPLE.ID}.covPerGe.sigPeaks.stats") , file("${SAMPLE.ID}.covPerGe.stats.df.gz") , file("${SAMPLE.ID}.covPerGe.stats.filtered.df.gz") , file("${SAMPLE.ID}.covPerGe.stats.pdf") , file("${SAMPLE.ID}.gcLnorm.covPerGe.pdf")  into (covPerGeDump1)
+  set file("${SAMPLE.ID}.covPerGe.gz") , file("${SAMPLE.ID}.covPerGe.sigPeaks.tsv") , file("${SAMPLE.ID}.covPerGe.sigPeaks.stats") , file("${SAMPLE.ID}.covPerGe.stats.df.gz") , file("${SAMPLE.ID}.covPerGe.stats.filtered.df.gz") , file("${SAMPLE.ID}.covPerGe.stats.pdf")  into (covPerGeDump1)
+  //, file("${SAMPLE.ID}.gcLnorm.covPerGe.pdf") ,  file("${SAMPLE.ID}.covPerGe.sigPeaks.pdf")
 
   """ 
   grep -v "^#" $repeatMasker/genome.out.gff | cut -f 1,4,5 > ${SAMPLE.ID}_tmp_reps
