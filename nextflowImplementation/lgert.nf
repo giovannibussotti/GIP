@@ -171,14 +171,14 @@ process covPerNt {
   output:
   file ("${SAMPLE.ID}.covPerNt.gz") into (covPerNt1 , covPerNt2)
   file ("${SAMPLE.ID}.pcMapqPerNt.gz") into (pcMapqPerNt1)
-  set file ("${SAMPLE.ID}.covPerNt.boxPlot.pdf") , file ("${SAMPLE.ID}.covPerNt.boxPlot_allMedians.tsv") , file ("${SAMPLE.ID}.covPerNt.medianGenomeCoverage") into (covPerNtDump1)
+  set file ("${SAMPLE.ID}.covPerNt.boxPlot.png") , file ("${SAMPLE.ID}.covPerNt.ridges.png") , file ("${SAMPLE.ID}.covPerNt.allMedians.tsv") , file ("${SAMPLE.ID}.covPerNt.medianGenomeCoverage") into (covPerNtDump1)
 
   script:
   """
   covPerNt $bam $size ${SAMPLE.ID}.covPerNt MEDIAN $MAPQ $BITFLAG 
   gzip ${SAMPLE.ID}.covPerNt
   pcMapqPerNt $bam $MAPQ ${SAMPLE.ID}.pcMapqPerNt
-  Rscript /bin/plotGenomeCoverage_V3.R --files ${SAMPLE.ID}.covPerNt.gz --NAMES ${SAMPLE.ID} --DIR . --outName ${SAMPLE.ID}.covPerNt.boxPlot --pcMapqFiles ${SAMPLE.ID}.pcMapqPerNt.gz --chr $CHRSj $plotCovPerNtOPT
+  Rscript /bin/plotGenomeCoverage_V3.R --files ${SAMPLE.ID}.covPerNt.gz --NAMES ${SAMPLE.ID} --DIR . --outName ${SAMPLE.ID}.covPerNt --pcMapqFiles ${SAMPLE.ID}.pcMapqPerNt.gz --chr $CHRSj $plotCovPerNtOPT
   """
 }
 

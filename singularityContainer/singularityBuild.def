@@ -35,7 +35,7 @@ From: ubuntu:xenial
   #apt-get
   export DEBIAN_FRONTEND=noninteractive
   apt-get -y update
-  apt-get install -y build-essential openssh-client wget zlib1g-dev bzip2 zlib1g libncurses5-dev libbz2-dev liblzma-dev unzip openjdk-8-jdk checkinstall libreadline-gplv2-dev libncursesw5-dev libssl-dev libsqlite3-dev tk-dev libgdbm-dev libc6-dev libbz2-dev python-dev python-setuptools python-pip python-smbus openssl libffi-dev python2.7 fort77 xorg-dev libblas-dev gfortran gcc-multilib gobjc++ aptitude libpcre3-dev libcurl4-openssl-dev texlive texlive-fonts-extra texinfo libnlopt-dev libxml2-dev git autoconf autogen vim csh
+  apt-get install -y build-essential openssh-client wget zlib1g-dev bzip2 zlib1g libncurses5-dev libbz2-dev liblzma-dev unzip openjdk-8-jdk checkinstall libreadline-gplv2-dev libncursesw5-dev libssl-dev libsqlite3-dev tk-dev libgdbm-dev libc6-dev libbz2-dev python-dev python-setuptools python-pip python-smbus openssl libffi-dev python2.7 fort77 xorg-dev libblas-dev gfortran gcc-multilib gobjc++ aptitude libpcre3-dev libcurl4-openssl-dev texlive texlive-fonts-extra texinfo libnlopt-dev libxml2-dev git autoconf autogen vim csh libcairo2-dev
   aptitude install -y libreadline-dev
 
   #samtools
@@ -99,8 +99,10 @@ From: ubuntu:xenial
   #snpEff does not need installation, just do: java -jar snpEff.jar
 
   #R
-  cd /opt/R
-  ./configure && make && make install
+  cd /opt/R 
+  ./configure --enable-memory-profiling --with-blas --with-lapack --with-cairo 
+  make
+  make install
   /opt/rpkginstall ape cran
   /opt/rpkginstall argparse cran
   /opt/rpkginstall Biostrings bioconductor
@@ -130,6 +132,7 @@ From: ubuntu:xenial
   /opt/rpkginstall psych cran
   /opt/rpkginstall session cran
   /opt/rpkginstall ggridges cran
+  /opt/rpkginstall Cairo cran
   #/opt/rpkginstall bisoreg cran #may need manual install since it was recently removed from CRAN
 
   #bisoreg
