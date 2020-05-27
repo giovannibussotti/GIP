@@ -245,8 +245,8 @@ process covPerGe {
   file (annotation)
 
   output:
-  set file("${SAMPLE.ID}.covPerGe.gz") , file("${SAMPLE.ID}.covPerGe.sigPeaks.tsv") , file("${SAMPLE.ID}.covPerGe.sigPeaks.stats") , file("${SAMPLE.ID}.covPerGe.stats.df.gz") , file("${SAMPLE.ID}.covPerGe.stats.filtered.df.gz") , file("${SAMPLE.ID}.covPerGe.stats.pdf")  into (covPerGeDump1)
-  //, file("${SAMPLE.ID}.gcLnorm.covPerGe.pdf") ,  file("${SAMPLE.ID}.covPerGe.sigPeaks.pdf")
+  set file("${SAMPLE.ID}.covPerGe.gz") , file("${SAMPLE.ID}.covPerGe.sigPeaks.tsv") , file("${SAMPLE.ID}.covPerGe.sigPeaks.stats") , file("${SAMPLE.ID}.covPerGe.stats.df.gz") , file("${SAMPLE.ID}.covPerGe.stats.filtered.df.gz") , file("${SAMPLE.ID}.covPerGe.stats.cloud.png") into (covPerGeDump1)
+  //, file("${SAMPLE.ID}.gcLnorm.covPerGe.pdf") ,  file("${SAMPLE.ID}.covPerGe.sigPeaks.pdf") , file("${SAMPLE.ID}.covPerGe.stats.pdf")
 
   """ 
   grep -v "^#" $repeatMasker/genome.out.gff | cut -f 1,4,5 > ${SAMPLE.ID}_tmp_reps
