@@ -219,8 +219,7 @@ process mappingStats {
   set file(fa) , file(fai) , file(dict) , file(size) from genome_ch5
 
   output:
-  //set file ("${SAMPLE.ID}.stats") , file ("${SAMPLE.ID}.insertSize.metrics") , file ("${SAMPLE.ID}.insertSize.pdf") into (mappingStatsDump1)
-  file('*') into lalaland
+  set file ("${SAMPLE.ID}.alignmentMetrics.table") , file ("${SAMPLE.ID}.insertSize.histData") , file ("${SAMPLE.ID}.insertSize.hist.png") , file ("${SAMPLE.ID}.insertSize.table") into (mappingStatsDump1)
 
   """ 
   mkdir \$PWD/tmpDir
@@ -229,7 +228,7 @@ process mappingStats {
   #insert size
   java -jar /bin/picard.jar CollectInsertSizeMetrics I=$bam O=${SAMPLE.ID}.insertSize.metrics H=${SAMPLE.ID}.insertSize.pdf REFERENCE_SEQUENCE=$fa TMP_DIR=\$PWD/tmpDir
   rm -rf \$PWD/tmpDir ${SAMPLE.ID}.insertSize.pdf
-  bash /bin/reformatMapStats.sh ${SAMPLE.ID}
+  reformatMapStats.sh ${SAMPLE.ID}
   """
 }
 
