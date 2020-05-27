@@ -171,7 +171,7 @@ process covPerNt {
   output:
   file ("${SAMPLE.ID}.covPerNt.gz") into (covPerNt1 , covPerNt2)
   file ("${SAMPLE.ID}.pcMapqPerNt.gz") into (pcMapqPerNt1)
-  set file ("${SAMPLE.ID}.covPerNt.boxPlot.png") , file ("${SAMPLE.ID}.covPerNt.ridges.png") , file ("${SAMPLE.ID}.covPerNt.allMedians.tsv") , file ("${SAMPLE.ID}.covPerNt.medianGenomeCoverage") into (covPerNtDump1)
+  set file ("${SAMPLE.ID}.covPerNt.boxplot.png") , file ("${SAMPLE.ID}.covPerNt.ridges.png") , file ("${SAMPLE.ID}.covPerNt.allMedians.tsv") , file ("${SAMPLE.ID}.covPerNt.medianGenomeCoverage") into (covPerNtDump1)
 
   script:
   """
@@ -193,7 +193,7 @@ process covPerBin {
 
   output:
   file ("${SAMPLE.ID}.covPerBin.gz") into (covPerBin1)
-  set file ("${SAMPLE.ID}.covPerBin_all.pdf") , file ("${SAMPLE.ID}.covPerBin_byChr.pdf") , file ("${SAMPLE.ID}.covPerBin.df.gz") , file ("${SAMPLE.ID}.covPerBin.extremeRatio.bed.gz") , file ("${SAMPLE.ID}.covPerBin_faceting.pdf") , file("${SAMPLE.ID}.covPerBin.sigPeaks.tsv.gz") , file("${SAMPLE.ID}.covPerBin.sigPeaks.stats") into (covPerBinDump1)
+  set file ("${SAMPLE.ID}.covPerBin.all.png") , file ("${SAMPLE.ID}.covPerBin_byChr.pdf") , file ("${SAMPLE.ID}.covPerBin.df.gz") , file ("${SAMPLE.ID}.covPerBin.extremeRatio.bed.gz") , file ("${SAMPLE.ID}.covPerBin.faceting.png") , file("${SAMPLE.ID}.covPerBin.sigPeaks.tsv.gz") , file("${SAMPLE.ID}.covPerBin.sigPeaks.stats") into (covPerBinDump1)
   //file ("${SAMPLE.ID}.gcLnorm.covPerBin.pdf") 
 
   """ 
