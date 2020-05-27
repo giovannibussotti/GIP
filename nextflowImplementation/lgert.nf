@@ -219,14 +219,17 @@ process mappingStats {
   set file(fa) , file(fai) , file(dict) , file(size) from genome_ch5
 
   output:
-  set file ("${SAMPLE.ID}.stats") , file ("${SAMPLE.ID}.insertSize.metrics") , file ("${SAMPLE.ID}.insertSize.pdf") into (mappingStatsDump1)
+  //set file ("${SAMPLE.ID}.stats") , file ("${SAMPLE.ID}.insertSize.metrics") , file ("${SAMPLE.ID}.insertSize.pdf") into (mappingStatsDump1)
+  file('*') into lalaland
 
   """ 
-  Rscript /bin/mappingStats.R --bams $bam --dir . --assembly $fa --outName NA --tmpDir ./_tmpDirCollectAlignmentSummaryMetrics_$SAMPLE.ID  --CollectAlignmentSummaryMetrics "java -jar /bin/picard.jar CollectAlignmentSummaryMetrics"
-
-  mkdir -p \$PWD/tmpDir
+  mkdir \$PWD/tmpDir
+  #mapping stats
+  java -jar /bin/picard.jar CollectAlignmentSummaryMetrics R=$fa I=$bam O=${SAMPLE.ID}.alignmentMetrics TMP_DIR=\$PWD/tmpDir
+  #insert size
   java -jar /bin/picard.jar CollectInsertSizeMetrics I=$bam O=${SAMPLE.ID}.insertSize.metrics H=${SAMPLE.ID}.insertSize.pdf REFERENCE_SEQUENCE=$fa TMP_DIR=\$PWD/tmpDir
-  rm -rf \$PWD/tmpDir
+  rm -rf \$PWD/tmpDir ${SAMPLE.ID}.insertSize.pdf
+  bash /bin/reformatMapStats.sh ${SAMPLE.ID}
   """
 }
 
