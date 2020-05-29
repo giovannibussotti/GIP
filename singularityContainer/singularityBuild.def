@@ -62,9 +62,6 @@ From: ubuntu:xenial
   # which is automatically source by singularity befor run/shell/exec command
   cat /bin/bashFunctions.sh >> $SINGULARITY_ENVIRONMENT
   
-  #remove unwanted header of mapSample.sh
-  tail -n +27 /bin/mapSample.sh > _tmp ; mv _tmp /bin/mapSample.sh
-
   #give permissions
   chmod a+x /bin/*
 

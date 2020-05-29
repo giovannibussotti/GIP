@@ -21,7 +21,7 @@ def helpMessage() {
     =========================================
     Usage:
     The typical command for running the pipeline is as follows:
-    nextflow lgert.nf --genome ../inputData/dataset/Linf_test.fa --annotation ../inputData/dataset/Linf_test.ge.gtf --index index.tsv -c lgert.config -resume
+    nextflow lgert.nf --genome ../inputData/dataset/Linf_test.fa --annotation ../inputData/dataset/Linf_test.ge.gtf -params-file sampInfo.yaml -c lgert.config
     Mandatory arguments:
       -params-file                   sample metadata yaml file 
       -c                             nextflow configuration file
@@ -71,19 +71,11 @@ params.resultDir     = "lgertOut"
 params.genome        = "genome.fa"
 params.annotation    = "annotations.gtf"
 params.repeatLibrary = "default"
-params.index         = 'index.tsv'
 genome               = file(params.genome)
 annotation           = file(params.annotation)
 
-//ch = Channel.from(params.sampleList)
-//ch.into { ch1; ch2; ch3; ch4; ch5; ch6; ch7; ch8; ch9; ch10; ch11}
-
-Channel
-    .fromPath(params.index)
-    .splitCsv(header:true , sep:'\t')
-    .map{ row-> tuple(row.sampleId, file(row.read1), file(row.read2), row.multiRunRead1, row.multiRunRead2   ) }
-    .set { ch1  }
-//ch1; ch2; ch3; ch4; ch5; ch6; ch7; ch8; ch9; ch10; ch11
+ch = Channel.from(params.sampleList)
+ch.into { ch1; ch2; ch3; ch4; ch5; ch6; ch7; ch8; ch9; ch10; ch11}
 
 //config file variables
 resultDir  = file(params.resultDir + "/files")
@@ -133,23 +125,22 @@ process prepareGenome {
 
 process map {
   publishDir resultDir 
-  tag { "${sampleId}" }
+  tag { "${SAMPLE.ID}" }
  
   input:
-  set sampleId , file(read1) , file(read2) , multiRunRead1 , multiRunRead2 from ch1
+  val SAMPLE from ch1
   set file(fa) , file(fai) , file(dict) , file(size) from genome_ch1  
-  file(db) from bwaDb_ch1
+  val db from bwaDb_ch1
 
   output:
-  set file ("${sampleId}.bam") , file ("${sampleId}.bam.bai") into (map1 , map2 , map3 , map4 , map5, map6 , map7 , map8 , map9)
-  file ("${sampleId}.MarkDup.log") into (mapDump1)
+  set file ("${SAMPLE.ID}.bam") , file ("${SAMPLE.ID}.bam.bai") into (map1 , map2 , map3 , map4 , map5, map6 , map7 , map8 , map9)
+  file ("${SAMPLE.ID}.MarkDup.log") into (mapDump1)
       
   """ 
-  mapSample.sh $sampleId $task.cpus $fa $db/bwa/genome/ $read1 $read2 $multiRunRead1 $multiRunRead2 .    
+  bash mapSample.sh $SAMPLE.ID $task.cpus $SAMPLE.FQ_DIR $fa $db/bwa/genome/ $SAMPLE.R1_FQID $SAMPLE.R2_FQID $SAMPLE.MULTIRUN_R1_FQIDS $SAMPLE.MULTIRUN_R2_FQIDS .    
   """
 }
 
-/*
 process covPerChr {
   publishDir resultDir
   tag { "${SAMPLE.ID}" }
@@ -460,7 +451,7 @@ process bigWigGenomeCov {
   """
 }
 
-
+/*
 process covPerClstr {
   publishDir resultDir
 
