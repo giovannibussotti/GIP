@@ -64,6 +64,7 @@ From: ubuntu:xenial
   
   #give permissions
   chmod a+x /bin/*
+  chmod a+x /opt/rpkginstall
 
   #Python3
   cd /opt/Python3
@@ -98,7 +99,7 @@ From: ubuntu:xenial
 
   #R
   cd /opt/R 
-  ./configure --enable-memory-profiling --with-blas --with-lapack --with-cairo 
+  ./configure --enable-memory-profiling --with-cairo 
   make
   make install
   /opt/rpkginstall ape cran

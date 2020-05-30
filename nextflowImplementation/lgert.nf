@@ -141,7 +141,7 @@ process map {
   file(db) from bwaDb_ch1
 
   output:
-  set file ("${sampleId}.bam") , file ("${sampleId}.bam.bai") into (map1 , map2 , map3 , map4 , map5, map6 , map7 , map8 , map9)
+  set val(sampleId) , file ("${sampleId}.bam") , file ("${sampleId}.bam.bai") into (map1 , map2 , map3 , map4 , map5, map6 , map7 , map8 , map9)
   file ("${sampleId}.MarkDup.log") into (mapDump1)
       
   """ 
@@ -149,213 +149,197 @@ process map {
   """
 }
 
-/*
+
 process covPerChr {
   publishDir resultDir
-  tag { "${SAMPLE.ID}" }
+  tag { "${sampleId}" }
 
   input:
-  set file(bam) , file(bai) from map1
-  val SAMPLE from ch2
+  set val(sampleId), file(bam) , file(bai) from map1
   set file(fa) , file(fai) , file(dict) , file(size) from genome_ch2
   file gaps from gaps_ch1
 
   output:
-  file ("chrCoverageMedians_${SAMPLE.ID}") into (covPerChr1 , covPerChr2 , covPerChr3 , covPerChr4, covPerChr5)
+  set val(sampleId), file(bam) , file(bai), file("chrCoverageMedians_$sampleId") into (covPerChr1 , covPerChr2 , covPerChr3 , covPerChr4, covPerChr5)
 
   """
   IFS=' ' read -r -a CHRS <<< "$CHRSj"  
-  chrMedianCoverages $SAMPLE.ID $size $MAPQ $BITFLAG \$CHRS . $gaps
+  chrMedianCoverages $sampleId $size $MAPQ $BITFLAG \$CHRS . $gaps
   """
 }
 
 process covPerNt {
   publishDir resultDir
-  tag { "${SAMPLE.ID}" }
+  tag { "${sampleId}" }
 
   input:
-  set file(bam) , file(bai) from map2
-  val SAMPLE from ch3
+  set val(sampleId), file(bam) , file(bai) , file(covPerChr) from covPerChr1
   set file(fa) , file(fai) , file(dict) , file(size) from genome_ch3
   
   output:
-  file ("${SAMPLE.ID}.covPerNt.gz") into (covPerNt1 , covPerNt2)
-  file ("${SAMPLE.ID}.pcMapqPerNt.gz") into (pcMapqPerNt1)
-  set file ("${SAMPLE.ID}.covPerNt.boxplot.png") , file ("${SAMPLE.ID}.covPerNt.ridges.png") , file ("${SAMPLE.ID}.covPerNt.allMedians.tsv") , file ("${SAMPLE.ID}.covPerNt.medianGenomeCoverage") into (covPerNtDump1)
+  set file ("${sampleId}.covPerNt.gz") , file ("${sampleId}.pcMapqPerNt.gz") , file ("${sampleId}.covPerNt.boxplot.png") , file ("${sampleId}.covPerNt.ridges.png") , file ("${sampleId}.covPerNt.allMedians.tsv") , file ("${sampleId}.covPerNt.medianGenomeCoverage") into (covPerNtDump1)
 
   script:
   """
-  covPerNt $bam $size ${SAMPLE.ID}.covPerNt MEDIAN $MAPQ $BITFLAG 
-  gzip ${SAMPLE.ID}.covPerNt
-  pcMapqPerNt $bam $MAPQ ${SAMPLE.ID}.pcMapqPerNt
-  Rscript /bin/plotGenomeCoverage_V3.R --files ${SAMPLE.ID}.covPerNt.gz --NAMES ${SAMPLE.ID} --DIR . --outName ${SAMPLE.ID}.covPerNt --pcMapqFiles ${SAMPLE.ID}.pcMapqPerNt.gz --chr $CHRSj $plotCovPerNtOPT
+  covPerNt $bam $size ${sampleId}.covPerNt MEDIAN $MAPQ $BITFLAG 
+  gzip ${sampleId}.covPerNt
+  pcMapqPerNt $bam $MAPQ ${sampleId}.pcMapqPerNt
+  Rscript /bin/plotGenomeCoverage_V3.R --files ${sampleId}.covPerNt.gz --NAMES ${sampleId} --DIR . --outName ${sampleId}.covPerNt --pcMapqFiles ${sampleId}.pcMapqPerNt.gz --chr $CHRSj $plotCovPerNtOPT
   """
 }
 
 process covPerBin {
   publishDir resultDir
-  tag { "${SAMPLE.ID}" }
+  tag { "${sampleId}" }
 
   input:
-  set file(bam) , file(bai) from map3
-  file(chrCoverageMedians) from covPerChr1
-  val SAMPLE from ch4
+  set val(sampleId), file(bam) , file(bai) , file(covPerChr) from covPerChr2
   set file(fa) , file(fai) , file(dict) , file(size) from genome_ch4  
 
   output:
-  file ("${SAMPLE.ID}.covPerBin.gz") into (covPerBin1)
-  set file ("${SAMPLE.ID}.covPerBin.all.png") , file ("${SAMPLE.ID}.covPerBin_byChr.pdf") , file ("${SAMPLE.ID}.covPerBin.df.gz") , file ("${SAMPLE.ID}.covPerBin.extremeRatio.bed.gz") , file ("${SAMPLE.ID}.covPerBin.faceting.png") , file("${SAMPLE.ID}.covPerBin.sigPeaks.tsv.gz") , file("${SAMPLE.ID}.covPerBin.sigPeaks.stats") into (covPerBinDump1)
+  set file ("${sampleId}.covPerBin.gz"), file ("${sampleId}.covPerBin.all.png") , file ("${sampleId}.covPerBin_byChr.pdf") , file ("${sampleId}.covPerBin.df.gz") , file ("${sampleId}.covPerBin.extremeRatio.bed.gz") , file ("${sampleId}.covPerBin.faceting.png") , file("${sampleId}.covPerBin.sigPeaks.tsv.gz") , file("${sampleId}.covPerBin.sigPeaks.stats") into (covPerBinDump1)
   //file ("${SAMPLE.ID}.gcLnorm.covPerBin.pdf") 
 
   """ 
-  covPerBin $bam $size /bin/gencov2intervals.pl $STEP $MAPQ $BITFLAG . $chrCoverageMedians 
+  covPerBin $bam $size /bin/gencov2intervals.pl $STEP $MAPQ $BITFLAG . $covPerChr 
 
-  Rscript /bin/covPerBin2loessGCnormalization_v2.R --ASSEMBLY $fa --DIR . --SAMPLE ${SAMPLE.ID} --outName ${SAMPLE.ID} 
-  mv ${SAMPLE.ID}.gcLnorm.covPerBin.gz ${SAMPLE.ID}.covPerBin.gz
+  Rscript /bin/covPerBin2loessGCnormalization_v2.R --ASSEMBLY $fa --DIR . --SAMPLE ${sampleId} --outName ${sampleId} 
+  mv ${sampleId}.gcLnorm.covPerBin.gz ${sampleId}.covPerBin.gz
 
-  Rscript /bin/compareGenomicCoverageBins.R --referenceName _fake_ --testName ${SAMPLE.ID} --referenceFile ${SAMPLE.ID}.covPerBin.gz --testFile ${SAMPLE.ID}.covPerBin.gz --outName ${SAMPLE.ID}.covPerBin --chrs $CHRSj --minMAPQ $MAPQ $PLOTcovPerBinOPT 
+  Rscript /bin/compareGenomicCoverageBins.R --referenceName _fake_ --testName ${sampleId} --referenceFile ${sampleId}.covPerBin.gz --testFile ${sampleId}.covPerBin.gz --outName ${sampleId}.covPerBin --chrs $CHRSj --minMAPQ $MAPQ $PLOTcovPerBinOPT 
 
-  #Rscript /bin/covPerBin2regression.R $PLOTcovPerBinRegressionOPT --filterChrsNames $CHRSj --filterMAPQ $MAPQ --DIR . --SAMPLES ${SAMPLE.ID}.covPerBin.gz  --NAMES ${SAMPLE.ID} --outName ${SAMPLE.ID}.PLOTcovPerBinRegression 
+  #Rscript /bin/covPerBin2regression.R $PLOTcovPerBinRegressionOPT --filterChrsNames $CHRSj --filterMAPQ $MAPQ --DIR . --SAMPLES ${sampleId}.covPerBin.gz  --NAMES ${sampleId} --outName ${sampleId}.PLOTcovPerBinRegression 
 
-  Rscript /bin/sigPeaks_CLT.R --input ${SAMPLE.ID}.covPerBin.gz --outName ${SAMPLE.ID}.covPerBin.sigPeaks --minMAPQ $MAPQ $covPerBinSigPeaksOPT 
+  Rscript /bin/sigPeaks_CLT.R --input ${sampleId}.covPerBin.gz --outName ${sampleId}.covPerBin.sigPeaks --minMAPQ $MAPQ $covPerBinSigPeaksOPT 
   """
 }
 
 process mappingStats {
   publishDir resultDir
-  tag { "${SAMPLE.ID}" }
+  tag { "${sampleId}" }
 
   input:
-  set file(bam) , file(bai) from map4
-  val SAMPLE from ch5
+  set val(sampleId), file(bam) , file(bai) from map2
   set file(fa) , file(fai) , file(dict) , file(size) from genome_ch5
 
   output:
-  set file ("${SAMPLE.ID}.alignmentMetrics.table") , file ("${SAMPLE.ID}.insertSize.histData") , file ("${SAMPLE.ID}.insertSize.hist.png") , file ("${SAMPLE.ID}.insertSize.table") into (mappingStatsDump1)
+  set file ("${sampleId}.alignmentMetrics.table") , file ("${sampleId}.insertSize.histData") , file ("${sampleId}.insertSize.hist.png") , file ("${sampleId}.insertSize.table") into (mappingStatsDump1)
 
   """ 
   mkdir \$PWD/tmpDir
   #mapping stats
-  java -jar /bin/picard.jar CollectAlignmentSummaryMetrics R=$fa I=$bam O=${SAMPLE.ID}.alignmentMetrics TMP_DIR=\$PWD/tmpDir
+  java -jar /bin/picard.jar CollectAlignmentSummaryMetrics R=$fa I=$bam O=${sampleId}.alignmentMetrics TMP_DIR=\$PWD/tmpDir
   #insert size
-  java -jar /bin/picard.jar CollectInsertSizeMetrics I=$bam O=${SAMPLE.ID}.insertSize.metrics H=${SAMPLE.ID}.insertSize.pdf REFERENCE_SEQUENCE=$fa TMP_DIR=\$PWD/tmpDir
-  rm -rf \$PWD/tmpDir ${SAMPLE.ID}.insertSize.pdf
-  reformatMapStats.sh ${SAMPLE.ID}
+  java -jar /bin/picard.jar CollectInsertSizeMetrics I=$bam O=${sampleId}.insertSize.metrics H=${sampleId}.insertSize.pdf REFERENCE_SEQUENCE=$fa TMP_DIR=\$PWD/tmpDir
+  rm -rf \$PWD/tmpDir ${sampleId}.insertSize.pdf
+  reformatMapStats.sh ${sampleId}
   """
 }
 
 process covPerGe {
   publishDir resultDir
-  tag { "${SAMPLE.ID}" }
+  tag { "${sampleId}" }
 
   input:
-  set file(bam) , file(bai) from map5
-  file(chrCoverageMedians) from covPerChr2
-  val SAMPLE from ch6
+  set val(sampleId), file(bam) , file(bai) , file(covPerChr) from covPerChr3
   set file(fa) , file(fai) , file(dict) , file(size) from genome_ch6
   file gaps from gaps_ch2
   file repeatMasker from repeatMasker_ch1
   file (annotation)
 
   output:
-  file("${SAMPLE.ID}.covPerGe.gz") into covPerGe1 
-  set file("${SAMPLE.ID}.covPerGe.sigPeaks.tsv") , file("${SAMPLE.ID}.covPerGe.sigPeaks.stats") , file("${SAMPLE.ID}.covPerGe.stats.df.gz") , file("${SAMPLE.ID}.covPerGe.stats.filtered.df.gz") , file("${SAMPLE.ID}.covPerGe.stats.cloud.png") into (covPerGeDump1)
-  //, file("${SAMPLE.ID}.gcLnorm.covPerGe.pdf") ,  file("${SAMPLE.ID}.covPerGe.sigPeaks.pdf") , file("${SAMPLE.ID}.covPerGe.stats.pdf")
+  set file("${sampleId}.covPerGe.gz") , file("${sampleId}.covPerGe.sigPeaks.tsv") , file("${sampleId}.covPerGe.sigPeaks.stats") , file("${sampleId}.covPerGe.stats.df.gz") , file("${sampleId}.covPerGe.stats.filtered.df.gz") , file("${sampleId}.covPerGe.stats.cloud.png") into (covPerGeDump1)
+  //, file("${sampleId}.gcLnorm.covPerGe.pdf") ,  file("${sampleId}.covPerGe.sigPeaks.pdf") , file("${sampleId}.covPerGe.stats.pdf")
 
   """ 
-  grep -v "^#" $repeatMasker/genome.out.gff | cut -f 1,4,5 > ${SAMPLE.ID}_tmp_reps
+  grep -v "^#" $repeatMasker/genome.out.gff | cut -f 1,4,5 > ${sampleId}_tmp_reps
   
-  covPerGe $bam ${SAMPLE.ID}.covPerGe $annotation $chrCoverageMedians $MAPQ $BITFLAG $covPerGeMAPQoperation $fa
+  covPerGe $bam ${sampleId}.covPerGe $annotation $covPerChr $MAPQ $BITFLAG $covPerGeMAPQoperation $fa
 
-  Rscript /bin/covPerGe2loessGCnormalization_v2.R --ASSEMBLY $fa --DIR . --SAMPLE ${SAMPLE.ID} --outName ${SAMPLE.ID}
-  mv ${SAMPLE.ID}.gcLnorm.covPerGe.gz ${SAMPLE.ID}.covPerGe.gz
+  Rscript /bin/covPerGe2loessGCnormalization_v2.R --ASSEMBLY $fa --DIR . --SAMPLE ${sampleId} --outName ${sampleId}
+  mv ${sampleId}.gcLnorm.covPerGe.gz ${sampleId}.covPerGe.gz
 
-  Rscript /bin/compareGeneCoverage.R --NAMES fake ${SAMPLE.ID} --samples ${SAMPLE.ID}.covPerGe.gz ${SAMPLE.ID}.covPerGe.gz --outName ${SAMPLE.ID}.covPerGe.stats --repeats ${SAMPLE.ID}_tmp_reps --gaps $gaps --chrs $CHRSj --minMAPQ $MAPQ $plotCovPerGeOPT 
+  Rscript /bin/compareGeneCoverage.R --NAMES fake ${sampleId} --samples ${sampleId}.covPerGe.gz ${sampleId}.covPerGe.gz --outName ${sampleId}.covPerGe.stats --repeats ${sampleId}_tmp_reps --gaps $gaps --chrs $CHRSj --minMAPQ $MAPQ $plotCovPerGeOPT 
 
-  Rscript /bin/sigPeaks_mixture.R --input ${SAMPLE.ID}.covPerGe.gz --outName ${SAMPLE.ID}.covPerGe.sigPeaks --minMAPQ $MAPQ $covPerGeSigPeaksOPT 
+  Rscript /bin/sigPeaks_mixture.R --input ${sampleId}.covPerGe.gz --outName ${sampleId}.covPerGe.sigPeaks --minMAPQ $MAPQ $covPerGeSigPeaksOPT 
 
-  rm -rf ${SAMPLE.ID}_tmp_reps
+  rm -rf ${sampleId}_tmp_reps
   """
 }
 
 process freebayes {
   publishDir resultDir
-  tag { "${SAMPLE.ID}" }
+  tag { "${sampleId}" }
  
   input:
-  set file(bam) , file(bai) from map6
-  file(chrCoverageMedians) from covPerChr3
-  val SAMPLE from ch7
+  set val(sampleId), file(bam) , file(bai) , file(covPerChr) from covPerChr4
   set file(fa) , file(fai) , file(dict) , file(size) from genome_ch7
   file repeatMasker from repeatMasker_ch2
 
   output:
-  set file("${SAMPLE.ID}.vcf.gz") , file("${SAMPLE.ID}.vcf.gz.tbi") , file("${SAMPLE.ID}_freebayesFiltered") into (freebayes1)
+  set val(sampleId) , file("${sampleId}.vcf.gz") , file("${sampleId}.vcf.gz.tbi") , file("${sampleId}_freebayesFiltered") into (freebayes1)
 
   """ 
-  freebayes -f $fa --min-mapping-quality $MAPQ $freebayesOPT --vcf ${SAMPLE.ID}.vcf $bam 
-  bgzip ${SAMPLE.ID}.vcf
-  tabix -p vcf -f ${SAMPLE.ID}.vcf.gz
-  Rscript /bin/vcf2variantsFrequency_V4.R --selectedChrs $CHRSj --vcfFile ${SAMPLE.ID}.vcf.gz --chrCoverageMediansFile $chrCoverageMedians --chrSizeFile $size --outdir ./${SAMPLE.ID}_freebayesFiltered --reference $fa --discardGtfRegions $repeatMasker/genome.out.gff $filterFreebayesOPT
+  freebayes -f $fa --min-mapping-quality $MAPQ $freebayesOPT --vcf ${sampleId}.vcf $bam 
+  bgzip ${sampleId}.vcf
+  tabix -p vcf -f ${sampleId}.vcf.gz
+  Rscript /bin/vcf2variantsFrequency_V4.R --selectedChrs $CHRSj --vcfFile ${sampleId}.vcf.gz --chrCoverageMediansFile $covPerChr --chrSizeFile $size --outdir ./${sampleId}_freebayesFiltered --reference $fa --discardGtfRegions $repeatMasker/genome.out.gff $filterFreebayesOPT
   """
 }
 
 process snpEff {
   publishDir resultDir
-  tag { "${SAMPLE.ID}" }
+  tag { "${sampleId}" }
 
   input:
-  set file(vcf) , file(tbi) , file(freebayesFilteredDir) from freebayes1
-  val SAMPLE from ch8
+  set val(sampleId), file(vcf) , file(tbi) , file(freebayesFilteredDir) from freebayes1
   file(snpEff) from snpEffDb_ch1
   
   output:
-    set file("${SAMPLE.ID}.vcf.gz") , file("${SAMPLE.ID}.vcf.gz.tbi") , file("${SAMPLE.ID}_freebayesFiltered") , file("snpEff_summary_${SAMPLE.ID}.genes.txt.gz") , file("snpEff_summary_${SAMPLE.ID}.html") into (snpEffDump1)
+    set file("${sampleId}.vcf.gz") , file("${sampleId}.vcf.gz.tbi") , file("${sampleId}_freebayesFiltered") , file("snpEff_summary_${sampleId}.genes.txt.gz") , file("snpEff_summary_${sampleId}.html") into (snpEffDump1)
 
   """ 
   #run snpEff on Freebayes output
-  gunzip -c $vcf > tmpSnpEff_${SAMPLE.ID}.vcf
-  java -jar /opt/snpEff/snpEff.jar -o gatk genome tmpSnpEff_${SAMPLE.ID}.vcf -noLog -c $snpEff/snpEff.config -stats snpEff_summary_${SAMPLE.ID} > ${SAMPLE.ID}.snpEff.vcf
-  bgzip ${SAMPLE.ID}.snpEff.vcf
-  gzip snpEff_summary_${SAMPLE.ID}.genes.txt
-  mv snpEff_summary_${SAMPLE.ID} snpEff_summary_${SAMPLE.ID}.html
-  mv ${SAMPLE.ID}.snpEff.vcf.gz ${SAMPLE.ID}.vcf.gz
+  gunzip -c $vcf > tmpSnpEff_${sampleId}.vcf
+  java -jar /opt/snpEff/snpEff.jar -o gatk genome tmpSnpEff_${sampleId}.vcf -noLog -c $snpEff/snpEff.config -stats snpEff_summary_${sampleId} > ${sampleId}.snpEff.vcf
+  bgzip ${sampleId}.snpEff.vcf
+  gzip snpEff_summary_${sampleId}.genes.txt
+  mv snpEff_summary_${sampleId} snpEff_summary_${sampleId}.html
+  mv ${sampleId}.snpEff.vcf.gz ${sampleId}.vcf.gz
   rm -rf $tbi
-  tabix -p vcf -f ${SAMPLE.ID}.vcf.gz
+  tabix -p vcf -f ${sampleId}.vcf.gz
 
   #run snpEff on the filtered SNVs
-  gunzip -c ${SAMPLE.ID}_freebayesFiltered/singleVariants.vcf.gz > tmpSnpEff_${SAMPLE.ID}.vcf
-  java -jar /opt/snpEff/snpEff.jar -o gatk genome tmpSnpEff_${SAMPLE.ID}.vcf -noLog -c $snpEff/snpEff.config -stats snpEff_summary_${SAMPLE.ID} > ${SAMPLE.ID}.snpEff.vcf
-  bgzip ${SAMPLE.ID}.snpEff.vcf
-  gzip -c snpEff_summary_${SAMPLE.ID}.genes.txt > ${SAMPLE.ID}_freebayesFiltered/snpEff_summary_${SAMPLE.ID}.genes.txt.gz
-  mv snpEff_summary_${SAMPLE.ID} ${SAMPLE.ID}_freebayesFiltered/snpEff_summary_${SAMPLE.ID}.html
-  mv ${SAMPLE.ID}.snpEff.vcf.gz ${SAMPLE.ID}_freebayesFiltered/singleVariants.vcf.gz
-  rm -rf ${SAMPLE.ID}_freebayesFiltered/singleVariants.vcf.gz.tbi
-  tabix -p vcf -f ${SAMPLE.ID}_freebayesFiltered/singleVariants.vcf.gz
+  gunzip -c ${sampleId}_freebayesFiltered/singleVariants.vcf.gz > tmpSnpEff_${sampleId}.vcf
+  java -jar /opt/snpEff/snpEff.jar -o gatk genome tmpSnpEff_${sampleId}.vcf -noLog -c $snpEff/snpEff.config -stats snpEff_summary_${sampleId} > ${sampleId}.snpEff.vcf
+  bgzip ${sampleId}.snpEff.vcf
+  gzip -c snpEff_summary_${sampleId}.genes.txt > ${sampleId}_freebayesFiltered/snpEff_summary_${sampleId}.genes.txt.gz
+  mv snpEff_summary_${sampleId} ${sampleId}_freebayesFiltered/snpEff_summary_${sampleId}.html
+  mv ${sampleId}.snpEff.vcf.gz ${sampleId}_freebayesFiltered/singleVariants.vcf.gz
+  rm -rf ${sampleId}_freebayesFiltered/singleVariants.vcf.gz.tbi
+  tabix -p vcf -f ${sampleId}_freebayesFiltered/singleVariants.vcf.gz
 
   #extract the EFF field
-  Rscript /bin/snpEffVcf2table.R --vcfFile ${SAMPLE.ID}_freebayesFiltered/singleVariants.vcf.gz --out ${SAMPLE.ID}_freebayesFiltered/singleVariants.df.EFF
+  Rscript /bin/snpEffVcf2table.R --vcfFile ${sampleId}_freebayesFiltered/singleVariants.vcf.gz --out ${sampleId}_freebayesFiltered/singleVariants.df.EFF
 
   #update the singleVariants.df table with the EFF field
-  gunzip ${SAMPLE.ID}_freebayesFiltered/singleVariants.df.gz 
-  gunzip ${SAMPLE.ID}_freebayesFiltered/singleVariants.df.EFF
-  awk '{print \$NF}' ${SAMPLE.ID}_freebayesFiltered/singleVariants.df.EFF > ${SAMPLE.ID}_freebayesFiltered/EFF
-  paste ${SAMPLE.ID}_freebayesFiltered/singleVariants.df ${SAMPLE.ID}_freebayesFiltered/EFF > ${SAMPLE.ID}_freebayesFiltered/singleVariants.df2
-  mv ${SAMPLE.ID}_freebayesFiltered/singleVariants.df2 ${SAMPLE.ID}_freebayesFiltered/singleVariants.df
-  gzip ${SAMPLE.ID}_freebayesFiltered/singleVariants.df
+  gunzip ${sampleId}_freebayesFiltered/singleVariants.df.gz 
+  gunzip ${sampleId}_freebayesFiltered/singleVariants.df.EFF
+  awk '{print \$NF}' ${sampleId}_freebayesFiltered/singleVariants.df.EFF > ${sampleId}_freebayesFiltered/EFF
+  paste ${sampleId}_freebayesFiltered/singleVariants.df ${sampleId}_freebayesFiltered/EFF > ${sampleId}_freebayesFiltered/singleVariants.df2
+  mv ${sampleId}_freebayesFiltered/singleVariants.df2 ${sampleId}_freebayesFiltered/singleVariants.df
+  gzip ${sampleId}_freebayesFiltered/singleVariants.df
 
-  rm -rf tmpSnpEff_${SAMPLE.ID}.vcf snpEff_summary_${SAMPLE.ID}.genes.txt ${SAMPLE.ID}_freebayesFiltered/singleVariants.df.EFF ${SAMPLE.ID}_freebayesFiltered/EFF
+  rm -rf tmpSnpEff_${sampleId}.vcf snpEff_summary_${sampleId}.genes.txt ${sampleId}_freebayesFiltered/singleVariants.df.EFF ${sampleId}_freebayesFiltered/EFF
   """
 }
 
 process dellySVref {
   publishDir resultDir
-  tag { "${SAMPLE.ID}" }
+  tag { "${sampleId}" }
 
   input:
-  set file(bam) , file(bai) from map7
-  file(chrCoverageMedians) from covPerChr4
-  val SAMPLE from ch9
+  set val(sampleId), file(bam) , file(bai) , file(covPerChr) from covPerChr5
   set file(fa) , file(fai) , file(dict) , file(size) from genome_ch8
   file repeatMasker from repeatMasker_ch3
   file gaps from gaps_ch3
@@ -369,57 +353,57 @@ process dellySVref {
   #####
   #prepare tmp bam with good HQ reads
   mkdir -p _tmpHQbam 
-  samtools view -b -q $MAPQ -F $BITFLAG $bam > _tmpHQbam/${SAMPLE.ID}.bam
-  samtools index _tmpHQbam/${SAMPLE.ID}.bam
+  samtools view -b -q $MAPQ -F $BITFLAG $bam > _tmpHQbam/${sampleId}.bam
+  samtools index _tmpHQbam/${sampleId}.bam
 
   TYPES=(DEL DUP INV TRA)
   for T in "\${TYPES[@]}"; do
-    delly -q $MAPQ -t \$T -g $fa -o ${SAMPLE.ID}_\${T}.vcf _tmpHQbam/${SAMPLE.ID}.bam
-    bgzip ${SAMPLE.ID}_\${T}.vcf
-    tabix -p vcf -f ${SAMPLE.ID}_\${T}.vcf.gz
+    delly -q $MAPQ -t \$T -g $fa -o ${sampleId}_\${T}.vcf _tmpHQbam/${sampleId}.bam
+    bgzip ${sampleId}_\${T}.vcf
+    tabix -p vcf -f ${sampleId}_\${T}.vcf.gz
   done
   rm -rf _tmpHQbam
   #concatenate SVs if they exist
   CONC=""
   for T in "\${TYPES[@]}"; do
-    if [ -e ${SAMPLE.ID}_\${T}.vcf.gz ]; then
-      CONC="\$CONC ${SAMPLE.ID}_\${T}.vcf.gz"
+    if [ -e ${sampleId}_\${T}.vcf.gz ]; then
+      CONC="\$CONC ${sampleId}_\${T}.vcf.gz"
     fi
   done
   if [ -z \$CONC ]; then 
-    touch ${SAMPLE.ID}.delly.vcf
+    touch ${sampleId}.delly.vcf
   else 
-    vcf-concat \$CONC > ${SAMPLE.ID}.delly.vcf
+    vcf-concat \$CONC > ${sampleId}.delly.vcf
   fi
 
-  rm -rf ${SAMPLE.ID}_DEL.vcf.gz ${SAMPLE.ID}_DUP.vcf.gz ${SAMPLE.ID}_INV.vcf.gz ${SAMPLE.ID}_TRA.vcf.gz ${SAMPLE.ID}_DEL.vcf.gz.tbi ${SAMPLE.ID}_DUP.vcf.gz.tbi ${SAMPLE.ID}_INV.vcf.gz.tbi ${SAMPLE.ID}_TRA.vcf.gz.tbi
+  rm -rf ${sampleId}_DEL.vcf.gz ${sampleId}_DUP.vcf.gz ${sampleId}_INV.vcf.gz ${sampleId}_TRA.vcf.gz ${sampleId}_DEL.vcf.gz.tbi ${sampleId}_DUP.vcf.gz.tbi ${sampleId}_INV.vcf.gz.tbi ${sampleId}_TRA.vcf.gz.tbi
   #sort and compress again
-  cat ${SAMPLE.ID}.delly.vcf | vcf-sort > ${SAMPLE.ID}.delly.vcf.tmp
-  mv ${SAMPLE.ID}.delly.vcf.tmp ${SAMPLE.ID}.delly.vcf 
-  bgzip ${SAMPLE.ID}.delly.vcf 
-  tabix -p vcf -f ${SAMPLE.ID}.delly.vcf.gz
+  cat ${sampleId}.delly.vcf | vcf-sort > ${sampleId}.delly.vcf.tmp
+  mv ${sampleId}.delly.vcf.tmp ${sampleId}.delly.vcf 
+  bgzip ${sampleId}.delly.vcf 
+  tabix -p vcf -f ${sampleId}.delly.vcf.gz
   
   ########
   #Filter#
   ########
-  DF=${SAMPLE.ID}.delly.filter
+  DF=${sampleId}.delly.filter
   mkdir -p \$DF
-  grep -v "^#" $repeatMasker/genome.out.gff | cut -f 1,4,5 > ${SAMPLE.ID}.tabu.bed
-  zcat $gaps >> ${SAMPLE.ID}.tabu.bed
+  grep -v "^#" $repeatMasker/genome.out.gff | cut -f 1,4,5 > ${sampleId}.tabu.bed
+  zcat $gaps >> ${sampleId}.tabu.bed
   SVTYPES=(DEL DUP INV)
   for SV in "\${SVTYPES[@]}"; do
-    Rscript /bin/filterDelly.R --SVTYPE \$SV --test $SAMPLE.ID --reference $SAMPLE.ID --vcfFile ${SAMPLE.ID}.delly.vcf.gz --chrSizeFile $size --badSequencesBed ${SAMPLE.ID}.tabu.bed --useENDfield yes --outName \$DF/${SAMPLE.ID}.delly.\$SV
+    Rscript /bin/filterDelly.R --SVTYPE \$SV --test $sampleId --reference $sampleId --vcfFile ${sampleId}.delly.vcf.gz --chrSizeFile $size --badSequencesBed ${sampleId}.tabu.bed --useENDfield yes --outName \$DF/${sampleId}.delly.\$SV
   done
-  Rscript /bin/filterDelly.R --SVTYPE TRA --test $SAMPLE.ID --reference $SAMPLE.ID --vcfFile ${SAMPLE.ID}.delly.vcf.gz --chrSizeFile $size --badSequencesBed ${SAMPLE.ID}.tabu.bed --useENDfield no --outName \$DF/${SAMPLE.ID}.delly.TRA
-  rm ${SAMPLE.ID}.tabu.bed
+  Rscript /bin/filterDelly.R --SVTYPE TRA --test $sampleId --reference $sampleId --vcfFile ${sampleId}.delly.vcf.gz --chrSizeFile $size --badSequencesBed ${sampleId}.tabu.bed --useENDfield no --outName \$DF/${sampleId}.delly.TRA
+  rm ${sampleId}.tabu.bed
   #add coverage
   mkdir -p \${DF}/coverages
   for X in `ls \$DF | grep ".bed\$" | sed -e 's/.bed\$//'`; do
     cat \$DF/\${X}.bed | perl -ne 'if(\$_=~/^(\\S+)\\s+(\\S+)\\s+(\\S+)/){\$chr=\$1;\$start=\$2;\$end=\$3;\$ge="\${chr}_\${start}_\${end}"; print \"\${chr}\\tdelly\\tSV\\t\${start}\\t\${end}\\t.\\t.\\t.\\tgene_id \\"\$ge\\"; transcript_id \\"\$ge\\";\\n\"} ' > \$DF/_tmp.gtf
-    covPerGe $bam \$DF/coverages/\${X}.cov \$DF/_tmp.gtf chrCoverageMedians_$SAMPLE.ID $MAPQ $BITFLAG $covPerGeMAPQoperation $fa
+    covPerGe $bam \$DF/coverages/\${X}.cov \$DF/_tmp.gtf $covPerChr $MAPQ $BITFLAG $covPerGeMAPQoperation $fa
     rm \$DF/_tmp.gtf
     #filter by coverage
-    filterByCov \$X \$DF/coverages/\${X}.fbc $minNormCovForDUP $maxNormCovForDEL $SAMPLE.ID \$DF
+    filterByCov \$X \$DF/coverages/\${X}.fbc $minNormCovForDUP $maxNormCovForDEL $sampleId \$DF
     #ov with genes
     ovWithGenes \$X \$DF
     mv \$DF/coverages/\${X}.ov \${X}.filter
@@ -428,6 +412,8 @@ process dellySVref {
   rm -rf \$DF
   """
 }
+
+/*
 
 process bigWigGenomeCov {
   publishDir resultDir

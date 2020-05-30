@@ -33,8 +33,8 @@ mv L-GERT_jobArrays-${LGERTv} L-GERT
 perl -e 'open(F,"L-GERT/LSD/bashFunctions.sh");$spy=0; while(<F>){if(($_=~/^function bwaMapSample/)or($spy==1)){print $_; $spy=1;}  } close F; ' > L-GERT/LSD/_tmp
 mv L-GERT/LSD/_tmp L-GERT/LSD/bashFunctions.sh
 #replace MarkDuplicates command
-cat L-GERT/LSD/bashFunctions.sh | sed -e 's/MarkDuplicates /java -jar \/bin\/picard.jar MarkDuplicates /' > L-GERT/LSD/_tmp
-mv L-GERT/LSD/_tmp L-GERT/LSD/bashFunctions.sh
+#cat L-GERT/LSD/bashFunctions.sh | sed -e 's/MarkDuplicates /java -jar \/bin\/picard.jar MarkDuplicates /' > L-GERT/LSD/_tmp
+#mv L-GERT/LSD/_tmp L-GERT/LSD/bashFunctions.sh
 #remove the GATK key parameters
 cat L-GERT/LSD/bashFunctions.sh | sed -e 's/-et NO_ET -K $GATKKEY//' > L-GERT/LSD/_tmp
 mv L-GERT/LSD/_tmp L-GERT/LSD/bashFunctions.sh
@@ -57,7 +57,6 @@ cat L-GERT/exonGTF_2_transcriptGTF.pl | sed -e "s/\/pasteur\/entites\/HubBioIT\/
 cat L-GERT/exonGTF_2_geneGTF.pl       | sed -e "s/\/pasteur\/entites\/HubBioIT\/gio\/apps\/my_scripts\/Scripts_Matthias\/Perl\/Lib\//\/bin\//"  > _tmp ; mv _tmp L-GERT/exonGTF_2_geneGTF.pl
 cat L-GERT/exonGTF_2_transcriptGTF.pl | sed -e "s/giovanniLibrary.pl/customPerlLib.pl/"  > _tmp ; mv _tmp L-GERT/exonGTF_2_transcriptGTF.pl
 cat L-GERT/exonGTF_2_geneGTF.pl       | sed -e "s/giovanniLibrary.pl/customPerlLib.pl/"  > _tmp ; mv _tmp L-GERT/exonGTF_2_geneGTF.pl
-chmod a+x L-GERT/*
 #replace variable names
 for X in `ls L-GERT/`; do cat L-GERT/$X | sed -e 's/\$SAMTOOLS/samtools/' |  sed -e "s/\'samtools\'/samtools/" > _tmp ; mv _tmp L-GERT/$X ; done
 for X in `ls L-GERT/`; do cat L-GERT/$X | sed -e 's/\$BEDTOOLS/bedtools/' |  sed -e "s/\'bedtools\'/bedtools/" > _tmp ; mv _tmp L-GERT/$X ; done
@@ -66,8 +65,7 @@ for X in `ls L-GERT/`; do cat L-GERT/$X | sed -e 's/\$GATK/\/bin\/GenomeAnalysis
 for X in `ls L-GERT/`; do cat L-GERT/$X | sed -e 's/\$TABIX/tabix/' > _tmp ; mv _tmp L-GERT/$X ; done
 for X in `ls L-GERT/`; do cat L-GERT/$X | sed -e 's/\$BGZIP/bgzip/' > _tmp ; mv _tmp L-GERT/$X ; done
 cat L-GERT/H-freebayes.sh | sed -e "s/\$FREEBAYES /freebayes /"  > _tmp ; mv _tmp L-GERT/H-freebayes.sh
-#add the script to pre-process the input which is not part of the github L-GERT_jobArrays version
-mv A-prepareGenome.sh L-GERT/
+chmod a+x L-GERT/*
 
 #SAMTOOLS
 wget https://github.com/samtools/samtools/releases/download/${SAMTOOLSv}/samtools-${SAMTOOLSv}.tar.bz2
