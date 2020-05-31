@@ -76,14 +76,13 @@ genome               = file(params.genome)
 annotation           = file(params.annotation)
 
 //ch = Channel.from(params.sampleList)
-//ch.into { ch1; ch2; ch3; ch4; ch5; ch6; ch7; ch8; ch9; ch10; ch11}
+//ch.into { ch1 }
 
 Channel
     .fromPath(params.index)
     .splitCsv(header:true , sep:'\t')
     .map{ row-> tuple(row.sampleId, file(row.read1), file(row.read2), row.multiRunRead1, row.multiRunRead2   ) }
     .set { ch1  }
-//ch1; ch2; ch3; ch4; ch5; ch6; ch7; ch8; ch9; ch10; ch11
 
 //config file variables
 resultDir  = file(params.resultDir + "/files")
@@ -141,7 +140,7 @@ process map {
   file(db) from bwaDb_ch1
 
   output:
-  set val(sampleId) , file ("${sampleId}.bam") , file ("${sampleId}.bam.bai") into (map1 , map2 , map3 , map4 , map5, map6 , map7 , map8 , map9)
+  set val(sampleId) , file ("${sampleId}.bam") , file ("${sampleId}.bam.bai") into (map1 , map2 , map3)
   file ("${sampleId}.MarkDup.log") into (mapDump1)
       
   """ 
@@ -160,7 +159,7 @@ process covPerChr {
   file gaps from gaps_ch1
 
   output:
-  set val(sampleId), file(bam) , file(bai), file("chrCoverageMedians_$sampleId") into (covPerChr1 , covPerChr2 , covPerChr3 , covPerChr4, covPerChr5)
+  set val(sampleId), file(bam) , file(bai), file("chrCoverageMedians_$sampleId") into (covPerChr1 , covPerChr2 , covPerChr3 , covPerChr4, covPerChr5 )
 
   """
   IFS=' ' read -r -a CHRS <<< "$CHRSj"  
@@ -248,7 +247,8 @@ process covPerGe {
   file (annotation)
 
   output:
-  set file("${sampleId}.covPerGe.gz") , file("${sampleId}.covPerGe.sigPeaks.tsv") , file("${sampleId}.covPerGe.sigPeaks.stats") , file("${sampleId}.covPerGe.stats.df.gz") , file("${sampleId}.covPerGe.stats.filtered.df.gz") , file("${sampleId}.covPerGe.stats.cloud.png") into (covPerGeDump1)
+  set val(sampleId), file(bam) , file(bai) , file(covPerChr) , file("${sampleId}.covPerGe.gz") into covPerGe1 
+  set file("${sampleId}.covPerGe.sigPeaks.tsv") , file("${sampleId}.covPerGe.sigPeaks.stats") , file("${sampleId}.covPerGe.stats.df.gz") , file("${sampleId}.covPerGe.stats.filtered.df.gz") , file("${sampleId}.covPerGe.stats.cloud.png") into (covPerGeDump1)
   //, file("${sampleId}.gcLnorm.covPerGe.pdf") ,  file("${sampleId}.covPerGe.sigPeaks.pdf") , file("${sampleId}.covPerGe.stats.pdf")
 
   """ 
@@ -413,18 +413,15 @@ process dellySVref {
   """
 }
 
-/*
-
 process bigWigGenomeCov {
   publishDir resultDir
-  tag { "${SAMPLE.ID}" }
+  tag { "${sampleId}" }
 
   input:
-  set file(bam) , file(bai) from map8
-  val SAMPLE from ch10
+  set val(sampleId), file(bam) , file(bai) from map3
   
   output:
-  file("${SAMPLE.ID}.bw") into (bigWigGenomeCovDump1)
+  file("${sampleId}.bw") into (bigWigGenomeCovDump1)
 
   """
   #generate a bedGraph per chr
@@ -438,10 +435,10 @@ process bigWigGenomeCov {
 
   #combine chrs and turn to bigWig
   mkdir -p \$TMP/sort
-  cat \$TMP/*.bg | sort -k1,1 -k2,2n -T \$TMP/sort > \$TMP/${SAMPLE.ID}.bg
+  cat \$TMP/*.bg | sort -k1,1 -k2,2n -T \$TMP/sort > \$TMP/${sampleId}.bg
   samtools idxstats $bam | cut -f 1,2 | head -n -2 > \$TMP/chrSize
-  /bin/bedGraphToBigWig \$TMP/${SAMPLE.ID}.bg \$TMP/chrSize \$TMP/${SAMPLE.ID}.bw
-  mv \$TMP/${SAMPLE.ID}.bw .
+  /bin/bedGraphToBigWig \$TMP/${sampleId}.bg \$TMP/chrSize \$TMP/${sampleId}.bw
+  mv \$TMP/${sampleId}.bw .
   rm -rf \$TMP
   """
 }
@@ -451,20 +448,17 @@ process covPerClstr {
   publishDir resultDir
 
   input:
-  file('*') from map9.collect()
-  //val('*') SAMPLE from ch11
-  file('*') from covPerChr5.collect()
-  file('*') from covPerGe1.collect()
+  set val(sampleId), file(bam) , file(bai) , file(covPerChr) , file(covPerGe) from covPerGe1
 
   output:
   file ('*') into lalaland
 
   """
-  ls > booo
-  #bash /bin/covPerClstr.sh -f "$covPerGe" -n "$NAMES" -b "$BAMS" -c "$CHRM" -m $minMAPQ -g $GEGTF -a $ASSEMBLY -l 0.9 -s 0.9 -o covPerClstr
+  echo "${sampleId}" > booo
   """
 }
-*/
+
+//#bash /bin/covPerClstr.sh -f "$covPerGe" -n "$NAMES" -b "$BAMS" -c "$CHRM" -m $minMAPQ -g $GEGTF -a $ASSEMBLY -l 0.9 -s 0.9 -o covPerClstr
 
 
 
