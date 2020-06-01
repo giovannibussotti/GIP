@@ -17,6 +17,7 @@ dellyv=0.6.7
 RepeatMaskerv=4.1.0
 RMBlastv=2.10.0
 freebayesv=1.3.1
+cdhitv=4.8.1
 
 #create the output dir
 mkdir -p files/
@@ -176,8 +177,13 @@ mv rmblast-${RMBlastv} rmblast
 
 #leishmaniaAndAncestralSharedRepeats.fa is manually copied from repBase
 
+#cd-hit
+wget https://github.com/weizhongli/cdhit/archive/V${cdhitv}.tar.gz
+tar -xzf V${cdhitv}.tar.gz
+mv cdhit-4.8.1/ cdhit
+
 #CLEAN
-rm -rf Python-${python3v}.tgz _tmp htslib-${htslibv}.tar.bz2 samtools-${SAMTOOLSv}.tar.bz2 bwa-${BWAv}.tar.bz2 L-GERT/LSD/test v${LGERTver}.tar.gz bedtools-${bedtoolsv}.tar.gz R-${Rv}.tar.gz RepeatMasker-${RepeatMaskerv}.tar.gz v${LGERTv}.tar.gz rmblast-${RMBlastv}+-x64-linux.tar.gz clinEff
+rm -rf Python-${python3v}.tgz _tmp htslib-${htslibv}.tar.bz2 samtools-${SAMTOOLSv}.tar.bz2 bwa-${BWAv}.tar.bz2 L-GERT/LSD/test v${LGERTver}.tar.gz bedtools-${bedtoolsv}.tar.gz R-${Rv}.tar.gz RepeatMasker-${RepeatMaskerv}.tar.gz v${LGERTv}.tar.gz rmblast-${RMBlastv}+-x64-linux.tar.gz clinEff V${cdhitv}.tar.gz
 
 #compress
 mkdir -p packages
