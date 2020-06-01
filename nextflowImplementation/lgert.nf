@@ -112,7 +112,7 @@ process prepareGenome {
   output:
   file ("db") into bwaDb_ch1
   file("genome.chrSize") into chrSize_ch1
-  set file("genome.fa") , file("genome.fa.fai") , file("genome.dict") , file("genome.chrSize") into (genome_ch1 , genome_ch2 , genome_ch3 , genome_ch4 , genome_ch5 , genome_ch6 , genome_ch7 , genome_ch8)
+  set file("genome.fa") , file("genome.fa.fai") , file("genome.dict") , file("genome.chrSize") into (genome_ch1 , genome_ch2 , genome_ch3 , genome_ch4 , genome_ch5 , genome_ch6 , genome_ch7 , genome_ch8, genome_ch9)
   file("genome.gaps.gz") into (gaps_ch1 , gaps_ch2 , gaps_ch3)
   file("repeatMasker") into (repeatMasker_ch1 , repeatMasker_ch2 , repeatMasker_ch3)
   file("snpEff")  into snpEffDb_ch1
@@ -448,13 +448,32 @@ process covPerClstr {
   publishDir resultDir
 
   input:
-  set val(sampleId), file(bam) , file(bai) , file(covPerChr) , file(covPerGe) from covPerGe1
+  file('*') from covPerGe1.collect()  
+  set file(fa) , file(fai) , file(dict) , file(size) from genome_ch9
 
   output:
-  file ('*') into lalaland
+  file ('*') into boo
 
   """
-  echo "${sampleId}" > booo
+  #all input in the same order
+  COVPERGE=''
+  NAMES=''
+  CHRM=''
+  BAMS='' 
+  for X in `ls *covPerGe.gz`; do 
+   N=\${X%%.covPerGe.gz}
+   NAMES="\$NAMES \$N"
+   BAMS="\$BAMS \${N}.bam"
+   CHRM="\$CHRM chrCoverageMedians_\$N"
+   COVPERGE="\$COVPERGE \$X";
+  done
+  #remove leading ithe space
+  NAMES="\$(echo -e "\${NAMES}" | sed -e 's/^[[:space:]]*//')"
+  BAMS="\$(echo -e "\${BAMS}" | sed -e 's/^[[:space:]]*//')"
+  CHRM="\$(echo -e "\${CHRM}" | sed -e 's/^[[:space:]]*//')"
+  COVPERGE="\$(echo -e "\${COVPERGE}" | sed -e 's/^[[:space:]]*//')"
+
+  bash /bin/covPerClstr.sh -f "\$COVPERGE" -n "\$NAMES" -b "\$BAMS" -c "\$CHRM" -m $MAPQ -g $annotation -a $fa -l 0.9 -s 0.9 -o covPerClstr
   """
 }
 

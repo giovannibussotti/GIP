@@ -1,0 +1,11 @@
+1) add to singularity covPerClstr dependencies blast/2.2.26 cd-hit/4.6.8
+2) modify/update the covPErClstr script accordingly
+3) add to the covPerClstr process the clstr annotation as in /pasteur/projets/policy01/BioIT/Giovanni/leish/p2p5/projects/mosaicCNVpaper/ld1sTimeSeriesCNVs/A-prepare.sh
+4) add a final process in which you build the reports. To do that use the "join" operator making sure that you join the output channels from the same sample id
+5) document on ThingsToKnow what you learned regarding collect() and join() in nexflow
+6) (i) change the index.tsv input file removing the multi mapping columns. (ii) Update the lgert.nf file accordingly. (iii) update the bwaMapSample and the mapSample.sh to simply expect read1 and read2. and if there is a comma run the concatenation module before mapping
+7) update covPerGe process, running the script to identify the significant peaks first, and using this as an input to highlight dots in the compareCovPerGe script
+8) update snpEff parametrization removing the UPSTREAM/DOWNSTREAM notation
+9) check if it is the case to update the snpEff database including the notion of ncRNA exons
+ 
+
