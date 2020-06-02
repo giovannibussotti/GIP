@@ -1,7 +1,6 @@
-1) test covPerClstr execution
+1) test the pipeline with MAPQ50 so that you can create covPerClstr outputs. otherwise with MAPQ5 nothing clusters
 2) add to the covPerClstr process the clstr annotation as in /pasteur/projets/policy01/BioIT/Giovanni/leish/p2p5/projects/mosaicCNVpaper/ld1sTimeSeriesCNVs/A-prepare.sh
 3) add a final process in which you build the reports. To do that use the "join" operator making sure that you join the output channels from the same sample id
-4) document on ThingsToKnow what you learned regarding collect() and join() in nexflow
 5) (i) change the index.tsv input file removing the multi mapping columns. (ii) Update the lgert.nf file accordingly. (iii) update the bwaMapSample and the mapSample.sh to simply expect read1 and read2. and if there is a comma run the concatenation module before mapping
 6) update covPerGe process, running the script to identify the significant peaks first, and using this as an input to highlight dots in the compareCovPerGe script
 7) update snpEff parametrization removing the UPSTREAM/DOWNSTREAM notation

@@ -450,6 +450,7 @@ process covPerClstr {
   input:
   file('*') from covPerGe1.collect()  
   set file(fa) , file(fai) , file(dict) , file(size) from genome_ch9
+  file (annotation)
 
   output:
   file ('*') into boo
