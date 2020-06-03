@@ -71,7 +71,8 @@ params.resultDir     = "lgertOut"
 params.genome        = "genome.fa"
 params.annotation    = "annotations.gtf"
 params.repeatLibrary = "default"
-params.index         = 'indextsv'
+params.index         = 'index.tsv'
+params.geneFunction  = 'NA'
 genome               = file(params.genome)
 annotation           = file(params.annotation)
 
@@ -105,9 +106,35 @@ minNormCovForDUP = params.minNormCovForDUP
 maxNormCovForDEL = params.maxNormCovForDEL
 bigWigOpt        = params.bigWigOpt
 
+params.flag = false
+
+process dummyGeneFunction {
+  output:
+  file 'dummyGeneFunction.tsv' into dummyGeFun_ch
+  when:
+  params.geneFunction == 'NA'
+
+  script:
+  """
+  cat $annotation | perl -ne 'if(\$_=~/gene_id \"([^\"]+)\"/){print "\$1\tNA\n";}' > dummyGeneFunction.tsv
+  """
+}
+
+process channelGeneFunction {
+  input:
+  file(params.geneFunction)
+  output:
+  file (params.geneFunction) into geFun_ch
+  when:
+  params.geneFunction != 'NA'
+
+  script:
+  """ 
+  """
+}
 
 process prepareGenome {
-  publishDir resultDir
+  publishDir "$params.resultDir/files/genome"
 
   output:
   file ("db") into bwaDb_ch1
@@ -116,7 +143,7 @@ process prepareGenome {
   file("genome.gaps.gz") into (gaps_ch1 , gaps_ch2 , gaps_ch3)
   file("repeatMasker") into (repeatMasker_ch1 , repeatMasker_ch2 , repeatMasker_ch3)
   file("snpEff")  into snpEffDb_ch1
-
+  
   script:
   if( params.repeatLibrary == 'default' )
   """
@@ -130,8 +157,8 @@ process prepareGenome {
 }
 
 
-process map {
-  publishDir resultDir 
+process map { 
+  publishDir "$params.resultDir/files/$sampleId"
   tag { "${sampleId}" }
  
   input:
@@ -150,7 +177,7 @@ process map {
 
 
 process covPerChr {
-  publishDir resultDir
+  publishDir "$params.resultDir/files/$sampleId"
   tag { "${sampleId}" }
 
   input:
@@ -168,7 +195,7 @@ process covPerChr {
 }
 
 process covPerNt {
-  publishDir resultDir
+  publishDir "$params.resultDir/files/$sampleId"
   tag { "${sampleId}" }
 
   input:
@@ -188,7 +215,7 @@ process covPerNt {
 }
 
 process covPerBin {
-  publishDir resultDir
+  publishDir "$params.resultDir/files/$sampleId"
   tag { "${sampleId}" }
 
   input:
@@ -214,7 +241,7 @@ process covPerBin {
 }
 
 process mappingStats {
-  publishDir resultDir
+  publishDir "$params.resultDir/files/$sampleId"
   tag { "${sampleId}" }
 
   input:
@@ -236,7 +263,7 @@ process mappingStats {
 }
 
 process covPerGe {
-  publishDir resultDir
+  publishDir "$params.resultDir/files/$sampleId"
   tag { "${sampleId}" }
 
   input:
@@ -268,7 +295,7 @@ process covPerGe {
 }
 
 process freebayes {
-  publishDir resultDir
+  publishDir "$params.resultDir/files/$sampleId"
   tag { "${sampleId}" }
  
   input:
@@ -288,7 +315,7 @@ process freebayes {
 }
 
 process snpEff {
-  publishDir resultDir
+  publishDir "$params.resultDir/files/$sampleId"
   tag { "${sampleId}" }
 
   input:
@@ -335,7 +362,7 @@ process snpEff {
 }
 
 process dellySVref {
-  publishDir resultDir
+  publishDir "$params.resultDir/files/$sampleId"
   tag { "${sampleId}" }
 
   input:
@@ -414,7 +441,7 @@ process dellySVref {
 }
 
 process bigWigGenomeCov {
-  publishDir resultDir
+  publishDir "$params.resultDir/files/$sampleId"
   tag { "${sampleId}" }
 
   input:
@@ -445,7 +472,7 @@ process bigWigGenomeCov {
 
 
 process covPerClstr {
-  publishDir resultDir
+  publishDir "$params.resultDir/files/covPerClstr"
 
   input:
   file('*') from covPerGe1.collect()  
