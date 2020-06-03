@@ -71,7 +71,7 @@ params.resultDir     = "lgertOut"
 params.genome        = "genome.fa"
 params.annotation    = "annotations.gtf"
 params.repeatLibrary = "default"
-params.index         = 'indextsv'
+params.index         = 'index.tsv'
 genome               = file(params.genome)
 annotation           = file(params.annotation)
 
@@ -81,7 +81,7 @@ annotation           = file(params.annotation)
 Channel
     .fromPath(params.index)
     .splitCsv(header:true , sep:'\t')
-    .map{ row-> tuple(row.sampleId, row.read1, row.read2) }
+    .map{ row-> tuple(row.sampleId, file(row.read1), file(row.read2), row.multiRunRead1, row.multiRunRead2   ) }
     .set { ch1  }
 
 //config file variables
@@ -135,7 +135,7 @@ process map {
   tag { "${sampleId}" }
  
   input:
-  set sampleId , read1 , read2 from ch1
+  set sampleId , file(read1) , file(read2) , multiRunRead1 , multiRunRead2 from ch1
   set file(fa) , file(fai) , file(dict) , file(size) from genome_ch1  
   file(db) from bwaDb_ch1
 
@@ -144,7 +144,7 @@ process map {
   file ("${sampleId}.MarkDup.log") into (mapDump1)
       
   """ 
-  mapSample.sh $sampleId $task.cpus $fa $db/bwa/genome/ $read1 $read2 .    
+  mapSample.sh $sampleId $task.cpus $fa $db/bwa/genome/ $read1 $read2 $multiRunRead1 $multiRunRead2 .    
   """
 }
 
@@ -477,6 +477,8 @@ process covPerClstr {
   bash /bin/covPerClstr.sh -f "\$COVPERGE" -n "\$NAMES" -b "\$BAMS" -c "\$CHRM" -m $MAPQ -g $annotation -a $fa -l 0.9 -s 0.9 -o covPerClstr
   """
 }
+
+//#bash /bin/covPerClstr.sh -f "$covPerGe" -n "$NAMES" -b "$BAMS" -c "$CHRM" -m $minMAPQ -g $GEGTF -a $ASSEMBLY -l 0.9 -s 0.9 -o covPerClstr
 
 
 
