@@ -110,7 +110,7 @@ params.flag = false
 
 process dummyGeneFunction {
   output:
-  file 'dummyGeneFunction.tsv' into (dummyGeFun_ch , dummyGeFun_ch1)
+  file 'dummyGeneFunction.tsv' into dummyGeFun_ch
   when:
   params.geneFunction == 'NA'
 
@@ -124,7 +124,7 @@ process useGeneFunction {
   input:
   file(params.geneFunction)
   output:
-  file (params.geneFunction) into (geFun_ch , geFun_ch1)
+  file (params.geneFunction) into geFun_ch
   when:
   params.geneFunction != 'NA'
 
@@ -272,7 +272,6 @@ process covPerGe {
   file gaps from gaps_ch2
   file repeatMasker from repeatMasker_ch1
   file (annotation)
-  file geFun from geFun_ch1.mix(dummyGeFun_ch1)
 
   output:
   set val(sampleId), file(bam) , file(bai) , file(covPerChr) , file("${sampleId}.covPerGe.gz") into covPerGe1 
@@ -289,7 +288,7 @@ process covPerGe {
 
   Rscript /bin/sigPeaks_mixture.R --input ${sampleId}.covPerGe.gz --outName ${sampleId}.covPerGe.significant --minMAPQ $MAPQ $covPerGeSigPeaksOPT
 
-  Rscript /bin/compareGeneCoverage.R --NAMES fake ${sampleId} --samples ${sampleId}.covPerGe.gz ${sampleId}.covPerGe.gz --outName ${sampleId}.covPerGe.stats --repeats ${sampleId}_tmp_reps --gaps $gaps --chrs $CHRSj --minMAPQ $MAPQ --significantGenes ${sampleId}.covPerGe.significant.tsv --geneFunctions $geFun $plotCovPerGeOPT 
+  Rscript /bin/compareGeneCoverage.R --NAMES fake ${sampleId} --samples ${sampleId}.covPerGe.gz ${sampleId}.covPerGe.gz --outName ${sampleId}.covPerGe.stats --repeats ${sampleId}_tmp_reps --gaps $gaps --chrs $CHRSj --minMAPQ $MAPQ --significantGenes ${sampleId}.covPerGe.significant.tsv $plotCovPerGeOPT 
 
   rm -rf ${sampleId}_tmp_reps
   """
