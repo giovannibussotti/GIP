@@ -86,7 +86,7 @@ Channel
     .set { ch1  }
 
 //config file variables
-resultDir  = file(params.resultDir + "/files")
+resultDir  = file(params.resultDir + "/samples")
 resultDir.with{mkdirs()}
 MAPQ    = params.MAPQ
 BITFLAG = params.BITFLAG
@@ -120,7 +120,7 @@ process dummyGeneFunction {
   """
 }
 
-process channelGeneFunction {
+process useGeneFunction {
   input:
   file(params.geneFunction)
   output:
@@ -134,7 +134,7 @@ process channelGeneFunction {
 }
 
 process prepareGenome {
-  publishDir "$params.resultDir/files/genome"
+  publishDir "$params.resultDir/genome"
 
   output:
   file ("db") into bwaDb_ch1
@@ -158,7 +158,7 @@ process prepareGenome {
 
 
 process map { 
-  publishDir "$params.resultDir/files/$sampleId"
+  publishDir "$params.resultDir/samples/$sampleId"
   tag { "${sampleId}" }
  
   input:
@@ -177,7 +177,7 @@ process map {
 
 
 process covPerChr {
-  publishDir "$params.resultDir/files/$sampleId"
+  publishDir "$params.resultDir/samples/$sampleId"
   tag { "${sampleId}" }
 
   input:
@@ -195,7 +195,7 @@ process covPerChr {
 }
 
 process covPerNt {
-  publishDir "$params.resultDir/files/$sampleId"
+  publishDir "$params.resultDir/samples/$sampleId"
   tag { "${sampleId}" }
 
   input:
@@ -215,7 +215,7 @@ process covPerNt {
 }
 
 process covPerBin {
-  publishDir "$params.resultDir/files/$sampleId"
+  publishDir "$params.resultDir/samples/$sampleId"
   tag { "${sampleId}" }
 
   input:
@@ -241,7 +241,7 @@ process covPerBin {
 }
 
 process mappingStats {
-  publishDir "$params.resultDir/files/$sampleId"
+  publishDir "$params.resultDir/samples/$sampleId"
   tag { "${sampleId}" }
 
   input:
@@ -263,7 +263,7 @@ process mappingStats {
 }
 
 process covPerGe {
-  publishDir "$params.resultDir/files/$sampleId"
+  publishDir "$params.resultDir/samples/$sampleId"
   tag { "${sampleId}" }
 
   input:
@@ -275,8 +275,8 @@ process covPerGe {
 
   output:
   set val(sampleId), file(bam) , file(bai) , file(covPerChr) , file("${sampleId}.covPerGe.gz") into covPerGe1 
-  set file("${sampleId}.covPerGe.sigPeaks.tsv") , file("${sampleId}.covPerGe.sigPeaks.stats") , file("${sampleId}.covPerGe.stats.df.gz") , file("${sampleId}.covPerGe.stats.filtered.df.gz") , file("${sampleId}.covPerGe.stats.cloud.png") into (covPerGeDump1)
-  //, file("${sampleId}.gcLnorm.covPerGe.pdf") ,  file("${sampleId}.covPerGe.sigPeaks.pdf") , file("${sampleId}.covPerGe.stats.pdf")
+  set file("${sampleId}.covPerGe.significant.tsv") , file("${sampleId}.covPerGe.significant.stats") , file("${sampleId}.covPerGe.stats.df.gz") , file("${sampleId}.covPerGe.stats.filtered.df.gz") , file("${sampleId}.covPerGe.stats.cloud.png") into (covPerGeDump1)
+  //, file("${sampleId}.gcLnorm.covPerGe.pdf") ,  file("${sampleId}.covPerGe.significant.pdf") , file("${sampleId}.covPerGe.stats.pdf")
 
   """ 
   grep -v "^#" $repeatMasker/genome.out.gff | cut -f 1,4,5 > ${sampleId}_tmp_reps
@@ -286,16 +286,16 @@ process covPerGe {
   Rscript /bin/covPerGe2loessGCnormalization_v2.R --ASSEMBLY $fa --DIR . --SAMPLE ${sampleId} --outName ${sampleId}
   mv ${sampleId}.gcLnorm.covPerGe.gz ${sampleId}.covPerGe.gz
 
-  Rscript /bin/compareGeneCoverage.R --NAMES fake ${sampleId} --samples ${sampleId}.covPerGe.gz ${sampleId}.covPerGe.gz --outName ${sampleId}.covPerGe.stats --repeats ${sampleId}_tmp_reps --gaps $gaps --chrs $CHRSj --minMAPQ $MAPQ $plotCovPerGeOPT 
+  Rscript /bin/sigPeaks_mixture.R --input ${sampleId}.covPerGe.gz --outName ${sampleId}.covPerGe.significant --minMAPQ $MAPQ $covPerGeSigPeaksOPT
 
-  Rscript /bin/sigPeaks_mixture.R --input ${sampleId}.covPerGe.gz --outName ${sampleId}.covPerGe.sigPeaks --minMAPQ $MAPQ $covPerGeSigPeaksOPT 
+  Rscript /bin/compareGeneCoverage.R --NAMES fake ${sampleId} --samples ${sampleId}.covPerGe.gz ${sampleId}.covPerGe.gz --outName ${sampleId}.covPerGe.stats --repeats ${sampleId}_tmp_reps --gaps $gaps --chrs $CHRSj --minMAPQ $MAPQ --significantGenes ${sampleId}.covPerGe.significant.tsv $plotCovPerGeOPT 
 
   rm -rf ${sampleId}_tmp_reps
   """
 }
 
 process freebayes {
-  publishDir "$params.resultDir/files/$sampleId"
+  publishDir "$params.resultDir/samples/$sampleId"
   tag { "${sampleId}" }
  
   input:
@@ -315,7 +315,7 @@ process freebayes {
 }
 
 process snpEff {
-  publishDir "$params.resultDir/files/$sampleId"
+  publishDir "$params.resultDir/samples/$sampleId"
   tag { "${sampleId}" }
 
   input:
@@ -328,7 +328,7 @@ process snpEff {
   """ 
   #run snpEff on Freebayes output
   gunzip -c $vcf > tmpSnpEff_${sampleId}.vcf
-  java -jar /opt/snpEff/snpEff.jar -o gatk genome tmpSnpEff_${sampleId}.vcf -noLog -c $snpEff/snpEff.config -stats snpEff_summary_${sampleId} > ${sampleId}.snpEff.vcf
+  java -jar /opt/snpEff/snpEff.jar -ud 0 -o gatk genome tmpSnpEff_${sampleId}.vcf -noLog -c $snpEff/snpEff.config -stats snpEff_summary_${sampleId} > ${sampleId}.snpEff.vcf
   bgzip ${sampleId}.snpEff.vcf
   gzip snpEff_summary_${sampleId}.genes.txt
   mv snpEff_summary_${sampleId} snpEff_summary_${sampleId}.html
@@ -338,7 +338,7 @@ process snpEff {
 
   #run snpEff on the filtered SNVs
   gunzip -c ${sampleId}_freebayesFiltered/singleVariants.vcf.gz > tmpSnpEff_${sampleId}.vcf
-  java -jar /opt/snpEff/snpEff.jar -o gatk genome tmpSnpEff_${sampleId}.vcf -noLog -c $snpEff/snpEff.config -stats snpEff_summary_${sampleId} > ${sampleId}.snpEff.vcf
+  java -jar /opt/snpEff/snpEff.jar -ud 0 -o gatk genome tmpSnpEff_${sampleId}.vcf -noLog -c $snpEff/snpEff.config -stats snpEff_summary_${sampleId} > ${sampleId}.snpEff.vcf
   bgzip ${sampleId}.snpEff.vcf
   gzip -c snpEff_summary_${sampleId}.genes.txt > ${sampleId}_freebayesFiltered/snpEff_summary_${sampleId}.genes.txt.gz
   mv snpEff_summary_${sampleId} ${sampleId}_freebayesFiltered/snpEff_summary_${sampleId}.html
@@ -362,7 +362,7 @@ process snpEff {
 }
 
 process dellySVref {
-  publishDir "$params.resultDir/files/$sampleId"
+  publishDir "$params.resultDir/samples/$sampleId"
   tag { "${sampleId}" }
 
   input:
@@ -441,7 +441,7 @@ process dellySVref {
 }
 
 process bigWigGenomeCov {
-  publishDir "$params.resultDir/files/$sampleId"
+  publishDir "$params.resultDir/samples/$sampleId"
   tag { "${sampleId}" }
 
   input:
@@ -472,12 +472,13 @@ process bigWigGenomeCov {
 
 
 process covPerClstr {
-  publishDir "$params.resultDir/files/covPerClstr"
+  publishDir "$params.resultDir/covPerClstr"
 
   input:
   file('*') from covPerGe1.collect()  
   set file(fa) , file(fai) , file(dict) , file(size) from genome_ch9
   file (annotation)
+  file geFun from geFun_ch.mix(dummyGeFun_ch)
 
   output:
   file ('*') into boo
@@ -501,7 +502,16 @@ process covPerClstr {
   CHRM="\$(echo -e "\${CHRM}" | sed -e 's/^[[:space:]]*//')"
   COVPERGE="\$(echo -e "\${COVPERGE}" | sed -e 's/^[[:space:]]*//')"
 
+  #find and quantify gene clstrs
   bash /bin/covPerClstr.sh -f "\$COVPERGE" -n "\$NAMES" -b "\$BAMS" -c "\$CHRM" -m $MAPQ -g $annotation -a $fa -l 0.9 -s 0.9 -o covPerClstr
+  #annotate
+  for CL in `ls covPerClstr/lowMapq.clstr/`; do 
+   echo \$CL >> covPerClstr/clstrAnn.tsv
+   for X in `grep ">" covPerClstr/lowMapq.clstr/\$CL | cut -f2 -d">"`; do grep -m1 -P "^\$X\\t" $geFun ; done >> covPerClstr/clstrAnn.tsv
+   echo >> covPerClstr/clstrAnn.tsv 
+   for X in `grep ">" covPerClstr/lowMapq.clstr/\$CL | cut -f2 -d">"`; do grep -m1 -P "^\$X\\t" $geFun ; done | awk '{printf("%s\\t%s\\n", \$0, "'\$CL'") }' >> covPerClstr/clstrAnnFormat2.tsv
+  done
+  
   """
 }
 
