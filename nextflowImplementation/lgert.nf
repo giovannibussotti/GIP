@@ -110,7 +110,7 @@ params.flag = false
 
 process dummyGeneFunction {
   output:
-  file 'dummyGeneFunction.tsv' into (dummyGeFun_ch , dummyGeFun_ch1)
+  file 'dummyGeneFunction.tsv' into (dummyGeFun_ch , dummyGeFun_ch1 , dummyGeFun_ch2)
   when:
   params.geneFunction == 'NA'
 
@@ -124,7 +124,7 @@ process useGeneFunction {
   input:
   file(params.geneFunction)
   output:
-  file (params.geneFunction) into (geFun_ch , geFun_ch1)
+  file (params.geneFunction) into (geFun_ch , geFun_ch1 , geFun_ch2)
   when:
   params.geneFunction != 'NA'
 
@@ -322,7 +322,8 @@ process snpEff {
   input:
   set val(sampleId), file(vcf) , file(tbi) , file(freebayesFilteredDir) from freebayes1
   file(snpEff) from snpEffDb_ch1
-  
+  file geFun from geFun_ch2.mix(dummyGeFun_ch2) 
+ 
   output:
     set file("${sampleId}.vcf.gz") , file("${sampleId}.vcf.gz.tbi") , file("${sampleId}_freebayesFiltered") , file("snpEff_summary_${sampleId}.genes.txt.gz") , file("snpEff_summary_${sampleId}.html") into (snpEffDump1)
 
@@ -356,7 +357,14 @@ process snpEff {
   awk '{print \$NF}' ${sampleId}_freebayesFiltered/singleVariants.df.EFF > ${sampleId}_freebayesFiltered/EFF
   paste ${sampleId}_freebayesFiltered/singleVariants.df ${sampleId}_freebayesFiltered/EFF > ${sampleId}_freebayesFiltered/singleVariants.df2
   mv ${sampleId}_freebayesFiltered/singleVariants.df2 ${sampleId}_freebayesFiltered/singleVariants.df
-  gzip ${sampleId}_freebayesFiltered/singleVariants.df
+
+  #compute dnds
+  Rscript /bin/dndsRatio.R --ALLGEANN $geFun --SNPEFFDF ${sampleId}_freebayesFiltered/singleVariants.df --ID ${sampleId}
+  mv ${sampleId}_cleanEFF.tsv ${sampleId}_freebayesFiltered/singleVariants.df
+  gzip ${sampleId}_freebayesFiltered/singleVariants.df  
+  mv ${sampleId}_dNdStables.tsv  ${sampleId}_freebayesFiltered/dNdStable.tsv
+  gzip ${sampleId}_freebayesFiltered/dNdStable.tsv
+  mv ${sampleId}_cleanEFF.stats ${sampleId}_freebayesFiltered/dNdS.stats  
 
   rm -rf tmpSnpEff_${sampleId}.vcf snpEff_summary_${sampleId}.genes.txt ${sampleId}_freebayesFiltered/singleVariants.df.EFF ${sampleId}_freebayesFiltered/EFF
   """
