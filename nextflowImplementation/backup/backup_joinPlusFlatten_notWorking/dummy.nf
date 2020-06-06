@@ -90,7 +90,7 @@ process map {
   set sampleId , read1 , read2 from ch1    
 
   output:
-  set val(sampleId) , file("${sampleId}*") into (map)
+  set val(sampleId) , file("${sampleId}*") into (map,map1)
 
   script:
   """
@@ -104,7 +104,7 @@ process covPerGe {
   set sampleId , read1 , read2 from ch2
 
   output:
-  set val(sampleId) , file("${sampleId}*") into (covPerGe)
+  set val(sampleId) , file("${sampleId}*") into (covPerGe,covPerGe1)
   
   script:
   """
@@ -134,5 +134,3 @@ process joinTheRightSamples {
   ls > out
   """
 }
-
-
