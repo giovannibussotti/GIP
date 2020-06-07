@@ -186,7 +186,7 @@ process covPerChr {
   file gaps from gaps_ch1
 
   output:
-  set val(sampleId), file(bam) , file(bai), file("chrCoverageMedians_$sampleId") into (covPerChr1 , covPerChr2 , covPerChr3 , covPerChr4, covPerChr5 )
+  set val(sampleId), file(bam) , file(bai), file("chrCoverageMedians_$sampleId") into (covPerChr1 , covPerChr2 , covPerChr3 , covPerChr4, covPerChr5  , covPerChr6)
 
   """
   IFS=' ' read -r -a CHRS <<< "$CHRSj"  
@@ -203,7 +203,7 @@ process covPerNt {
   set file(fa) , file(fai) , file(dict) , file(size) from genome_ch3
   
   output:
-  set file ("${sampleId}.covPerNt.gz") , file ("${sampleId}.pcMapqPerNt.gz") , file ("${sampleId}.covPerNt.boxplot.png") , file ("${sampleId}.covPerNt.ridges.png") , file ("${sampleId}.covPerNt.allMedians.tsv") , file ("${sampleId}.covPerNt.medianGenomeCoverage") into (covPerNtDump1)
+  set val(sampleId), file ("${sampleId}.covPerNt.gz") , file ("${sampleId}.pcMapqPerNt.gz") , file ("${sampleId}.covPerNt.boxplot.png") , file ("${sampleId}.covPerNt.ridges.png") , file ("${sampleId}.covPerNt.allMedians.tsv") , file ("${sampleId}.covPerNt.medianGenomeCoverage") into (covPerNt)
 
   script:
   """
@@ -223,7 +223,7 @@ process covPerBin {
   set file(fa) , file(fai) , file(dict) , file(size) from genome_ch4  
 
   output:
-  set file ("${sampleId}.covPerBin.gz"), file ("${sampleId}.covPerBin.all.png") , file ("${sampleId}.covPerBin_byChr.pdf") , file ("${sampleId}.covPerBin.df.gz") , file ("${sampleId}.covPerBin.extremeRatio.bed.gz") , file ("${sampleId}.covPerBin.faceting.png") , file("${sampleId}.covPerBin.sigPeaks.tsv.gz") , file("${sampleId}.covPerBin.sigPeaks.stats") into (covPerBinDump1)
+  set val(sampleId), file ("${sampleId}.covPerBin.gz"), file ("${sampleId}.covPerBin.all.png") , file ("${sampleId}.covPerBin_byChr.pdf") , file ("${sampleId}.covPerBin.df.gz") , file ("${sampleId}.covPerBin.extremeRatio.bed.gz") , file ("${sampleId}.covPerBin.faceting.png") , file("${sampleId}.covPerBin.sigPeaks.tsv.gz") , file("${sampleId}.covPerBin.sigPeaks.stats") into (covPerBin)
   //file ("${SAMPLE.ID}.gcLnorm.covPerBin.pdf") 
 
   """ 
@@ -249,7 +249,7 @@ process mappingStats {
   set file(fa) , file(fai) , file(dict) , file(size) from genome_ch5
 
   output:
-  set file ("${sampleId}.alignmentMetrics.table") , file ("${sampleId}.insertSize.histData") , file ("${sampleId}.insertSize.hist.png") , file ("${sampleId}.insertSize.table") into (mappingStatsDump1)
+  set val(sampleId), file ("${sampleId}.alignmentMetrics.table") , file ("${sampleId}.insertSize.histData") , file ("${sampleId}.insertSize.hist.png") , file ("${sampleId}.insertSize.table") into (mappingStats)
 
   """ 
   mkdir \$PWD/tmpDir
@@ -276,7 +276,7 @@ process covPerGe {
 
   output:
   set val(sampleId), file(bam) , file(bai) , file(covPerChr) , file("${sampleId}.covPerGe.gz") into covPerGe1 
-  set file("${sampleId}.covPerGe.significant.tsv") , file("${sampleId}.covPerGe.significant.stats") , file("${sampleId}.covPerGe.stats.df.gz") , file("${sampleId}.covPerGe.stats.filtered.df.gz") , file("${sampleId}.covPerGe.stats.cloud.png") into (covPerGeDump1)
+  set val(sampleId) , file("${sampleId}.covPerGe.significant.tsv") , file("${sampleId}.covPerGe.significant.stats") , file("${sampleId}.covPerGe.stats.df.gz") , file("${sampleId}.covPerGe.stats.filtered.df.gz") , file("${sampleId}.covPerGe.stats.cloud.png") into (covPerGeDump1)
   //, file("${sampleId}.gcLnorm.covPerGe.pdf") ,  file("${sampleId}.covPerGe.significant.pdf") , file("${sampleId}.covPerGe.stats.pdf")
 
   """ 
@@ -325,14 +325,14 @@ process snpEff {
   file geFun from geFun_ch2.mix(dummyGeFun_ch2) 
  
   output:
-    set file("${sampleId}.vcf.gz") , file("${sampleId}.vcf.gz.tbi") , file("${sampleId}_freebayesFiltered") , file("snpEff_summary_${sampleId}.genes.txt.gz") , file("snpEff_summary_${sampleId}.html") into (snpEffDump1)
+    set val(sampleId) , file("${sampleId}.vcf.gz") , file("${sampleId}.vcf.gz.tbi") , file("${sampleId}_freebayesFiltered") , file("snpEff_summary_${sampleId}.genes.txt.gz") , file("snpEff_summary_${sampleId}.html") into (snpEff)
 
   """ 
   #run snpEff on Freebayes output
   gunzip -c $vcf > tmpSnpEff_${sampleId}.vcf
   java -jar /opt/snpEff/snpEff.jar -ud 0 -o gatk genome tmpSnpEff_${sampleId}.vcf -noLog -c $snpEff/snpEff.config -stats snpEff_summary_${sampleId} > ${sampleId}.snpEff.vcf
   bgzip ${sampleId}.snpEff.vcf
-  gzip snpEff_summary_${sampleId}.genes.txt
+  gzip -f snpEff_summary_${sampleId}.genes.txt
   mv snpEff_summary_${sampleId} snpEff_summary_${sampleId}.html
   mv ${sampleId}.snpEff.vcf.gz ${sampleId}.vcf.gz
   rm -rf $tbi
@@ -361,9 +361,9 @@ process snpEff {
   #compute dnds
   Rscript /bin/dndsRatio.R --ALLGEANN $geFun --SNPEFFDF ${sampleId}_freebayesFiltered/singleVariants.df --ID ${sampleId}
   mv ${sampleId}_cleanEFF.tsv ${sampleId}_freebayesFiltered/singleVariants.df
-  gzip ${sampleId}_freebayesFiltered/singleVariants.df  
+  gzip -f ${sampleId}_freebayesFiltered/singleVariants.df  
   mv ${sampleId}_dNdStables.tsv  ${sampleId}_freebayesFiltered/dNdStable.tsv
-  gzip ${sampleId}_freebayesFiltered/dNdStable.tsv
+  gzip -f ${sampleId}_freebayesFiltered/dNdStable.tsv
   mv ${sampleId}_cleanEFF.stats ${sampleId}_freebayesFiltered/dNdS.stats  
 
   rm -rf tmpSnpEff_${sampleId}.vcf snpEff_summary_${sampleId}.genes.txt ${sampleId}_freebayesFiltered/singleVariants.df.EFF ${sampleId}_freebayesFiltered/EFF
@@ -381,24 +381,24 @@ process dellySVref {
   file gaps from gaps_ch3
 
   output:
-  file("*") into dump
+  file("*") into delly
 
   """
   #####
   #RUN#
   #####
-  #prepare tmp bam with good HQ reads
-  mkdir -p _tmpHQbam 
-  samtools view -b -q $MAPQ -F $BITFLAG $bam > _tmpHQbam/${sampleId}.bam
-  samtools index _tmpHQbam/${sampleId}.bam
+  #prepare tmp bam with good HQ reads 
+  samtools view -b -q $MAPQ -F $BITFLAG $bam > tmpHQbam.bam
+  samtools index tmpHQbam.bam
 
+  #call SVs
   TYPES=(DEL DUP INV TRA)
   for T in "\${TYPES[@]}"; do
-    delly -q $MAPQ -t \$T -g $fa -o ${sampleId}_\${T}.vcf _tmpHQbam/${sampleId}.bam
+    delly -q $MAPQ -t \$T -g $fa -o ${sampleId}_\${T}.vcf tmpHQbam.bam
     bgzip ${sampleId}_\${T}.vcf
     tabix -p vcf -f ${sampleId}_\${T}.vcf.gz
   done
-  rm -rf _tmpHQbam
+
   #concatenate SVs if they exist
   CONC=""
   for T in "\${TYPES[@]}"; do
@@ -413,6 +413,7 @@ process dellySVref {
   fi
 
   rm -rf ${sampleId}_DEL.vcf.gz ${sampleId}_DUP.vcf.gz ${sampleId}_INV.vcf.gz ${sampleId}_TRA.vcf.gz ${sampleId}_DEL.vcf.gz.tbi ${sampleId}_DUP.vcf.gz.tbi ${sampleId}_INV.vcf.gz.tbi ${sampleId}_TRA.vcf.gz.tbi
+  
   #sort and compress again
   cat ${sampleId}.delly.vcf | vcf-sort > ${sampleId}.delly.vcf.tmp
   mv ${sampleId}.delly.vcf.tmp ${sampleId}.delly.vcf 
@@ -422,6 +423,7 @@ process dellySVref {
   ########
   #Filter#
   ########
+  #run filterDelly
   DF=${sampleId}.delly.filter
   mkdir -p \$DF
   grep -v "^#" $repeatMasker/genome.out.gff | cut -f 1,4,5 > ${sampleId}.tabu.bed
@@ -432,10 +434,11 @@ process dellySVref {
   done
   Rscript /bin/filterDelly.R --SVTYPE TRA --test $sampleId --reference $sampleId --vcfFile ${sampleId}.delly.vcf.gz --chrSizeFile $size --badSequencesBed ${sampleId}.tabu.bed --useENDfield no --outName \$DF/${sampleId}.delly.TRA
   rm ${sampleId}.tabu.bed
-  #add coverage
+  #convert bed to gtf
   mkdir -p \${DF}/coverages
   for X in `ls \$DF | grep ".bed\$" | sed -e 's/.bed\$//'`; do
     cat \$DF/\${X}.bed | perl -ne 'if(\$_=~/^(\\S+)\\s+(\\S+)\\s+(\\S+)/){\$chr=\$1;\$start=\$2;\$end=\$3;\$ge="\${chr}_\${start}_\${end}"; print \"\${chr}\\tdelly\\tSV\\t\${start}\\t\${end}\\t.\\t.\\t.\\tgene_id \\"\$ge\\"; transcript_id \\"\$ge\\";\\n\"} ' > \$DF/_tmp.gtf
+    #evaluate coverage
     covPerGe $bam \$DF/coverages/\${X}.cov \$DF/_tmp.gtf $covPerChr $MAPQ $BITFLAG $covPerGeMAPQoperation $fa
     rm \$DF/_tmp.gtf
     #filter by coverage
@@ -490,7 +493,7 @@ process covPerClstr {
   file geFun from geFun_ch.mix(dummyGeFun_ch)
 
   output:
-  file ('*') into boo
+  file ('*') into covPerClstrDump
 
   """
   #all input in the same order
@@ -523,6 +526,23 @@ process covPerClstr {
   
   """
 }
+
+process report {
+  input:
+  file ('*') from covPerChr6.join(covPerNt).join(covPerBin).join(mappingStats).join(covPerGeDump1).join(snpEff)
+
+  output:
+  file("test") into end  
+
+  script:
+  """
+  echo > test
+
+  """
+}
+
+
+
 
 
 
