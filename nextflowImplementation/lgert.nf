@@ -208,7 +208,7 @@ process covPerNt {
   script:
   """
   covPerNt $bam $size ${sampleId}.covPerNt MEDIAN $MAPQ $BITFLAG 
-  gzip ${sampleId}.covPerNt
+  gzip -f ${sampleId}.covPerNt
   pcMapqPerNt $bam $MAPQ ${sampleId}.pcMapqPerNt
   Rscript /bin/plotGenomeCoverage_V3.R --files ${sampleId}.covPerNt.gz --NAMES ${sampleId} --DIR . --outName ${sampleId}.covPerNt --pcMapqFiles ${sampleId}.pcMapqPerNt.gz --chr $CHRSj $plotCovPerNtOPT
   """
@@ -388,13 +388,14 @@ process dellySVref {
   #RUN#
   #####
   #prepare tmp bam with good HQ reads 
-  samtools view -b -q $MAPQ -F $BITFLAG $bam > tmpHQbam.bam
-  samtools index tmpHQbam.bam
+  mkdir -p _tmpHQbam 
+  samtools view -b -q $MAPQ -F $BITFLAG $bam > _tmpHQbam/${sampleId}.bam
+  samtools index _tmpHQbam/${sampleId}.bam
 
   #call SVs
   TYPES=(DEL DUP INV TRA)
   for T in "\${TYPES[@]}"; do
-    delly -q $MAPQ -t \$T -g $fa -o ${sampleId}_\${T}.vcf tmpHQbam.bam
+    delly -q $MAPQ -t \$T -g $fa -o ${sampleId}_\${T}.vcf _tmpHQbam/${sampleId}.bam
     bgzip ${sampleId}_\${T}.vcf
     tabix -p vcf -f ${sampleId}_\${T}.vcf.gz
   done
@@ -406,13 +407,13 @@ process dellySVref {
       CONC="\$CONC ${sampleId}_\${T}.vcf.gz"
     fi
   done
-  if [ -z \$CONC ]; then 
+  if [ -z "\$CONC" ]; then 
     touch ${sampleId}.delly.vcf
   else 
     vcf-concat \$CONC > ${sampleId}.delly.vcf
   fi
 
-  rm -rf ${sampleId}_DEL.vcf.gz ${sampleId}_DUP.vcf.gz ${sampleId}_INV.vcf.gz ${sampleId}_TRA.vcf.gz ${sampleId}_DEL.vcf.gz.tbi ${sampleId}_DUP.vcf.gz.tbi ${sampleId}_INV.vcf.gz.tbi ${sampleId}_TRA.vcf.gz.tbi
+  rm -rf ${sampleId}_DEL.vcf.gz ${sampleId}_DUP.vcf.gz ${sampleId}_INV.vcf.gz ${sampleId}_TRA.vcf.gz ${sampleId}_DEL.vcf.gz.tbi ${sampleId}_DUP.vcf.gz.tbi ${sampleId}_INV.vcf.gz.tbi ${sampleId}_TRA.vcf.gz.tbi _tmpHQbam
   
   #sort and compress again
   cat ${sampleId}.delly.vcf | vcf-sort > ${sampleId}.delly.vcf.tmp
