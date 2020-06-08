@@ -36,7 +36,7 @@ From: ubuntu:xenial
   #apt-get
   export DEBIAN_FRONTEND=noninteractive
   apt-get -y update
-  apt-get install -y build-essential openssh-client wget zlib1g-dev bzip2 zlib1g libncurses5-dev libbz2-dev liblzma-dev unzip openjdk-8-jdk checkinstall libreadline-gplv2-dev libncursesw5-dev libssl-dev libsqlite3-dev tk-dev libgdbm-dev libc6-dev libbz2-dev python-dev python-setuptools python-pip python-smbus openssl libffi-dev python2.7 fort77 xorg-dev libblas-dev gfortran gcc-multilib gobjc++ aptitude libpcre3-dev libcurl4-openssl-dev texlive texlive-fonts-extra texinfo libnlopt-dev libxml2-dev git autoconf autogen vim csh libcairo2-dev
+  apt-get install -y build-essential openssh-client wget zlib1g-dev bzip2 zlib1g libncurses5-dev libbz2-dev liblzma-dev unzip openjdk-8-jdk checkinstall libreadline-gplv2-dev libncursesw5-dev libssl-dev libsqlite3-dev tk-dev libgdbm-dev libc6-dev libbz2-dev python-dev python-setuptools python-pip python-smbus openssl libffi-dev python2.7 fort77 xorg-dev libblas-dev gfortran gcc-multilib gobjc++ aptitude libpcre3-dev libcurl4-openssl-dev texlive texlive-fonts-extra texinfo libnlopt-dev libxml2-dev git autoconf autogen vim csh libcairo2-dev libgd2-xpm-dev
   aptitude install -y libreadline-dev
 
   #samtools
@@ -89,6 +89,20 @@ From: ubuntu:xenial
   cpan Pod::Usage
   cpan Getopt::Long
   cpan List::Util
+  cpan Clone
+  cpan Config::General
+  cpan Font::TTF::Font
+  cpan GD
+  cpan Math::Bezier
+  cpan Math::Round
+  cpan Math::VecStat
+  cpan Params::Validate
+  cpan Readonly
+  cpan Regexp::Common
+  cpan SVG
+  cpan Set::IntSpan
+  cpan Statistics::Basic
+  cpan Text::Format  
 
   #MUMmer
   cd /opt/MUMmer
