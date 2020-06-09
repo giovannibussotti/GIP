@@ -168,10 +168,11 @@ process map {
 
   output:
   set val(sampleId) , file ("${sampleId}.bam") , file ("${sampleId}.bam.bai") into (map1 , map2 , map3)
-  file ("${sampleId}.MarkDup.log") into (mapDump1)
+  set val(sampleId) , file ("${sampleId}.MarkDup.table") , file ("${sampleId}.MarkDup.histData") , file ("${sampleId}.MarkDup.hist.png") into (mapDump1)
       
   """ 
   mapSample.sh $sampleId $task.cpus $fa $db/bwa/genome/ $read1 $read2 .    
+  reformatMarkDup.sh $sampleId
   """
 }
 
@@ -539,7 +540,7 @@ process covPerClstr {
 
 process report {
   input:
-  file ('*') from covPerChr5.join(covPerNt).join(covPerBin).join(mappingStats).join(covPerGeDump1).join(snpEff).join(delly)
+  file ('*') from covPerChr5.join(covPerNt).join(covPerBin).join(mappingStats).join(covPerGeDump1).join(snpEff).join(delly).join(mapDump1)
 
   output:
   file("test") into end  
