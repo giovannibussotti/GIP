@@ -186,7 +186,7 @@ process covPerChr {
   file gaps from gaps_ch1
 
   output:
-  set val(sampleId), file(bam) , file(bai), file("chrCoverageMedians_$sampleId") into (covPerChr1 , covPerChr2 , covPerChr3 , covPerChr4, covPerChr5  , covPerChr6)
+  set val(sampleId), file(bam) , file(bai), file("chrCoverageMedians_$sampleId") into (covPerChr1 , covPerChr2 , covPerChr3 , covPerChr4, covPerChr5 )
 
   """
   IFS=' ' read -r -a CHRS <<< "$CHRSj"  
@@ -204,6 +204,7 @@ process covPerNt {
   
   output:
   set val(sampleId), file ("${sampleId}.covPerNt.gz") , file ("${sampleId}.pcMapqPerNt.gz") , file ("${sampleId}.covPerNt.boxplot.png") , file ("${sampleId}.covPerNt.ridges.png") , file ("${sampleId}.covPerNt.allMedians.tsv") , file ("${sampleId}.covPerNt.medianGenomeCoverage") into (covPerNt)
+  set val(sampleId), file(bam) , file(bai) , file(covPerChr) , file ("${sampleId}.covPerNt.gz") into (covPerNt4delly)
 
   script:
   """
@@ -375,18 +376,16 @@ process dellySVref {
   tag { "${sampleId}" }
 
   input:
-  set val(sampleId), file(bam) , file(bai) , file(covPerChr) from covPerChr5
+  set val(sampleId), file(bam) , file(bai) , file(covPerChr) , file (covPerNt) from covPerNt4delly
   set file(fa) , file(fai) , file(dict) , file(size) from genome_ch8
   file repeatMasker from repeatMasker_ch3
   file gaps from gaps_ch3
+  file (annotation)
 
   output:
-  file("*") into delly
+  set val(sampleId), file("${sampleId}.delly.vcf.gz") , file("${sampleId}.delly.vcf.gz.tbi") , file("${sampleId}_dellyFiltered")  into delly
 
   """
-  #####
-  #RUN#
-  #####
   #prepare tmp bam with good HQ reads 
   mkdir -p _tmpHQbam 
   samtools view -b -q $MAPQ -F $BITFLAG $bam > _tmpHQbam/${sampleId}.bam
@@ -450,6 +449,16 @@ process dellySVref {
     bedForCircos \${X}.filter \${X}.filter.circosBed
   done
   rm -rf \$DF
+  
+  #circos
+  cp /bin/ideogram.conf /bin/ticks.conf .
+  prepare4Circos.sh -i $sampleId -m $bam -s $size -g $annotation -c "$CHRSj" -n $covPerNt -b 25000 -t /bin/templateCircos.conf -z ${sampleId}.delly.TRA.filter.circosBed -j ${sampleId}.delly.INV.filter.circosBed -k ${sampleId}.delly.DUP.filter.circosBed -w ${sampleId}.delly.DEL.filter.circosBed
+
+  #reorganize output
+  mkdir -p ${sampleId}_dellyFiltered/
+  mv ${sampleId}.delly.*filter* ${sampleId}_dellyFiltered/
+  mv ${sampleId}.SV.circos.png ${sampleId}_dellyFiltered/
+  mv ${sampleId}_circosData ${sampleId}_dellyFiltered/
   """
 }
 
@@ -530,7 +539,7 @@ process covPerClstr {
 
 process report {
   input:
-  file ('*') from covPerChr6.join(covPerNt).join(covPerBin).join(mappingStats).join(covPerGeDump1).join(snpEff)
+  file ('*') from covPerChr5.join(covPerNt).join(covPerBin).join(mappingStats).join(covPerGeDump1).join(snpEff).join(delly)
 
   output:
   file("test") into end  
