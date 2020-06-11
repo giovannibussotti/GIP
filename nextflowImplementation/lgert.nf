@@ -225,7 +225,7 @@ process covPerBin {
   set file(fa) , file(fai) , file(dict) , file(size) from genome_ch4  
 
   output:
-  set val(sampleId), file ("${sampleId}.covPerBin.gz"), file ("${sampleId}.covPerBin.all.png") , file ("${sampleId}.covPerBin_byChr.pdf") , file ("${sampleId}.covPerBin.df.gz") , file ("${sampleId}.covPerBin.extremeRatio.bed.gz") , file ("${sampleId}.covPerBin.faceting.png") , file("${sampleId}.covPerBin.sigPeaks.tsv.gz") , file("${sampleId}.covPerBin.sigPeaks.stats") into (covPerBin)
+  set val(sampleId), file ("${sampleId}.covPerBin.gz"), file ("${sampleId}.covPerBin.all.png") , file ("${sampleId}.covPerBin_byChr.pdf") , file ("${sampleId}.covPerBin.df.gz") , file ("${sampleId}.covPerBin.extremeRatio.bed.gz") , file ("${sampleId}.covPerBin.faceting.png") , file("${sampleId}.covPerBin.significant.tsv.gz") , file("${sampleId}.covPerBin.significant.stats") into (covPerBin)
   //file ("${SAMPLE.ID}.gcLnorm.covPerBin.pdf") 
 
   """ 
@@ -234,11 +234,9 @@ process covPerBin {
   Rscript /bin/covPerBin2loessGCnormalization_v2.R --ASSEMBLY $fa --DIR . --SAMPLE ${sampleId} --outName ${sampleId} 
   mv ${sampleId}.gcLnorm.covPerBin.gz ${sampleId}.covPerBin.gz
 
+  Rscript /bin/sigPeaks_CLT.R --input ${sampleId}.covPerBin.gz --outName ${sampleId}.covPerBin.significant --minMAPQ $MAPQ $covPerBinSigPeaksOPT
+
   Rscript /bin/compareGenomicCoverageBins.R --referenceName _fake_ --testName ${sampleId} --referenceFile ${sampleId}.covPerBin.gz --testFile ${sampleId}.covPerBin.gz --outName ${sampleId}.covPerBin --chrs $CHRSj --minMAPQ $MAPQ $PLOTcovPerBinOPT 
-
-  #Rscript /bin/covPerBin2regression.R $PLOTcovPerBinRegressionOPT --filterChrsNames $CHRSj --filterMAPQ $MAPQ --DIR . --SAMPLES ${sampleId}.covPerBin.gz  --NAMES ${sampleId} --outName ${sampleId}.PLOTcovPerBinRegression 
-
-  Rscript /bin/sigPeaks_CLT.R --input ${sampleId}.covPerBin.gz --outName ${sampleId}.covPerBin.sigPeaks --minMAPQ $MAPQ $covPerBinSigPeaksOPT 
   """
 }
 
