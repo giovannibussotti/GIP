@@ -136,7 +136,6 @@ From: ubuntu:xenial
   /opt/rpkginstall reshape2 cran
   /opt/rpkginstall scales cran
   /opt/rpkginstall seqLogo bioconductor
-  /opt/rpkginstall unbalhaar cran
   /opt/rpkginstall VariantAnnotation bioconductor
   /opt/rpkginstall entropy cran
   /opt/rpkginstall fitdistrplus cran
@@ -150,6 +149,7 @@ From: ubuntu:xenial
   /opt/rpkginstall session cran
   /opt/rpkginstall ggridges cran
   /opt/rpkginstall Cairo cran
+  /opt/rpkginstall fields cran
   #/opt/rpkginstall bisoreg cran #may need manual install since it was recently removed from CRAN
 
   #bisoreg
