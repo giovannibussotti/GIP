@@ -1,5 +1,5 @@
 1) add a final process in which you build the reports. To do that use the "join" operator making sure that you join the output channels from the same sample id
 2) check if it is the case to update the snpEff database including the notion of ncRNA exons
-3) replace gzip with gzip -f allover
-4) fix delly step
-5) generate a delly karioplote
+3) generate a report karioplote
+4) replace compareGenomicCoverageBins.R with compareGenomicCoverageBins_oneSample.R
+
