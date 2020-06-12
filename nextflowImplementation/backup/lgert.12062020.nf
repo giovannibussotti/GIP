@@ -75,8 +75,6 @@ params.index         = 'index.tsv'
 params.geneFunction  = 'NA'
 genome               = file(params.genome)
 annotation           = file(params.annotation)
-geneFunction         = file(params.geneFunction)
-repeatLibrary        = file(params.repeatLibrary)
 
 //ch = Channel.from(params.sampleList)
 //ch.into { ch1 }
@@ -108,20 +106,30 @@ minNormCovForDUP = params.minNormCovForDUP
 maxNormCovForDEL = params.maxNormCovForDEL
 bigWigOpt        = params.bigWigOpt
 
+params.flag = false
 
-process processGeneFunction {
+process dummyGeneFunction {
   output:
-  file 'geneFunction.tsv' into (geFun_ch , geFun_ch1 , geFun_ch2)
+  file 'dummyGeneFunction.tsv' into (dummyGeFun_ch , dummyGeFun_ch1 , dummyGeFun_ch2)
+  when:
+  params.geneFunction == 'NA'
 
   script:
-  if( params.geneFunction == 'NA'  )
   """
-  cat $annotation | perl -ne 'if(\$_=~/gene_id \"([^\"]+)\"/){print "\$1\tNA\n";}' > geneFunction.tsv
+  cat $annotation | perl -ne 'if(\$_=~/gene_id \"([^\"]+)\"/){print "\$1\tNA\n";}' > dummyGeneFunction.tsv
   """
+}
 
-  else 
-  """
-  cp $geneFunction geneFunction.tsv
+process useGeneFunction {
+  input:
+  file(params.geneFunction)
+  output:
+  file (params.geneFunction) into (geFun_ch , geFun_ch1 , geFun_ch2)
+  when:
+  params.geneFunction != 'NA'
+
+  script:
+  """ 
   """
 }
 
@@ -144,7 +152,7 @@ process prepareGenome {
 
   else
   """
-  A-prepareGenome.sh -f $genome -x $annotation -c $task.cpus -l $repeatLibrary
+  A-prepareGenome.sh -f $genome -x $annotation -c $task.cpus -l params.repeatLibrary
   """
 }
 
@@ -264,7 +272,7 @@ process covPerGe {
   file gaps from gaps_ch2
   file repeatMasker from repeatMasker_ch1
   file (annotation)
-  file geFun from geFun_ch1
+  file geFun from geFun_ch1.mix(dummyGeFun_ch1)
 
   output:
   set val(sampleId), file(bam) , file(bai) , file(covPerChr) , file("${sampleId}.covPerGe.gz") into covPerGe1 
@@ -314,7 +322,7 @@ process snpEff {
   input:
   set val(sampleId), file(vcf) , file(tbi) , file(freebayesFilteredDir) from freebayes1
   file(snpEff) from snpEffDb_ch1
-  file geFun from geFun_ch2 
+  file geFun from geFun_ch2.mix(dummyGeFun_ch2) 
  
   output:
     set val(sampleId) , file("${sampleId}.vcf.gz") , file("${sampleId}.vcf.gz.tbi") , file("${sampleId}_freebayesFiltered") , file("snpEff_summary_${sampleId}.genes.txt.gz") , file("snpEff_summary_${sampleId}.html") into (snpEff)
@@ -491,7 +499,7 @@ process covPerClstr {
   file('*') from covPerGe1.collect()  
   set file(fa) , file(fai) , file(dict) , file(size) from genome_ch9
   file (annotation)
-  file geFun from geFun_ch
+  file geFun from geFun_ch.mix(dummyGeFun_ch)
 
   output:
   file ('*') into covPerClstrDump
