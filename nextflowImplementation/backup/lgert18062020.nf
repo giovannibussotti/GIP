@@ -41,7 +41,7 @@ def helpMessage() {
       -covPerBinSigPeaksOPT          identify statistically significant CNV wrt the reference  
     Gene Coverage Options:      
       -covPerGeMAPQoperation         Measure average gene MAPQ  
-      -covPerGeRepeatRange           Visualize repeats within this distance from significant genes
+      -plotCovPerGeOPT               Gene coverage plotting options
       -covPerGeSigPeaksOPT           identify statistically significant gene CNV wrt the reference
     SNV Options:  
       -freebayesOPT                  Freebayes options
@@ -105,7 +105,7 @@ PLOTcovPerBinOPT = params.PLOTcovPerBinOPT
 PLOTcovPerBinRegressionOPT= params.PLOTcovPerBinRegressionOPT
 covPerBinSigPeaksOPT      = params.covPerBinSigPeaksOPT
 covPerGeMAPQoperation     = params.covPerGeMAPQoperation
-covPerGeRepeatRange       = params.covPerGeRepeatRange
+plotCovPerGeOPT           = params.plotCovPerGeOPT
 covPerGeSigPeaksOPT       = params.covPerGeSigPeaksOPT
 freebayesOPT              = params.freebayesOPT
 filterFreebayesOPT        = params.filterFreebayesOPT
@@ -138,7 +138,7 @@ process prepareGenome {
   file ("db") into bwaDb_ch1
   file("genome.chrSize") into chrSize_ch1
   set file("genome.fa") , file("genome.fa.fai") , file("genome.dict") , file("genome.chrSize") into (genome_ch1 , genome_ch2 , genome_ch3 , genome_ch4 , genome_ch5 , genome_ch6 , genome_ch7 , genome_ch8, genome_ch9)
-  file("genome.gaps.gz") into (gaps_ch1 , gaps_ch2)
+  file("genome.gaps.gz") into (gaps_ch1 , gaps_ch2 , gaps_ch3)
   file("repeatMasker") into (repeatMasker_ch1 , repeatMasker_ch2 , repeatMasker_ch3)
   file("snpEff")  into snpEffDb_ch1
   
@@ -185,7 +185,7 @@ process covPerChr {
   file gaps from gaps_ch1
 
   output:
-  set val(sampleId), file(bam) , file(bai), file("chrCoverageMedians_$sampleId") into (covPerChr1 , covPerChr2 , covPerChr3, covPerChr4 )
+  set val(sampleId), file(bam) , file(bai), file("chrCoverageMedians_$sampleId") into (covPerChr1 , covPerChr2 , covPerChr3 , covPerChr4, covPerChr5 )
 
   """
   IFS=' ' read -r -a CHRS <<< "$CHRSj"  
@@ -224,8 +224,6 @@ process covPerBin {
 
   output:
   set val(sampleId), file ("${sampleId}.covPerBin.gz"), file ("${sampleId}.covPerBin.plot.all.png") , file ("${sampleId}.covPerBin.plot.byChr.pdf") , file ("${sampleId}.covPerBin.plot.tsv.gz") , file ("${sampleId}.covPerBin.plot.faceting.png") , file("${sampleId}.covPerBin.significant.bins.tsv.gz") , file("${sampleId}.covPerBin.significant.segments.tsv.gz") , file("${sampleId}.covPerBin.significant.stats") into (covPerBin)
-  set val(sampleId), file(bam) , file(bai) , file(covPerChr) , file ("${sampleId}.covPerBin.gz") into (covPerBin4covPerGe) 
-  
   //file ("${SAMPLE.ID}.gcLnorm.covPerBin.pdf") 
 
   """ 
@@ -267,18 +265,21 @@ process covPerGe {
   tag { "${sampleId}" }
 
   input:
-  set val(sampleId), file(bam) , file(bai) , file(covPerChr) , file(covPerBin) from covPerBin4covPerGe
+  set val(sampleId), file(bam) , file(bai) , file(covPerChr) from covPerChr3
   set file(fa) , file(fai) , file(dict) , file(size) from genome_ch6
+  file gaps from gaps_ch2
   file repeatMasker from repeatMasker_ch1
   file (annotation)
   file geFun from geFun_ch1
 
   output:
   set val(sampleId), file(bam) , file(bai) , file(covPerChr) , file("${sampleId}.covPerGe.gz") into covPerGe1 
-  set val(sampleId) , file("${sampleId}.covPerGe.significant.tsv") , file("${sampleId}.covPerGe.significant.stats") , file("${sampleId}.covPerGeKaryoplot") into (covPerGeDump1)
+  set val(sampleId) , file("${sampleId}.covPerGe.significant.tsv") , file("${sampleId}.covPerGe.significant.stats") , file("${sampleId}.covPerGe.stats.df.gz") , file("${sampleId}.covPerGe.stats.filtered.df.gz") , file("${sampleId}.covPerGe.stats.cloud.png") into (covPerGeDump1)
   //, file("${sampleId}.gcLnorm.covPerGe.pdf") ,  file("${sampleId}.covPerGe.significant.pdf") , file("${sampleId}.covPerGe.stats.pdf")
 
   """ 
+  grep -v "^#" $repeatMasker/genome.out.gff | cut -f 1,4,5 > ${sampleId}_tmp_reps
+  
   covPerGe $bam ${sampleId}.covPerGe $annotation $covPerChr $MAPQ $BITFLAG $covPerGeMAPQoperation $fa
 
   Rscript /bin/covPerGe2loessGCnormalization_v2.R --ASSEMBLY $fa --DIR . --SAMPLE ${sampleId} --outName ${sampleId}
@@ -286,7 +287,9 @@ process covPerGe {
 
   Rscript /bin/sigPeaks_mixture.R --input ${sampleId}.covPerGe.gz --outName ${sampleId}.covPerGe.significant --minMAPQ $MAPQ $covPerGeSigPeaksOPT
 
-  Rscript /bin/karyoplotCovPerGe.R --covPerGe ${sampleId}.covPerGe.gz --covPerBin $covPerBin --chrSize $size --CHRS $CHRSj --REPS $repeatMasker/genome.out.gff --significant ${sampleId}.covPerGe.significant.tsv --outDir ${sampleId}.covPerGeKaryoplot --repeatRange $covPerGeRepeatRange --minMAPQ $MAPQ
+  Rscript /bin/compareGeneCoverage.R --NAMES fake ${sampleId} --samples ${sampleId}.covPerGe.gz ${sampleId}.covPerGe.gz --outName ${sampleId}.covPerGe.stats --repeats ${sampleId}_tmp_reps --gaps $gaps --chrs $CHRSj --minMAPQ $MAPQ --significantGenes ${sampleId}.covPerGe.significant.tsv --geneFunctions $geFun $plotCovPerGeOPT 
+
+  rm -rf ${sampleId}_tmp_reps
   """
 }
 
@@ -295,7 +298,7 @@ process freebayes {
   tag { "${sampleId}" }
  
   input:
-  set val(sampleId), file(bam) , file(bai) , file(covPerChr) from covPerChr3
+  set val(sampleId), file(bam) , file(bai) , file(covPerChr) from covPerChr4
   set file(fa) , file(fai) , file(dict) , file(size) from genome_ch7
   file repeatMasker from repeatMasker_ch2
 
@@ -373,7 +376,7 @@ process dellySVref {
   set val(sampleId), file(bam) , file(bai) , file(covPerChr) , file (covPerNt) from covPerNt4delly
   set file(fa) , file(fai) , file(dict) , file(size) from genome_ch8
   file repeatMasker from repeatMasker_ch3
-  file gaps from gaps_ch2
+  file gaps from gaps_ch3
   file (annotation)
 
   output:
@@ -533,7 +536,7 @@ process covPerClstr {
 
 process report {
   input:
-  file ('*') from covPerChr4.join(covPerNt).join(covPerBin).join(mappingStats).join(covPerGeDump1).join(snpEff).join(delly).join(mapDump1)
+  file ('*') from covPerChr5.join(covPerNt).join(covPerBin).join(mappingStats).join(covPerGeDump1).join(snpEff).join(delly).join(mapDump1)
 
   output:
   file("porcaVacca") into end  

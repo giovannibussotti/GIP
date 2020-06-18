@@ -150,6 +150,7 @@ From: ubuntu:xenial
   /opt/rpkginstall ggridges cran
   /opt/rpkginstall Cairo cran
   /opt/rpkginstall fields cran
+  /opt/rpkginstall karyoploteR bioconductor
   #/opt/rpkginstall bisoreg cran #may need manual install since it was recently removed from CRAN
 
   #bisoreg
