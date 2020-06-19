@@ -207,7 +207,7 @@ process covPerNt {
 
   script:
   """
-  covPerNt $bam $size ${sampleId}.covPerNt MEDIAN 0 $BITFLAG 
+  covPerNt $bam $size ${sampleId}.covPerNt MEDIAN $MAPQ $BITFLAG 
   gzip -f ${sampleId}.covPerNt
   pcMapqPerNt $bam $MAPQ ${sampleId}.pcMapqPerNt
   Rscript /bin/plotGenomeCoverage_V3.R --files ${sampleId}.covPerNt.gz --NAMES ${sampleId} --DIR . --outName ${sampleId}.covPerNt --pcMapqFiles ${sampleId}.pcMapqPerNt.gz --chr $CHRSj $plotCovPerNtOPT
@@ -229,14 +229,14 @@ process covPerBin {
   //file ("${SAMPLE.ID}.gcLnorm.covPerBin.pdf") 
 
   """ 
-  covPerBin $bam $size /bin/gencov2intervals.pl $STEP 0 $BITFLAG . $covPerChr 
+  covPerBin $bam $size /bin/gencov2intervals.pl $STEP $MAPQ $BITFLAG . $covPerChr 
 
   Rscript /bin/covPerBin2loessGCnormalization_v2.R --ASSEMBLY $fa --DIR . --SAMPLE ${sampleId} --outName ${sampleId} 
   mv ${sampleId}.gcLnorm.covPerBin.gz ${sampleId}.covPerBin.gz
 
   Rscript /bin/sigPeaks_CLT.R --input ${sampleId}.covPerBin.gz --outName ${sampleId}.covPerBin.significant --minMAPQ $MAPQ $covPerBinSigPeaksOPT
 
-  Rscript /bin/plotCovPerBin.R --covPerBin ${sampleId}.covPerBin.gz --outName ${sampleId}.covPerBin.plot --chrs $CHRSj --significant ${sampleId}.covPerBin.significant.bins.tsv.gz --chrSizeFile genome.chrSize --minMAPQ $MAPQ
+  Rscript /bin/plotCovPerBin.R --covPerBin ${sampleId}.covPerBin.gz --outName ${sampleId}.covPerBin.plot --chrs $CHRSj --significant ${sampleId}.covPerBin.significant.bins.tsv.gz --chrSizeFile genome.chrSize
   """
 }
 
@@ -279,7 +279,7 @@ process covPerGe {
   //, file("${sampleId}.gcLnorm.covPerGe.pdf") ,  file("${sampleId}.covPerGe.significant.pdf") , file("${sampleId}.covPerGe.stats.pdf")
 
   """ 
-  covPerGe $bam ${sampleId}.covPerGe $annotation $covPerChr 0 $BITFLAG $covPerGeMAPQoperation $fa
+  covPerGe $bam ${sampleId}.covPerGe $annotation $covPerChr $MAPQ $BITFLAG $covPerGeMAPQoperation $fa
 
   Rscript /bin/covPerGe2loessGCnormalization_v2.R --ASSEMBLY $fa --DIR . --SAMPLE ${sampleId} --outName ${sampleId}
   mv ${sampleId}.gcLnorm.covPerGe.gz ${sampleId}.covPerGe.gz
