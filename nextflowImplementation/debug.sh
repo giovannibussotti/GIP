@@ -4,7 +4,9 @@
 find . -type l -exec bash -c "echo 'Replacing {} ...';  cp -LR '{}' '{}'.dereferenced;  rm '{}';  mv '{}'.dereferenced '{}'" \;
 
 
- #3) Then access the container with sudo singularity shell -B $PWD:/mnt --writable ../../../../singularityContainer/lgertContainer.simg/
+ #3) Then access the container with 
+ sudo singularity shell -B $PWD:/mnt --writable ../../../../singularityContainer/lgertContainer.simg/
+ 
  #4) run again the command that failed: cd /mnt ; bash .command.sh 
 
  #NOTE: in nextflow, inside the process script part, you can access variables that are either 1) specified in the nexflow script but outside the process (e.g. the ones you define as command line params options) or 2) specified in the proces input part (e.g. file (annotation) ).

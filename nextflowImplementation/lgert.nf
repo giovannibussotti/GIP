@@ -40,7 +40,6 @@ def helpMessage() {
       -PLOTcovPerBinRegressionOPT    coverage regression plotting options
       -covPerBinSigPeaksOPT          identify statistically significant CNV wrt the reference  
     Gene Coverage Options:      
-      -covPerGeMAPQoperation         Measure average gene MAPQ  
       -covPerGeRepeatRange           Visualize repeats within this distance from significant genes
       -covPerGeSigPeaksOPT           identify statistically significant gene CNV wrt the reference
     SNV Options:  
@@ -104,7 +103,6 @@ STEP             = params.STEP
 PLOTcovPerBinOPT = params.PLOTcovPerBinOPT
 PLOTcovPerBinRegressionOPT= params.PLOTcovPerBinRegressionOPT
 covPerBinSigPeaksOPT      = params.covPerBinSigPeaksOPT
-covPerGeMAPQoperation     = params.covPerGeMAPQoperation
 covPerGeRepeatRange       = params.covPerGeRepeatRange
 covPerGeSigPeaksOPT       = params.covPerGeSigPeaksOPT
 freebayesOPT              = params.freebayesOPT
@@ -279,7 +277,7 @@ process covPerGe {
   //, file("${sampleId}.gcLnorm.covPerGe.pdf") ,  file("${sampleId}.covPerGe.significant.pdf") , file("${sampleId}.covPerGe.stats.pdf")
 
   """ 
-  covPerGe $bam ${sampleId}.covPerGe $annotation $covPerChr 0 $BITFLAG $covPerGeMAPQoperation $fa
+  covPerGe $bam ${sampleId}.covPerGe $annotation $covPerChr 0 $BITFLAG MEAN $fa
 
   Rscript /bin/covPerGe2loessGCnormalization_v2.R --ASSEMBLY $fa --DIR . --SAMPLE ${sampleId} --outName ${sampleId}
   mv ${sampleId}.gcLnorm.covPerGe.gz ${sampleId}.covPerGe.gz
@@ -541,7 +539,10 @@ process report {
   script:
   """
   echo > porcaVacca
-
+  sampleId=`cat input.1`
+  reportFileName=report_\${sampleId}.html
+  cp /bin/buildReport.Rmd .
+  R -e "sample='\$sampleId'; version='$version'; rmarkdown::render('buildReport.Rmd' , output_file = '\$reportFileName')"
   """
 }
 

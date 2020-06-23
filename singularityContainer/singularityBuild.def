@@ -36,7 +36,7 @@ From: ubuntu:xenial
   #apt-get
   export DEBIAN_FRONTEND=noninteractive
   apt-get -y update
-  apt-get install -y build-essential openssh-client wget zlib1g-dev bzip2 zlib1g libncurses5-dev libbz2-dev liblzma-dev unzip openjdk-8-jdk checkinstall libreadline-gplv2-dev libncursesw5-dev libssl-dev libsqlite3-dev tk-dev libgdbm-dev libc6-dev libbz2-dev python-dev python-setuptools python-pip python-smbus openssl libffi-dev python2.7 fort77 xorg-dev libblas-dev gfortran gcc-multilib gobjc++ aptitude libpcre3-dev libcurl4-openssl-dev texlive texlive-fonts-extra texinfo libnlopt-dev libxml2-dev git autoconf autogen vim csh libcairo2-dev libgd2-xpm-dev
+  apt-get install -y build-essential openssh-client wget zlib1g-dev bzip2 zlib1g libncurses5-dev libbz2-dev liblzma-dev unzip openjdk-8-jdk checkinstall libreadline-gplv2-dev libncursesw5-dev libssl-dev libsqlite3-dev tk-dev libgdbm-dev libc6-dev libbz2-dev python-dev python-setuptools python-pip python-smbus openssl libffi-dev python2.7 fort77 xorg-dev libblas-dev gfortran gcc-multilib gobjc++ aptitude libpcre3-dev libcurl4-openssl-dev texlive texlive-fonts-extra texinfo libnlopt-dev libxml2-dev git autoconf autogen vim csh libcairo2-dev libgd2-xpm-dev pandoc
   aptitude install -y libreadline-dev
 
   #samtools
@@ -64,6 +64,7 @@ From: ubuntu:xenial
   
   #give permissions
   chmod a+x /bin/*
+  chmod a+r /bin/*
   chmod a+x /opt/rpkginstall
 
   #Python3
@@ -151,6 +152,8 @@ From: ubuntu:xenial
   /opt/rpkginstall Cairo cran
   /opt/rpkginstall fields cran
   /opt/rpkginstall karyoploteR bioconductor
+  /opt/rpkginstall knitr cran
+  /opt/rpkginstall rmarkdown cran
   #/opt/rpkginstall bisoreg cran #may need manual install since it was recently removed from CRAN
 
   #bisoreg
