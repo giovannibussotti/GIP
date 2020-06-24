@@ -534,20 +534,15 @@ process report {
   file ('*') from covPerChr4.join(covPerNt).join(covPerBin).join(mappingStats).join(covPerGeDump1).join(snpEff).join(delly).join(mapDump1)
 
   output:
-  file("porcaVacca") into end  
+  file("report_*.html") into end  
 
   script:
   """
-  echo > porcaVacca
   sampleId=`cat input.1`
   reportFileName=report_\${sampleId}.html
   cp /bin/buildReport.Rmd .
   R -e "sample='\$sampleId'; version='$version'; rmarkdown::render('buildReport.Rmd' , output_file = '\$reportFileName')"
   """
 }
-
-
-
-
 
 
