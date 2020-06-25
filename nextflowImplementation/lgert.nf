@@ -462,7 +462,7 @@ process bigWigGenomeCov {
   set val(sampleId), file(bam) , file(bai) from map3
   
   output:
-  file("${sampleId}.bw") into (bigWigGenomeCovDump1)
+  set val(sampleId), file("${sampleId}.bw") into (bigWigGenomeCov)
 
   """
   #generate a bedGraph per chr
@@ -531,7 +531,7 @@ process covPerClstr {
 
 process report {
   input:
-  file ('*') from covPerChr4.join(covPerNt).join(covPerBin).join(mappingStats).join(covPerGeDump1).join(snpEff).join(delly).join(mapDump1)
+  file ('*') from covPerChr4.join(covPerNt).join(covPerBin).join(mappingStats).join(covPerGeDump1).join(snpEff).join(delly).join(mapDump1).join(bigWigGenomeCov)
 
   output:
   file("report_*.html") into end  
