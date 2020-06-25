@@ -1,4 +1,7 @@
-#build container
+#build container (for production)
+sudo singularity build --disable-cache igip.sif singularityBuild.def
+
+#build container (for development)
 sudo singularity build --disable-cache --sandbox lgertContainer.simg singularityBuild.def
 
 #access container
