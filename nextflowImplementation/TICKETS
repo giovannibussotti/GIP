@@ -1,7 +1,8 @@
-1) add a final process in which you build the reports. To do that use the "join" operator making sure that you join the output channels from the same sample id
-2) check if it is the case to update the snpEff database including the notion of ncRNA exons
-3) generate a report karioplote with all the analysis together
-4) process the repeatMasker output with something like /pasteur/entites/HubBioIT/gio/apps/my_scripts/various/reduceRepeatMaskerMotifsComplexity.pl
+1) generate a report karioplote with all the analysis together
+2) process the repeatMasker output with something like /pasteur/entites/HubBioIT/gio/apps/my_scripts/various/reduceRepeatMaskerMotifsComplexity.pl
+3) you can improve the freebayes step by running it in multi-process fashion
+4) change the logo and the pipeline name to gip (genome instability pipeline)
 
 NOTE CHANGES
 1) The coverage readout of nt bin and gene is now without MAPQ filters. The covPerNt, covPerBin and covPerGe files don't consider now any read MAPQ filter. Then it is the downstream analysis that decides what nt bin or gene to filter/mask. This is a nice improvement!
+2) in snpEff the user can introduce the notion of ncRNAs by providing a GTF file which specifies the ncRNA biotype. Rwad snpEff documentation 

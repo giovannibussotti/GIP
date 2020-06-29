@@ -16,9 +16,10 @@ Rv=3.6.0
 dellyv=0.6.7
 RepeatMaskerv=4.1.0
 RMBlastv=2.10.0
-freebayesv=1.3.1
+freebayesv=1.3.2
 cdhitv=4.8.1
 circosv=0.69-9
+
 
 #create the output dir
 mkdir -p files/
@@ -116,10 +117,11 @@ mv R-${Rv} R
 #or you can get it from the pasteur FTP (but you have to re-upload the file every 40 days)  
 #wget http://dl.pasteur.fr/fop/KFC7iGSz/GenomeAnalysisTK.jar
 
-#freebayes
-wget https://github.com/ekg/freebayes/releases/download/v${freebayesv}/freebayes-v${freebayesv}
-mv freebayes-v${freebayesv} freebayes
-chmod +x freebayes
+#freebayes the old version 1.0.1 installed in the cluster works. The static precompiled binaries work in the ubuntu machine but not in the centos 6 cluster (kernel too old). To make it work just compile it yoursef from source in the container as usual
+git clone --recursive git://github.com/ekg/freebayes.git
+cd freebayes
+git checkout v$freebayesv && git submodule update --recursive
+cd ..
 
 #snpEff
 #version SnpEff 4.3t (build 2017-11-24 10:18)

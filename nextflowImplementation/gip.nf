@@ -3,11 +3,11 @@
 vim: syntax=groovy
 -*- mode: groovy;-*-
 ========================================================================================
-                   L-GERT : Leishmania-Genome Reporting Tool 
+                   GIP : GENOME INSTABILITY PIPELINE
 ========================================================================================
  Quantify compare and visualize Leishmania genomic variants . Started March 2019.
  #### Homepage / Documentation
- https://github.com/giovannibussotti/L-GERT
+ https://github.com/giovannibussotti/GIP
  #### Authors
  Giovanni Bussotti <giovanni.bussotti@pasteur.fr>
 ----------------------------------------------------------------------------------------
@@ -17,12 +17,12 @@ version = 1.1
 def helpMessage() {
     log.info"""
     =========================================
-     L-GERT : Leishmania-Genome Reporting Tool v${version}
+     GIP : Genome Instability Pipeline v${version}
     =========================================
     
     Usage:
     The typical command for running the pipeline is as follows:
-    nextflow lgert.nf --genome ../inputData/dataset/Linf_test.fa --annotation ../inputData/dataset/Linf_test.ge.gtf --index index.tsv -c lgert.config -resume
+    nextflow gip.nf --genome ../inputData/dataset/Linf_test.fa --annotation ../inputData/dataset/Linf_test.ge.gtf --index index.tsv -c gip.config -resume
     
     Mandatory arguments:
       -params-file                   sample metadata yaml file 
@@ -131,6 +131,10 @@ process processGeneFunction {
 
 process prepareGenome {
   publishDir "$params.resultDir/genome"
+
+  input:
+  file(annotation)
+  file(genome)
 
   output:
   file ("db") into bwaDb_ch1

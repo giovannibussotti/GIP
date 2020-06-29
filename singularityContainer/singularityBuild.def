@@ -21,9 +21,9 @@ From: ubuntu:xenial
   cd /opt
   tar -xzf packages.tar.gz
   cd packages
-  mv bedtools2/ bwa/ htslib/ L-GERT/ samtools/ Python3/ R vcftools/ rmblast/ RepeatMasker snpEff circos/ MUMmer/ leishmaniaAndAncestralSharedRepeats.fa cdhit/ /opt/
+  mv bedtools2/ bwa/ htslib/ L-GERT/ samtools/ freebayes/ Python3/ R vcftools/ rmblast/ RepeatMasker snpEff circos/ MUMmer/ leishmaniaAndAncestralSharedRepeats.fa cdhit/ /opt/
   mv /opt/L-GERT/snpEff.configTemplate /opt/L-GERT/rpkginstall /opt/
-  mv picard.jar GenomeAnalysisTK.jar delly bedGraphToBigWig genePredToBed gtfToGenePred trf409.linux64 freebayes /bin/
+  mv picard.jar GenomeAnalysisTK.jar delly bedGraphToBigWig genePredToBed gtfToGenePred trf409.linux64 /bin/
   cd ..
   rm -rf packages
 
@@ -36,13 +36,18 @@ From: ubuntu:xenial
   #apt-get
   export DEBIAN_FRONTEND=noninteractive
   apt-get -y update
-  apt-get install -y build-essential openssh-client wget zlib1g-dev bzip2 zlib1g libncurses5-dev libbz2-dev liblzma-dev unzip openjdk-8-jdk checkinstall libreadline-gplv2-dev libncursesw5-dev libssl-dev libsqlite3-dev tk-dev libgdbm-dev libc6-dev libbz2-dev python-dev python-setuptools python-pip python-smbus openssl libffi-dev python2.7 fort77 xorg-dev libblas-dev gfortran gcc-multilib gobjc++ aptitude libpcre3-dev libcurl4-openssl-dev texlive texlive-fonts-extra texinfo libnlopt-dev libxml2-dev git autoconf autogen vim csh libcairo2-dev libgd2-xpm-dev pandoc
+  apt-get install -y build-essential openssh-client wget zlib1g-dev bzip2 zlib1g libncurses5-dev libbz2-dev liblzma-dev unzip openjdk-8-jdk checkinstall libreadline-gplv2-dev libncursesw5-dev libssl-dev libsqlite3-dev tk-dev libgdbm-dev libc6-dev libbz2-dev python-dev python-setuptools python-pip python-smbus openssl libffi-dev python2.7 fort77 xorg-dev libblas-dev gfortran gcc-multilib gobjc++ aptitude libpcre3-dev libcurl4-openssl-dev texlive texlive-fonts-extra texinfo libnlopt-dev libxml2-dev git autoconf autogen vim csh libcairo2-dev libgd2-xpm-dev pandoc cmake bc parallel
   aptitude install -y libreadline-dev
 
   #samtools
   cd /opt/samtools
   ./configure && make && make install
   
+  #freebayes
+  cd /opt/freebayes
+  make 
+  make install
+
   #bwa
   cd /opt/bwa
   make
@@ -66,6 +71,7 @@ From: ubuntu:xenial
   chmod a+x /bin/*
   chmod a+r /bin/*
   chmod a+x /opt/rpkginstall
+  chmod a+r /opt/leishmaniaAndAncestralSharedRepeats.fa
 
   #Python3
   cd /opt/Python3

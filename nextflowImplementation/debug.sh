@@ -5,7 +5,7 @@ find . -type l -exec bash -c "echo 'Replacing {} ...';  cp -LR '{}' '{}'.derefer
 
 
  #3) Then access the container with 
- sudo singularity shell -B $PWD:/mnt --writable ../../../../singularityContainer/lgertContainer.simg/
+ sudo singularity shell -B $PWD:/mnt --writable ../../../../singularityContainer/gipContainerDev.simg/
  
  #4) run again the command that failed: cd /mnt ; bash .command.sh 
 
