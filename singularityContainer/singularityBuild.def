@@ -13,6 +13,8 @@ From: ubuntu:xenial
 
 %environment
   export LC_ALL=C
+  export R_LIBS=/usr/local/lib/R/library/
+  export R_LIBS_USER=/usr/local/lib/R/library/
 
 %post
   ln -nsf /bin/bash /bin/sh
