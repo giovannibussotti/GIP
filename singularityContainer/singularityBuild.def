@@ -175,13 +175,8 @@ From: ubuntu:xenial
   R CMD INSTALL --build bisoreg_1.5.tar.gz  
 
 %runscript
- INPUT=$1
- echo $INPUT > result0
- ls /mnt/fq > result1
- ls /mnt/data > result2
- samtools view $INPUT | head > result3
- type bwaMapSample > result4
- 
+ #INPUT=$1
+ #echo $INPUT > result0
+ #echo "Arguments received: $*"
+ exec /bin/sampleComparison.sh "$@" 
 
-#bash mapSample.sh  $SAMPLE_ID $SLURM_CPUS_PER_TASK $fqDir $ASSEMBLY $INDEX $R1_FQID $R2_FQID $MULTIRUN_R1_FQIDS $MULTIRUN_R2_FQIDS $bamDir
-#bash mapSample.sh test 3 /mnt/fq/ /mnt/data/Linf_test.fa /mnt/data/db/bwa/Linf_test test.R1.fastq.gz test.R2.fastq.gz NA NA .
