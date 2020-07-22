@@ -31,7 +31,7 @@ def helpMessage() {
       -resultDir                     result directory 
       -MAPQ                          read MAPQ cut-off  
       -BITFLAG                       SAM bitflag filter
-      -CHRSj                         List of chromosome identifiers to consider (included in quotes)
+      -chromosomes                         List of chromosome identifiers to consider (included in quotes)
     Karyotype Options:
       -plotCovPerNtOPT               karyptype boxplot plotting options
     Bin Coverage Options:  
@@ -72,7 +72,7 @@ if (params.help){
 //}
 
 // Configurable variables
-params.resultDir     = "lgertOut"
+params.resultDir     = "gipOut"
 params.genome        = "genome.fa"
 params.annotation    = "annotations.gtf"
 params.repeatLibrary = "default"
@@ -97,7 +97,7 @@ resultDir  = file(params.resultDir + "/samples")
 resultDir.with{mkdirs()}
 MAPQ    = params.MAPQ
 BITFLAG = params.BITFLAG
-CHRSj   = params.CHRSj
+chromosomes   = params.chromosomes
 plotCovPerNtOPT  = params.plotCovPerNtOPT
 STEP             = params.STEP
 PLOTcovPerBinOPT = params.PLOTcovPerBinOPT
@@ -190,7 +190,7 @@ process covPerChr {
   set val(sampleId), file(bam) , file(bai), file("chrCoverageMedians_$sampleId") into (covPerChr1 , covPerChr2 , covPerChr3, covPerChr4 )
 
   """
-  IFS=' ' read -r -a CHRS <<< "$CHRSj"  
+  IFS=' ' read -r -a CHRS <<< "$chromosomes"  
   chrMedianCoverages $sampleId $size $MAPQ $BITFLAG \$CHRS . $gaps
   """
 }
@@ -212,7 +212,7 @@ process covPerNt {
   covPerNt $bam $size ${sampleId}.covPerNt MEDIAN 0 $BITFLAG 
   gzip -f ${sampleId}.covPerNt
   pcMapqPerNt $bam $MAPQ ${sampleId}.pcMapqPerNt
-  Rscript /bin/plotGenomeCoverage_V3.R --files ${sampleId}.covPerNt.gz --NAMES ${sampleId} --DIR . --outName ${sampleId}.covPerNt --pcMapqFiles ${sampleId}.pcMapqPerNt.gz --chr $CHRSj $plotCovPerNtOPT
+  Rscript /bin/plotGenomeCoverage_V3.R --files ${sampleId}.covPerNt.gz --NAMES ${sampleId} --DIR . --outName ${sampleId}.covPerNt --pcMapqFiles ${sampleId}.pcMapqPerNt.gz --chr $chromosomes $plotCovPerNtOPT
   """
 }
 
@@ -238,7 +238,7 @@ process covPerBin {
 
   Rscript /bin/sigPeaks_CLT.R --input ${sampleId}.covPerBin.gz --outName ${sampleId}.covPerBin.significant --minMAPQ $MAPQ $covPerBinSigPeaksOPT
 
-  Rscript /bin/plotCovPerBin.R --covPerBin ${sampleId}.covPerBin.gz --outName ${sampleId}.covPerBin.plot --chrs $CHRSj --significant ${sampleId}.covPerBin.significant.bins.tsv.gz --chrSizeFile genome.chrSize --minMAPQ $MAPQ
+  Rscript /bin/plotCovPerBin.R --covPerBin ${sampleId}.covPerBin.gz --outName ${sampleId}.covPerBin.plot --chrs $chromosomes --significant ${sampleId}.covPerBin.significant.bins.tsv.gz --chrSizeFile genome.chrSize --minMAPQ $MAPQ
   """
 }
 
@@ -288,7 +288,7 @@ process covPerGe {
 
   Rscript /bin/sigPeaks_mixture.R --input ${sampleId}.covPerGe.gz --outName ${sampleId}.covPerGe.significant --minMAPQ $MAPQ $covPerGeSigPeaksOPT
 
-  Rscript /bin/karyoplotCovPerGe.R --covPerGe ${sampleId}.covPerGe.gz --covPerBin $covPerBin --chrSize $size --CHRS $CHRSj --REPS $repeatMasker/genome.out.gff --significant ${sampleId}.covPerGe.significant.tsv --outDir ${sampleId}.covPerGeKaryoplot --repeatRange $covPerGeRepeatRange --minMAPQ $MAPQ --geneFunction $geFun
+  Rscript /bin/karyoplotCovPerGe.R --covPerGe ${sampleId}.covPerGe.gz --covPerBin $covPerBin --chrSize $size --CHRS $chromosomes --REPS $repeatMasker/genome.out.gff --significant ${sampleId}.covPerGe.significant.tsv --outDir ${sampleId}.covPerGeKaryoplot --repeatRange $covPerGeRepeatRange --minMAPQ $MAPQ --geneFunction $geFun
   """
 }
 
@@ -308,7 +308,7 @@ process freebayes {
   freebayes -f $fa --min-mapping-quality $MAPQ $freebayesOPT --vcf ${sampleId}.vcf $bam 
   bgzip ${sampleId}.vcf
   tabix -p vcf -f ${sampleId}.vcf.gz
-  Rscript /bin/vcf2variantsFrequency_V4.R --selectedChrs $CHRSj --vcfFile ${sampleId}.vcf.gz --chrCoverageMediansFile $covPerChr --chrSizeFile $size --outdir ./${sampleId}_freebayesFiltered --reference $fa --discardGtfRegions $repeatMasker/genome.out.gff $filterFreebayesOPT
+  Rscript /bin/vcf2variantsFrequency_V4.R --selectedChrs $chromosomes --vcfFile ${sampleId}.vcf.gz --chrCoverageMediansFile $covPerChr --chrSizeFile $size --outdir ./${sampleId}_freebayesFiltered --reference $fa --discardGtfRegions $repeatMasker/genome.out.gff $filterFreebayesOPT
   """
 }
 
@@ -448,7 +448,7 @@ process dellySVref {
   
   #circos
   cp /bin/ideogram.conf /bin/ticks.conf .
-  prepare4Circos.sh -i $sampleId -m $bam -s $size -g $annotation -c "$CHRSj" -n $covPerNt -b 25000 -t /bin/templateCircos.conf -z ${sampleId}.delly.TRA.filter.circosBed -j ${sampleId}.delly.INV.filter.circosBed -k ${sampleId}.delly.DUP.filter.circosBed -w ${sampleId}.delly.DEL.filter.circosBed
+  prepare4Circos.sh -i $sampleId -m $bam -s $size -g $annotation -c "$chromosomes" -n $covPerNt -b 25000 -t /bin/templateCircos.conf -z ${sampleId}.delly.TRA.filter.circosBed -j ${sampleId}.delly.INV.filter.circosBed -k ${sampleId}.delly.DUP.filter.circosBed -w ${sampleId}.delly.DEL.filter.circosBed
 
   #reorganize output
   mkdir -p ${sampleId}_dellyFiltered/

@@ -1,0 +1,25 @@
+###################
+#v1.0.1 - 22072020#
+###################
+Removed several unused L-GERT job arrays scripts
+
+###################
+#v1.0.1 - 20072020#
+###################
+Error when run on TARS Due to the fact that the R libraries were searched in the host home and not on the container
+
+ Error: package or namespace load failed for 'VariantAnnotation' in loadNamespace(i, c(lib.loc, .libPaths()), versionCheck = vI[[i]]):
+ namespace 'DBI' 1.0.0 is being loaded, but >= 1.1.0 is required
+
+===> Workaround in the cluster
+export R_LIBS=/usr/local/lib/R/library/
+export R_LIBS_USER=/usr/local/lib/R/library/
+then in the NF config envWhitelist='R_LIBS,R_LIBS_USER'
+
+===> R_LIBS and R_LIBS_USER are now also exported in the definition file. I need to test if the new container works in the cluster without the need to export those variables there and defining envWhitelist
+
+##############
+#NOTE CHANGES#
+##############
+1) The coverage readout of nt bin and gene is now without MAPQ filters. The covPerNt, covPerBin and covPerGe files don't consider now any read MAPQ filter. Then it is the downstream analysis that decides what nt bin or gene to filter/mask. This is a nice improvement!
+2) in snpEff the user can introduce the notion of ncRNAs by providing a GTF file which specifies the ncRNA biotype. Rwad snpEff documentation 

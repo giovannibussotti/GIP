@@ -46,12 +46,8 @@ mv L-GERT/LSD/_tmp L-GERT/LSD/bashFunctions.sh
 # exec /bin/bash --norc "$@"
 grep ^function  L-GERT/LSD/bashFunctions.sh | sed -e 's/function/typeset -fx/' | sed -e 's/{//' > _tmp ; cat _tmp >> L-GERT/LSD/bashFunctions.sh
 #clean and sort files
-mv L-GERT/LSD/utility/covPerClstr.sh     L-GERT/
-mv L-GERT/LSD/utility/covPerChrSummary.R L-GERT/
-mv L-GERT/LSD/utility/binCoverage2cnvs.R L-GERT/
-mv L-GERT/otherScripts/*                 L-GERT/
-mv L-GERT/LSD/*                          L-GERT/
-rm -rf L-GERT/testDeNovo.tsv L-GERT/test.tsv L-GERT/README.md L-GERT/LSDschema.png L-GERT/CHANGES.txt L-GERT/cleanLSD.sh L-GERT/test/ L-GERT/runSpades.sh L-GERT/S-recycler_noModule.sh L-GERT/S-recycler.sh L-GERT/Q-GAT.sh L-GERT/P-redundans.sh L-GERT/N-blastnContigsToRef.sh L-GERT/M-cosmidSeqMappingStats.sh L-GERT/A-collapseMultirunSamples.R L-GERT/I-spades.sh L-GERT/utility L-GERT/otherScripts/ L-GERT/sequenceOfPipelineTasks.txt L-GERT/runLSD L-GERT/runLSD L-GERT/configLSD L-GERT/description.docx L-GERT/LSD L-GERT/.gitignore
+mv L-GERT/scripts/*                          L-GERT/
+rm -rf L-GERT/README.md  L-GERT/sequenceOfPipelineTasks.txt L-GERT/description.docx L-GERT/scripts L-GERT/.gitignore
 mv L-GERT/giovanniLibrary.pl L-GERT/customPerlLib.pl
 #replace file paths
 cat L-GERT/gtf2bed12.sh | sed -e "s/\/pasteur\/entites\/HubBioIT\/gio\/apps\/my_scripts\/UCSC\///"  > _tmp ; mv _tmp L-GERT/gtf2bed12.sh
@@ -67,7 +63,6 @@ for X in `ls L-GERT/`; do cat L-GERT/$X | sed -e 's/\$BWA/bwa/' > _tmp ; mv _tmp
 for X in `ls L-GERT/`; do cat L-GERT/$X | sed -e 's/\$GATK/\/bin\/GenomeAnalysisTK.jar/' > _tmp ; mv _tmp L-GERT/$X ; done
 for X in `ls L-GERT/`; do cat L-GERT/$X | sed -e 's/\$TABIX/tabix/' > _tmp ; mv _tmp L-GERT/$X ; done
 for X in `ls L-GERT/`; do cat L-GERT/$X | sed -e 's/\$BGZIP/bgzip/' > _tmp ; mv _tmp L-GERT/$X ; done
-cat L-GERT/H-freebayes.sh | sed -e "s/\$FREEBAYES /freebayes /"  > _tmp ; mv _tmp L-GERT/H-freebayes.sh
 chmod a+x L-GERT/*
 
 #SAMTOOLS

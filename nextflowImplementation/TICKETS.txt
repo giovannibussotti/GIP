@@ -1,0 +1,29 @@
+
+5) develop the sampleComparison master script in bash or R, processing the user input in singularity run or exec. Comparison modes:
+-karyotype boxplots
+-geCNV pairwise
+-geCNV triangle
+-overlay SNV frequency
+-SNVs venn diagrams up to 6 samples
+-covPerBin pairwise
+-covPerBin smooth/manhattan
+-bin/gene to CNVs (including CNV correlation map and network analysis)
+-mummer ANI PCA distance
+
+The Rscripts names should match the MODE tag.
+you need to:
+  A) copy the Rscripts to "script modules" where the name matches the MODE tags (e.g. cp plotGenomeCoverage_V3.R karyotype)
+  B) edit the module script replacing --NAMES with --samples
+  C) allow the module script to work as before (e.g. with --files), but add the --GIPout parameter that if defined has priority over --files, and builds the input file names expecting this structure GIPout/sample/sample.covPerNt.gz
+  D) if the module script works fine try to replace in gip.nf the old Rscript with this new module (reminding to change --NAMES to --samples) 
+
+4) generate a report karioplote with all the analysis together
+
+3) process the repeatMasker output with something like /pasteur/entites/HubBioIT/gio/apps/my_scripts/various/reduceRepeatMaskerMotifsComplexity.pl
+
+2) you can improve the freebayes step by running it in multi-process fashion
+
+1) change the logo and the pipeline name to gip (genome instability pipeline)
+
+
+
