@@ -114,6 +114,7 @@ bigWigOpt        = params.bigWigOpt
 
 
 process processGeneFunction {
+  publishDir "$params.resultDir/genome"
   output:
   file 'geneFunction.tsv' into (geFun_ch , geFun_ch1 , geFun_ch2)
 

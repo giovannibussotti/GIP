@@ -178,5 +178,6 @@ From: ubuntu:xenial
  #INPUT=$1
  #echo $INPUT > result0
  #echo "Arguments received: $*"
- exec /bin/sampleComparison.sh "$@" 
+ #if needed consider using "$@" instead of $* 
+ exec /bin/sampleComparison.sh $* 
 
