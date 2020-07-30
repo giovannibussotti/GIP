@@ -491,7 +491,7 @@ process bigWigGenomeCov {
 
 
 process covPerClstr {
-  publishDir "$params.resultDir/covPerClstr"
+  publishDir "$params.resultDir"
 
   input:
   file('*') from covPerGe1.collect()  
