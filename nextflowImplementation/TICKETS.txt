@@ -1,14 +1,16 @@
 
 5) develop the sampleComparison master script in bash or R, processing the user input in singularity run or exec. Comparison modes:
 -karyotype boxplots
--geCNV pairwise
--geCNV triangle
--overlay SNV frequency
--SNVs venn diagrams up to 6 samples
 -covPerBin pairwise
+-geCNV pairwise (allowing to show gene clusters)
+-geCNV triangle (allowing to show gene clusters)
+-covPerBin triangle, just showing the kernel density, not the dots
+-overlay SNV frequency and SNV position/frequency scatterplots
+-SNVs venn diagrams up to 6 samples (possibly combine with the overlay SNV module) (possibly show venn diagrams faceting, or with par(), to have a venn doagram per chromosome)
 -covPerBin smooth/manhattan
 -bin/gene to CNVs (including CNV correlation map and network analysis)
 -mummer ANI PCA distance
+-mash k-mer PCA distance (possibly add a gip process to generate the sketch files)
 
 The Rscripts names should match the MODE tag.
 you need to:
