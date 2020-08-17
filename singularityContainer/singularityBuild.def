@@ -162,6 +162,8 @@ From: ubuntu:xenial
   /opt/rpkginstall karyoploteR bioconductor
   /opt/rpkginstall knitr cran
   /opt/rpkginstall rmarkdown cran
+  /opt/rpkginstall ggtern cran
+  /opt/rpkginstall plot3D cran
   #/opt/rpkginstall bisoreg cran #may need manual install since it was recently removed from CRAN
 
   #bisoreg
