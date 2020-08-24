@@ -38,7 +38,7 @@ From: ubuntu:xenial
   #apt-get
   export DEBIAN_FRONTEND=noninteractive
   apt-get -y update
-  apt-get install -y build-essential openssh-client wget zlib1g-dev bzip2 zlib1g libncurses5-dev libbz2-dev liblzma-dev unzip openjdk-8-jdk checkinstall libreadline-gplv2-dev libncursesw5-dev libssl-dev libsqlite3-dev tk-dev libgdbm-dev libc6-dev libbz2-dev python-dev python-setuptools python-pip python-smbus openssl libffi-dev python2.7 fort77 xorg-dev libblas-dev gfortran gcc-multilib gobjc++ aptitude libpcre3-dev libcurl4-openssl-dev texlive texlive-fonts-extra texinfo libnlopt-dev libxml2-dev git autoconf autogen vim csh libcairo2-dev libgd2-xpm-dev pandoc cmake bc parallel
+  apt-get install -y build-essential openssh-client wget zlib1g-dev bzip2 zlib1g libncurses5-dev libbz2-dev liblzma-dev unzip openjdk-8-jdk checkinstall libreadline-gplv2-dev libncursesw5-dev libssl-dev libsqlite3-dev tk-dev libgdbm-dev libc6-dev libbz2-dev python-dev python-setuptools python-pip python-smbus openssl libffi-dev python2.7 fort77 xorg-dev libblas-dev gfortran gcc-multilib gobjc++ aptitude libpcre3-dev libcurl4-openssl-dev texlive texlive-fonts-extra texinfo libnlopt-dev libxml2-dev git autoconf autogen vim csh libcairo2-dev libgd2-xpm-dev pandoc cmake bc parallel libv8-dev
   aptitude install -y libreadline-dev
 
   #samtools
@@ -154,7 +154,6 @@ From: ubuntu:xenial
   /opt/rpkginstall mclust cran
   /opt/rpkginstall mixtools cran
   /opt/rpkginstall networkD3 cran
-  /opt/rpkginstall psych cran
   /opt/rpkginstall session cran
   /opt/rpkginstall ggridges cran
   /opt/rpkginstall Cairo cran
@@ -165,6 +164,7 @@ From: ubuntu:xenial
   /opt/rpkginstall ggtern cran
   /opt/rpkginstall plot3D cran
   /opt/rpkginstall venn cran
+  /opt/rpkginstall randomcoloR cran
   #/opt/rpkginstall bisoreg cran #may need manual install since it was recently removed from CRAN
 
   #bisoreg

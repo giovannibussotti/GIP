@@ -1,3 +1,4 @@
+6) consider renaming the singularity container "giptools"
 
 5) develop the sampleComparison master script in bash or R, processing the user input in singularity run or exec. Comparison modes:
 -karyotype boxplots
