@@ -165,6 +165,7 @@ From: ubuntu:xenial
   /opt/rpkginstall plot3D cran
   /opt/rpkginstall venn cran
   /opt/rpkginstall randomcoloR cran
+  /opt/rpkginstall pheatmap cran
   #/opt/rpkginstall bisoreg cran #may need manual install since it was recently removed from CRAN
 
   #bisoreg
