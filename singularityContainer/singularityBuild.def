@@ -158,7 +158,6 @@ From: ubuntu:xenial
   /opt/rpkginstall ggridges cran
   /opt/rpkginstall Cairo cran
   /opt/rpkginstall fields cran
-  /opt/rpkginstall karyoploteR bioconductor
   /opt/rpkginstall knitr cran
   /opt/rpkginstall rmarkdown cran
   /opt/rpkginstall ggtern cran
@@ -177,6 +176,14 @@ From: ubuntu:xenial
   wget https://cran.r-project.org/src/contrib/Archive/bisoreg/bisoreg_1.5.tar.gz
   R -e 'install.packages("bisoreg_1.5.tar.gz", repos = NULL, type="source")'
   R CMD INSTALL --build bisoreg_1.5.tar.gz  
+
+  #XML is required for karyoploteR, but now available just for R>4.0
+  #manual installation of XML
+  wget https://cran.r-project.org/src/contrib/Archive/XML/XML_3.99-0.3.tar.gz
+  R -e 'install.packages("XML_3.99-0.3.tar.gz", repos = NULL, type="source")'
+  R CMD INSTALL --build XML_3.99-0.3.tar.gz
+
+  /opt/rpkginstall karyoploteR bioconductor
 
 %runscript
  #INPUT=$1

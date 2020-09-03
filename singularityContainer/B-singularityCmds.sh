@@ -1,5 +1,5 @@
 #build container (for production)
-sudo singularity build --disable-cache giptools.sif singularityBuild.def
+sudo singularity build --disable-cache giptools.sif singularityBuild.def >>giptools.build.log 2>&1
 
 #build container (for development)
 sudo singularity build --disable-cache --sandbox gipContainerDev.simg singularityBuild.def
