@@ -30,6 +30,7 @@ cp -r ../manuallyDownlodedPkgs/* .
 
 #copy miniCRAN
 cp -r ../Rpkgs/miniCRAN/ .
+cp ../Rpkgs/Rpkgs.tsv ../Rpkgs/installRpkgs.R .
 
 #L-GERT_jobArrays: download and convert 
 wget https://github.com/giovannibussotti/L-GERT_jobArrays/archive/v${LGERTv}.tar.gz

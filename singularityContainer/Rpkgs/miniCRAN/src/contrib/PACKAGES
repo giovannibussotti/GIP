@@ -292,6 +292,25 @@ License: Artistic-2.0
 MD5sum: bad869d07414625ecd54fe04d294c68d
 NeedsCompilation: yes
 
+Package: KernSmooth
+Version: 2.23-17
+Priority: recommended
+Depends: R (>= 2.5.0), stats
+Suggests: MASS
+License: Unlimited
+MD5sum: e4e16ea7ee18495604ae57fb1894f38c
+NeedsCompilation: yes
+
+Package: MASS
+Version: 7.3-52
+Priority: recommended
+Depends: R (>= 3.1.0), grDevices, graphics, stats, utils
+Imports: methods
+Suggests: lattice, nlme, nnet, survival
+License: GPL-2 | GPL-3
+MD5sum: 4569057548e1814cb0da9309a01db6e5
+NeedsCompilation: yes
+
 Package: MCL
 Version: 1.0
 Depends: R (>= 2.10.0)
@@ -307,6 +326,17 @@ Imports: stats, methods, Matrix (>= 1.1-5)
 License: GPL (>= 2)
 MD5sum: 65b3ab56650c62bf1046a3eb1f1e19a0
 NeedsCompilation: no
+
+Package: Matrix
+Version: 1.2-18
+Priority: recommended
+Depends: R (>= 3.2.0)
+Imports: methods, graphics, grid, stats, utils, lattice
+Suggests: expm, MASS
+Enhances: MatrixModels, graph, SparseM, sfsmisc
+License: GPL (>= 2) | file LICENCE
+MD5sum: 377e1301d3e3f5b252335a69ed72ad99
+NeedsCompilation: yes
 
 Package: ProtGenerics
 Version: 1.18.0
@@ -360,13 +390,13 @@ MD5sum: fb536e6f531cacfdb88d49b1dd6aa529
 NeedsCompilation: yes
 
 Package: RcppArmadillo
-Version: 0.9.900.2.0
+Version: 0.9.900.3.0
 Depends: R (>= 3.3.0)
 Imports: Rcpp (>= 0.11.0), stats, utils, methods
 LinkingTo: Rcpp
 Suggests: tinytest, Matrix, pkgKitten, reticulate, slam
 License: GPL (>= 2)
-MD5sum: b266872bc27d33b02eb833b23052297e
+MD5sum: 4f84c99b8e9b28c2d06cf0837f7ae1c3
 NeedsCompilation: yes
 
 Package: RcppEigen
@@ -668,6 +698,15 @@ License: GPL-3
 MD5sum: 9203effe656c5a836c8a5daa8948cbe0
 NeedsCompilation: no
 
+Package: boot
+Version: 1.3-25
+Priority: recommended
+Depends: R (>= 3.0.0), graphics, stats
+Suggests: MASS, survival
+License: Unlimited
+MD5sum: 1b4d29c70b339aff435a5501e63baab9
+NeedsCompilation: no
+
 Package: bootstrap
 Version: 2019.6
 Depends: stats, R (>= 2.10.0)
@@ -732,6 +771,15 @@ License: BSD_3_clause + file LICENSE
 MD5sum: bcb4f623a0a9c5b297fb818346cad9a4
 NeedsCompilation: yes
 
+Package: class
+Version: 7.3-17
+Priority: recommended
+Depends: R (>= 3.0.0), stats, utils
+Imports: MASS
+License: GPL-2 | GPL-3
+MD5sum: 16b388f009b15bca9935e6a2fbc7db5d
+NeedsCompilation: yes
+
 Package: cli
 Version: 2.0.2
 Depends: R (>= 2.10)
@@ -751,12 +799,30 @@ License: GPL-3
 MD5sum: 2309a44a587573a739119e98d0f5e3b7
 NeedsCompilation: no
 
+Package: cluster
+Version: 2.1.0
+Priority: recommended
+Depends: R (>= 3.3.0)
+Imports: graphics, grDevices, stats, utils
+Suggests: MASS, Matrix
+License: GPL (>= 2)
+MD5sum: cd2ddaaf54689590cb9e0042af7c3a71
+NeedsCompilation: yes
+
 Package: coda
 Version: 0.19-3
 Depends: R (>= 2.14.0)
 Imports: lattice
 License: GPL (>= 2)
 MD5sum: 2e32c8217920c2824229217a95fb8228
+NeedsCompilation: no
+
+Package: codetools
+Version: 0.2-16
+Priority: recommended
+Depends: R (>= 2.1)
+License: GPL
+MD5sum: 0f04011ff13aa9df73195efa9e71bed9
 NeedsCompilation: no
 
 Package: colorspace
@@ -1014,6 +1080,15 @@ Suggests: covr, ggplot2, testthat, readr, knitr, rmarkdown, dplyr
 License: GPL-3
 MD5sum: efa3b3055e9167fd2a74b4386441eb1c
 NeedsCompilation: no
+
+Package: foreign
+Version: 0.8-80
+Priority: recommended
+Depends: R (>= 4.0.0)
+Imports: methods, utils, stats
+License: GPL (>= 2)
+MD5sum: 809005732f6fa8ed8c6e7e5136d6a541
+NeedsCompilation: yes
 
 Package: formatR
 Version: 1.7
@@ -1371,6 +1446,17 @@ License: GPL (>= 2)
 MD5sum: 0a01f66ccf60abc874649d430f3902d5
 NeedsCompilation: no
 
+Package: lattice
+Version: 0.20-41
+Priority: recommended
+Depends: R (>= 3.0.0)
+Imports: grid, grDevices, graphics, stats, utils
+Suggests: KernSmooth, MASS, latticeExtra
+Enhances: chron
+License: GPL (>= 2)
+MD5sum: c3a51a4fea975722e65207987b04e48f
+NeedsCompilation: yes
+
 Package: lazyeval
 Version: 0.2.2
 Depends: R (>= 3.1.0)
@@ -1473,12 +1559,32 @@ License: MIT + file LICENSE
 MD5sum: 493209ee04673f0fcab473c3dd80fb8c
 NeedsCompilation: no
 
+Package: mgcv
+Version: 1.8-33
+Priority: recommended
+Depends: R (>= 2.14.0), nlme (>= 3.1-64)
+Imports: methods, stats, graphics, Matrix, splines, utils
+Suggests: parallel, survival, MASS
+License: GPL (>= 2)
+MD5sum: f87b7080aa7aca57f508ce89498d4769
+NeedsCompilation: yes
+
 Package: mime
 Version: 0.9
 Imports: tools
 License: GPL
 MD5sum: 68b5c7d82bdf9100e6076c038ae2130d
 NeedsCompilation: yes
+
+Package: miniCRAN
+Version: 0.2.13
+Imports: graphics, httr, methods, stats, tools, utils, igraph,
+        assertthat (>= 0.2.0)
+Suggests: devtools, knitr, rmarkdown, testthat (>= 2.1.0), covr, withr,
+        mockery, testthis, roxygen2
+License: GPL-2
+MD5sum: ae1c63493d2c03769dbf4bef3ef00a26
+NeedsCompilation: no
 
 Package: miniUI
 Version: 0.1.1.1
@@ -1535,11 +1641,30 @@ License: GPL (>= 3)
 MD5sum: dad3befe0a77dd04c72704eb95fb3d45
 NeedsCompilation: no
 
+Package: nlme
+Version: 3.1-149
+Priority: recommended
+Depends: R (>= 3.4.0)
+Imports: graphics, stats, utils, lattice
+Suggests: Hmisc, MASS
+License: GPL (>= 2) | file LICENCE
+MD5sum: 789d3fb225cc4d662ad7317234e8933c
+NeedsCompilation: yes
+
 Package: nloptr
 Version: 1.2.2.2
 Suggests: testthat (>= 0.8.1), knitr, rmarkdown, inline (>= 0.3.14)
 License: LGPL-3
 MD5sum: 2a08caa453fe8ef80b185a5f38d97799
+NeedsCompilation: yes
+
+Package: nnet
+Version: 7.3-14
+Priority: recommended
+Depends: R (>= 3.0.0), stats, utils
+Suggests: MASS
+License: GPL-2 | GPL-3
+MD5sum: 9c26b3b6aed33b76039b72d7293016d7
 NeedsCompilation: yes
 
 Package: openssl
@@ -1661,12 +1786,12 @@ MD5sum: 0585a928696b8b7c259d2aaf8125762f
 NeedsCompilation: no
 
 Package: processx
-Version: 3.4.3
+Version: 3.4.4
 Imports: ps (>= 1.2.0), R6, utils
 Suggests: callr (>= 3.2.0), codetools, covr, crayon, curl, debugme,
         parallel, testthat, withr
 License: MIT + file LICENSE
-MD5sum: 58785b0bee92f79f098d9aa899535601
+MD5sum: 1d73116d15312881fdfe5b3e25d8ca31
 NeedsCompilation: yes
 
 Package: progress
@@ -1832,6 +1957,15 @@ License: GPL (>= 2)
 MD5sum: cc603acaafb08119734091a8a02e1b9d
 NeedsCompilation: yes
 
+Package: rpart
+Version: 4.1-15
+Priority: recommended
+Depends: R (>= 2.15.0), graphics, stats, grDevices
+Suggests: survival
+License: GPL-2 | GPL-3
+MD5sum: 078012c2d1e1ef1f8c53f9d93c5e43f6
+NeedsCompilation: yes
+
 Package: rprojroot
 Version: 1.3-2
 Depends: R (>= 3.0.0)
@@ -1965,6 +2099,15 @@ License: LGPL-2 | BSD_3_clause + file LICENSE
 MD5sum: c6dc0cc6c2701ff7ca67d5b4b4bbc87e
 NeedsCompilation: yes
 
+Package: spatial
+Version: 7.3-12
+Priority: recommended
+Depends: R (>= 3.0.0), graphics, stats, utils
+Suggests: MASS
+License: GPL-2 | GPL-3
+MD5sum: 642201a46e889ad8c5981b4a4137c261
+NeedsCompilation: yes
+
 Package: statmod
 Version: 1.4.34
 Depends: R (>= 3.0.0)
@@ -1991,6 +2134,15 @@ Suggests: covr, htmltools, htmlwidgets, knitr, rmarkdown, testthat
 License: GPL-2 | file LICENSE
 MD5sum: 1c3e0267af33d829b842de9fa68853e2
 NeedsCompilation: no
+
+Package: survival
+Version: 3.2-3
+Priority: recommended
+Depends: R (>= 3.4.0)
+Imports: graphics, Matrix, methods, splines, stats, utils
+License: LGPL (>= 2)
+MD5sum: 4a798e5ba4fc921246d41509bbb1a5b2
+NeedsCompilation: yes
 
 Package: sys
 Version: 3.4
