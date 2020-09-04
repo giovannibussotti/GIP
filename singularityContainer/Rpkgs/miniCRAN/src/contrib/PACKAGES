@@ -390,13 +390,13 @@ MD5sum: fb536e6f531cacfdb88d49b1dd6aa529
 NeedsCompilation: yes
 
 Package: RcppArmadillo
-Version: 0.9.900.3.0
+Version: 0.9.900.2.0
 Depends: R (>= 3.3.0)
 Imports: Rcpp (>= 0.11.0), stats, utils, methods
 LinkingTo: Rcpp
 Suggests: tinytest, Matrix, pkgKitten, reticulate, slam
 License: GPL (>= 2)
-MD5sum: 4f84c99b8e9b28c2d06cf0837f7ae1c3
+MD5sum: b266872bc27d33b02eb833b23052297e
 NeedsCompilation: yes
 
 Package: RcppEigen
@@ -862,6 +862,15 @@ Imports: methods, utils, grDevices, stats, tensorA, robustbase, bayesm,
 Suggests: rgl, combinat, energy, knitr, rmarkdown
 License: GPL (>= 2)
 MD5sum: 7002e29393d9bcf6e7740890f214f9ef
+NeedsCompilation: yes
+
+Package: conquer
+Version: 1.0.2
+Depends: R (>= 3.5.0)
+Imports: Rcpp (>= 1.0.3), Matrix, matrixStats, stats
+LinkingTo: Rcpp, RcppArmadillo (>= 0.9.850.1.0)
+License: GPL-3
+MD5sum: 63c7c7ef6148081c6c6d4f4232453ee6
 NeedsCompilation: yes
 
 Package: crayon
