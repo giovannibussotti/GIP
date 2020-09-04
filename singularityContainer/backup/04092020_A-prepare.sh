@@ -28,9 +28,6 @@ cd files
 #copy manually downloded packages
 cp -r ../manuallyDownlodedPkgs/* .
 
-#copy miniCRAN
-cp -r ../Rpkgs/miniCRAN/ .
-
 #L-GERT_jobArrays: download and convert 
 wget https://github.com/giovannibussotti/L-GERT_jobArrays/archive/v${LGERTv}.tar.gz
 tar -xzf v${LGERTv}.tar.gz
