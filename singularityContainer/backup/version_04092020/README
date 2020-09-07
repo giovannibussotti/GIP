@@ -1,0 +1,7 @@
+first version working also on the TARS cluster
+everything works fine.
+The only thing is that this version uses rpkginstall, which download each time the R packages to install.
+This may represent a problem since some of the packages may be unavailable in the future.
+To solve this problem now GIP relies in a local R packages repository (see Rpkgs folder).
+All the all the packages source files are stored and their dependencies indexed in the miniCRAN folder (I ran buildMiniCran.R to build it).
+When we build the singularity image now we install from the miniCRAN local repository, using the installRpkgs.R script 

@@ -129,7 +129,7 @@ From: ubuntu:xenial
   ./configure --enable-memory-profiling --with-cairo 
   make
   make install
-  #Rscript /opt/installRpkgs.R >>/opt/installRpkgs.log 2>&1
+  Rscript /opt/installRpkgs.R >>/opt/installRpkgs.log 2>&1
 
 
  

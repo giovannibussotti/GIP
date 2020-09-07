@@ -5,9 +5,6 @@ alreadyInstalled <- row.names(installed.packages())
 manualInstallPkgs <- c("bisoreg","XML",alreadyInstalled)
 allPkgsAuto <- allPkgs[ ! allPkgs$Package %in% manualInstallPkgs, ]
 
-#XML is needed by other pkgs like karyoplote, so you need to install first
-#install.packages("/opt/miniCRAN/src/contrib/XML_3.99-0.3.tar.gz", repos = NULL, type="source") #now it sould be fixed by addOldPackage()
-
 install.packages(allPkgsAuto$Package, repos = paste0("file:///", pth), type = "source")
 
 #first you need to install all the pkgs dependencies before installing bisoreg
