@@ -535,6 +535,8 @@ process covPerClstr {
 }
 
 process report {
+  publishDir "$params.resultDir"
+  
   input:
   file ('*') from covPerChr4.join(covPerNt).join(covPerBin).join(mappingStats).join(covPerGeDump1).join(snpEff).join(delly).join(mapDump1).join(bigWigGenomeCov)
 
