@@ -12,14 +12,6 @@
 2) you can improve the freebayes step by running it in multi-process fashion
 
 1) report to fix:
--change the logo and the pipeline name to gip (genome instability pipeline)
--Figure 2: Insert size distribution --> should be "Figure 1"
-                                    --> remove the top 10% of the data
--Table 4: Chromosome coverage --> formatting problem
-                              --> do not repeat "Table twice"
 -Figure 5: Genomic bin coverage overview --> should start always at zero. See if you need to tune the max ylim, anyway the redline should be marked on the axis. Works on the dummy VM test, but not on TARS
-- Table 9: SNVs examples and Table 10: dNdS comparison examples
-                              --> formatting problem
-                              --do not repeat "Table" twice
 -make sure that the links to files work well both on the VM andd on TARS
 
