@@ -1,24 +1,9 @@
-6) consider renaming the singularity container "giptools"
-
+ 
 5) develop the sampleComparison master script in bash or R, processing the user input in singularity run or exec. Comparison modes:
--karyotype boxplots
--covPerBin pairwise
--geCNV pairwise (allowing to show gene clusters)
--geCNV triangle (allowing to show gene clusters)
--covPerBin triangle, just showing the kernel density, not the dots
--overlay SNV frequency and SNV position/frequency scatterplots
--SNVs venn diagrams up to 6 samples (possibly combine with the overlay SNV module) (possibly show venn diagrams faceting, or with par(), to have a venn doagram per chromosome)
--covPerBin smooth/manhattan
+-raxML SNV tree (consider to implement this as a nexflow pipeline to run the bootsraps and the starting trees in parallel on the cluster)  and 
 -bin/gene to CNVs (including CNV correlation map and network analysis)
--mummer ANI PCA distance
 -mash k-mer PCA distance (possibly add a gip process to generate the sketch files)
-
-The Rscripts names should match the MODE tag.
-you need to:
-  A) copy the Rscripts to "script modules" where the name matches the MODE tags (e.g. cp plotGenomeCoverage_V3.R karyotype)
-  B) edit the module script replacing --NAMES with --samples
-  C) allow the module script to work as before (e.g. with --files), but add the --GIPout parameter that if defined has priority over --files, and builds the input file names expecting this structure GIPout/sample/sample.covPerNt.gz
-  D) if the module script works fine try to replace in gip.nf the old Rscript with this new module (reminding to change --NAMES to --samples) 
+-mash k-mer screen to look for contaminants starting from short reads and the mash refsseq database
 
 4) generate a report karioplote with all the analysis together
 
@@ -26,7 +11,15 @@ you need to:
 
 2) you can improve the freebayes step by running it in multi-process fashion
 
-1) change the logo and the pipeline name to gip (genome instability pipeline)
-
-
+1) report to fix:
+-change the logo and the pipeline name to gip (genome instability pipeline)
+-Figure 2: Insert size distribution --> should be "Figure 1"
+                                    --> remove the top 10% of the data
+-Table 4: Chromosome coverage --> formatting problem
+                              --> do not repeat "Table twice"
+-Figure 5: Genomic bin coverage overview --> should start always at zero. See if you need to tune the max ylim, anyway the redline should be marked on the axis. Works on the dummy VM test, but not on TARS
+- Table 9: SNVs examples and Table 10: dNdS comparison examples
+                              --> formatting problem
+                              --do not repeat "Table" twice
+-make sure that the links to files work well both on the VM andd on TARS
 

@@ -1,4 +1,20 @@
 ###################
+#v1.0.1 - 05092020#
+###################
+-Adopted miniCRAN local R packages repository 
+-Renamed giptools.sif
+-prepared several contrast modules:
+  SNV
+  binCNV
+  binDensity
+  geCNV
+  geInteraction
+  genomeDistance
+  karyotype
+  ternary
+  ternaryBin
+
+###################
 #v1.0.1 - 22072020#
 ###################
 Removed several unused L-GERT job arrays scripts
