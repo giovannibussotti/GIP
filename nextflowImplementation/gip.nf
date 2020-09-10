@@ -31,12 +31,13 @@ def helpMessage() {
       -resultDir                     result directory 
       -MAPQ                          read MAPQ cut-off  
       -BITFLAG                       SAM bitflag filter
-      -chromosomes                         List of chromosome identifiers to consider (included in quotes)
-    Karyotype Options:
-      -plotCovPerNtOPT               karyptype boxplot plotting options
+      -chromosomes                   List of chromosome identifiers to consider (included in quotes)
+      -customCoverageLimits          Two numbers: N1, N2. Significant CNV genes or bins must also have a coverage > N1 or < N2   
+   Karyotype Options:
+      -chrPlotYlim                   karyptype boxplot y-axis limits
     Bin Coverage Options:  
-      -binSize                          bin size
-      -PLOTcovPerBinOPT              coverage plotting options 
+      -binSize                       bin size
+      -binPlotYlim                   bin coverage y-axis limits 
       -covPerBinSigPeaksOPT          identify statistically significant CNV wrt the reference  
     Gene Coverage Options:      
       -covPerGeRepeatRange           Visualize repeats within this distance from significant genes
@@ -96,10 +97,11 @@ resultDir  = file(params.resultDir + "/samples")
 resultDir.with{mkdirs()}
 MAPQ    = params.MAPQ
 BITFLAG = params.BITFLAG
-chromosomes   = params.chromosomes
-plotCovPerNtOPT  = params.plotCovPerNtOPT
-binSize             = params.binSize
-PLOTcovPerBinOPT = params.PLOTcovPerBinOPT
+chromosomes  = params.chromosomes
+chrPlotYlim  = params.chrPlotYlim
+binPlotYlim  = params.binPlotYlim
+binSize      = params.binSize
+customCoverageLimits = params.customCoverageLimits
 covPerBinSigPeaksOPT      = params.covPerBinSigPeaksOPT
 covPerGeRepeatRange       = params.covPerGeRepeatRange
 covPerGeSigPeaksOPT       = params.covPerGeSigPeaksOPT
