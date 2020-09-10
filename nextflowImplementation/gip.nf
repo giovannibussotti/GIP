@@ -35,9 +35,8 @@ def helpMessage() {
     Karyotype Options:
       -plotCovPerNtOPT               karyptype boxplot plotting options
     Bin Coverage Options:  
-      -STEP                          bin size
+      -binSize                          bin size
       -PLOTcovPerBinOPT              coverage plotting options 
-      -PLOTcovPerBinRegressionOPT    coverage regression plotting options
       -covPerBinSigPeaksOPT          identify statistically significant CNV wrt the reference  
     Gene Coverage Options:      
       -covPerGeRepeatRange           Visualize repeats within this distance from significant genes
@@ -50,7 +49,7 @@ def helpMessage() {
       -minNormCovForDUP              min normalized sequencing coverage for Delly duplications
       -maxNormCovForDEL              max normalized sequencing coverage for Delly deletions
     BigWig Options:  
-      -bigWigOpt                     Options to generate the coverage bigWig file
+      -bigWigOPT                     Options to generate the coverage bigWig file
     """.stripIndent()
 }
 
@@ -99,9 +98,8 @@ MAPQ    = params.MAPQ
 BITFLAG = params.BITFLAG
 chromosomes   = params.chromosomes
 plotCovPerNtOPT  = params.plotCovPerNtOPT
-STEP             = params.STEP
+binSize             = params.binSize
 PLOTcovPerBinOPT = params.PLOTcovPerBinOPT
-PLOTcovPerBinRegressionOPT= params.PLOTcovPerBinRegressionOPT
 covPerBinSigPeaksOPT      = params.covPerBinSigPeaksOPT
 covPerGeRepeatRange       = params.covPerGeRepeatRange
 covPerGeSigPeaksOPT       = params.covPerGeSigPeaksOPT
@@ -110,7 +108,7 @@ filterFreebayesOPT        = params.filterFreebayesOPT
 filterDellyOPT   = params.filterDellyOPT
 minNormCovForDUP = params.minNormCovForDUP
 maxNormCovForDEL = params.maxNormCovForDEL
-bigWigOpt        = params.bigWigOpt
+bigWigOPT        = params.bigWigOPT
 
 
 process processGeneFunction {
@@ -213,7 +211,7 @@ process covPerNt {
   covPerNt $bam $size ${sampleId}.covPerNt MEDIAN 0 $BITFLAG 
   gzip -f ${sampleId}.covPerNt
   pcMapqPerNt $bam $MAPQ ${sampleId}.pcMapqPerNt
-  Rscript /bin/plotGenomeCoverage_V3.R --files ${sampleId}.covPerNt.gz --NAMES ${sampleId} --DIR . --outName ${sampleId}.covPerNt --pcMapqFiles ${sampleId}.pcMapqPerNt.gz --chr $chromosomes $plotCovPerNtOPT
+  Rscript /bin/plotGenomeCoverage_V3.R --files ${sampleId}.covPerNt.gz --NAMES ${sampleId} --DIR . --outName ${sampleId}.covPerNt --pcMapqFiles ${sampleId}.pcMapqPerNt.gz --chr $chromosomes --ylim $chrPlotYlim
   """
 }
 
@@ -232,14 +230,14 @@ process covPerBin {
   //file ("${SAMPLE.ID}.gcLnorm.covPerBin.pdf") 
 
   """ 
-  covPerBin $bam $size /bin/gencov2intervals.pl $STEP 0 $BITFLAG . $covPerChr 
+  covPerBin $bam $size /bin/gencov2intervals.pl $binSize 0 $BITFLAG . $covPerChr 
 
   Rscript /bin/covPerBin2loessGCnormalization_v2.R --ASSEMBLY $fa --DIR . --SAMPLE ${sampleId} --outName ${sampleId} 
   mv ${sampleId}.gcLnorm.covPerBin.gz ${sampleId}.covPerBin.gz
 
-  Rscript /bin/sigPeaks_CLT.R --input ${sampleId}.covPerBin.gz --outName ${sampleId}.covPerBin.significant --minMAPQ $MAPQ $covPerBinSigPeaksOPT
+  Rscript /bin/sigPeaks_CLT.R --input ${sampleId}.covPerBin.gz --outName ${sampleId}.covPerBin.significant --minMAPQ $MAPQ --coverageThresholds $customCoverageLimits  $covPerBinSigPeaksOPT
 
-  Rscript /bin/plotCovPerBin.R --covPerBin ${sampleId}.covPerBin.gz --outName ${sampleId}.covPerBin.plot --chrs $chromosomes --significant ${sampleId}.covPerBin.significant.bins.tsv.gz --chrSizeFile genome.chrSize --minMAPQ $MAPQ
+  Rscript /bin/plotCovPerBin.R --covPerBin ${sampleId}.covPerBin.gz --outName ${sampleId}.covPerBin.plot --chrs $chromosomes --significant ${sampleId}.covPerBin.significant.bins.tsv.gz --chrSizeFile genome.chrSize --minMAPQ $MAPQ --ylim $binPlotYlim --coverageColorLimits $customCoverageLimits
   """
 }
 
@@ -287,7 +285,7 @@ process covPerGe {
   Rscript /bin/covPerGe2loessGCnormalization_v2.R --ASSEMBLY $fa --DIR . --SAMPLE ${sampleId} --outName ${sampleId}
   mv ${sampleId}.gcLnorm.covPerGe.gz ${sampleId}.covPerGe.gz
 
-  Rscript /bin/sigPeaks_mixture.R --input ${sampleId}.covPerGe.gz --outName ${sampleId}.covPerGe.significant --minMAPQ $MAPQ $covPerGeSigPeaksOPT
+  Rscript /bin/sigPeaks_mixture.R --input ${sampleId}.covPerGe.gz --outName ${sampleId}.covPerGe.significant --minMAPQ $MAPQ --coverageThresholds $customCoverageLimits $covPerGeSigPeaksOPT
 
   Rscript /bin/karyoplotCovPerGe.R --covPerGe ${sampleId}.covPerGe.gz --covPerBin $covPerBin --chrSize $size --CHRS $chromosomes --REPS $repeatMasker/genome.out.gff --significant ${sampleId}.covPerGe.significant.tsv --outDir ${sampleId}.covPerGeKaryoplot --repeatRange $covPerGeRepeatRange --minMAPQ $MAPQ --geneFunction $geFun
   """
@@ -476,7 +474,7 @@ process bigWigGenomeCov {
   for CHR in `samtools idxstats $bam | cut -f1 | head -n -2`; do
     samtools view  -b $bam \$CHR > \$TMP/\${CHR}.bam    
     samtools index \$TMP/\${CHR}.bam
-    bamCoverage -b \$TMP/\${CHR}.bam --outFileName \$TMP/\${CHR}.bg --numberOfProcessors $task.cpus --outFileFormat bedgraph --normalizeUsingRPKM --ignoreDuplicates -r \$CHR $bigWigOpt
+    bamCoverage -b \$TMP/\${CHR}.bam --outFileName \$TMP/\${CHR}.bg --numberOfProcessors $task.cpus --outFileFormat bedgraph --normalizeUsingRPKM --ignoreDuplicates -r \$CHR $bigWigOPT
   done
 
   #combine chrs and turn to bigWig
@@ -535,7 +533,7 @@ process covPerClstr {
 }
 
 process report {
-  publishDir "$params.resultDir"
+  publishDir "$params.resultDir/samples/$sampleId"
   
   input:
   file ('*') from covPerChr4.join(covPerNt).join(covPerBin).join(mappingStats).join(covPerGeDump1).join(snpEff).join(delly).join(mapDump1).join(bigWigGenomeCov)
