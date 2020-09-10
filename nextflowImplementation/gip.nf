@@ -535,13 +535,12 @@ process covPerClstr {
 }
 
 process report {
-  publishDir "$params.resultDir/samples/$sampleId"
-  
   input:
   file ('*') from covPerChr4.join(covPerNt).join(covPerBin).join(mappingStats).join(covPerGeDump1).join(snpEff).join(delly).join(mapDump1).join(bigWigGenomeCov)
 
   output:
-  file("report_*.html") into end  
+  set val(sampleId), file("report_${sampleId}.html") into (report)
+
 
   script:
   """
@@ -550,6 +549,16 @@ process report {
   cp /bin/buildReport.Rmd .
   R -e "sample='\$sampleId'; version='$version'; rmarkdown::render('buildReport.Rmd' , output_file = '\$reportFileName')"
   """
+}
+
+process publishReport {
+  publishDir "$params.resultDir/samples/$sampleId"  
+  input:
+  set val(sampleId), file(html) from report
+
+  output:
+  file ('*') into end
+
 }
 
 
