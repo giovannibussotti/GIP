@@ -541,16 +541,17 @@ process report {
   output:
   set val(sampleId), file("report_${sampleId}.html") into (report)
 
-
   script:
   """
   sampleId=`cat input.1`
   reportFileName=report_\${sampleId}.html
   cp /bin/buildReport.Rmd .
   R -e "sample='\$sampleId'; version='$version'; rmarkdown::render('buildReport.Rmd' , output_file = '\$reportFileName')"
+  cp report_${sampleId}.html $params.resultDir/samples/$sampleId/
   """
 }
 
+/*
 process publishReport {
   publishDir "$params.resultDir/samples/$sampleId"  
   input:
@@ -558,7 +559,6 @@ process publishReport {
 
   output:
   file ('*') into end
-
 }
-
+*/
 
