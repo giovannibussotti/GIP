@@ -1,0 +1,1 @@
+2020-09-11 13:05:09	6m 46s	naughty_kirch	OK	57d39831b6efd0faba6f11f06dbd1660	240dd4a4-1520-459d-9947-7e98b7674518	nextflow gip.nf --genome ../inputData/dataset/Linf_test.fa --annotation ../inputData/dataset/Linf_test.ge.gtf --index index.tsv -c gip.config -resume
