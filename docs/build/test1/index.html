@@ -1,0 +1,279 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" >
+<head>
+  <meta charset="utf-8">
+  
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  
+  <title>Genome Instability Pipeline &mdash; GIP 1.0.1 documentation</title>
+  
+
+  
+  <link rel="stylesheet" href="_static/css/theme.css" type="text/css" />
+  <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+
+  
+  
+  
+  
+
+  
+  <!--[if lt IE 9]>
+    <script src="_static/js/html5shiv.min.js"></script>
+  <![endif]-->
+  
+    
+      <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+        <script src="_static/jquery.js"></script>
+        <script src="_static/underscore.js"></script>
+        <script src="_static/doctools.js"></script>
+        <script src="_static/language_data.js"></script>
+    
+    <script type="text/javascript" src="_static/js/theme.js"></script>
+
+    
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="All about me" href="all-about-me.html" /> 
+</head>
+
+<body class="wy-body-for-nav">
+
+   
+  <div class="wy-grid-for-nav">
+    
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+          
+
+          
+            <a href="#" class="icon icon-home" alt="Documentation Home"> GIP
+          
+
+          
+            
+            <img src="_static/logo.jpg" class="logo" alt="Logo"/>
+          
+          </a>
+
+          
+            
+            
+          
+
+          
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+
+          
+        </div>
+
+        
+        <div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="main navigation">
+          
+            
+            
+              
+            
+            
+              <p class="caption"><span class="caption-text">Table of Contents</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="all-about-me.html">All about me</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usage/installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usage/quickstart.html">quick start</a></li>
+</ul>
+
+            
+          
+        </div>
+        
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap">
+
+      
+      <nav class="wy-nav-top" aria-label="top navigation">
+        
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="#">GIP</a>
+        
+      </nav>
+
+
+      <div class="wy-nav-content">
+        
+        <div class="rst-content">
+        
+          
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<div role="navigation" aria-label="breadcrumbs navigation">
+
+  <ul class="wy-breadcrumbs">
+    
+      <li><a href="#" class="icon icon-home"></a> &raquo;</li>
+        
+      <li>Genome Instability Pipeline</li>
+    
+    
+      <li class="wy-breadcrumbs-aside">
+        
+            
+            <a href="_sources/index.rst.txt" rel="nofollow"> View page source</a>
+          
+        
+      </li>
+    
+  </ul>
+
+  
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+            
+  <div class="section" id="genome-instability-pipeline">
+<h1>Genome Instability Pipeline<a class="headerlink" href="#genome-instability-pipeline" title="Permalink to this headline">¶</a></h1>
+<p>The Genome Instability Pipeline (GIP) will solve your problem of analyzing whole genome sequencing (WGS) data
+making bioinformatics screenings faster and easier
+GIP allows the batch processing of multiple WGS experiments, including the mapping of short reads, the quantification of chromosomes, genes and genomic bins.
+The results of GIP are summarized in a <em>report</em> page providing sequencing experiment and mapping statistics, graphical representations of genomic features quantifications, and excel tables.</p>
+<p>GIP also enables <strong>giptools</strong>, a tool-suite allowing to  <strong>detect</strong>, <strong>compare</strong> and <strong>visualize</strong></p>
+<ul class="simple">
+<li><p>aneuploidy changes</p></li>
+<li><p>gene copy number variants (CNVs)</p></li>
+<li><p>single nucleotide variants (SNVs)</p></li>
+<li><p>structural variants (SVs)</p></li>
+</ul>
+<p>Look how easy it is to use.
+Run GIP on a large set of input WGS experiments (e.g. 200 samples)</p>
+<blockquote>
+<div><p><code class="docutils literal notranslate"><span class="pre">nextflow</span> <span class="pre">gip.nf</span> <span class="pre">--genome</span> <span class="pre">sequenceFile</span> <span class="pre">--annotation</span> <span class="pre">annotationFile</span> <span class="pre">--index</span> <span class="pre">input.tsv</span> <span class="pre">-c</span> <span class="pre">config</span></code></p>
+</div></blockquote>
+<p>Compare gene CNVs in 3 specific isolates</p>
+<blockquote>
+<div><p><code class="docutils literal notranslate"><span class="pre">./giptools</span> <span class="pre">ternary</span> <span class="pre">--gipOut</span> <span class="pre">gipOutDir</span> <span class="pre">--samples</span> <span class="pre">Lmj_A445</span> <span class="pre">Lmj_1948</span> <span class="pre">Ltr_16</span></code></p>
+</div></blockquote>
+<div class="figure align-center">
+<a class="reference internal image-reference" href="_images/triangle1.png"><img alt="_images/triangle1.png" src="_images/triangle1.png" style="width: 500px;" /></a>
+</div>
+<div class="section" id="features">
+<h2>Features<a class="headerlink" href="#features" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><p>Scalable workflow implemented in Nextflow</p></li>
+<li><p>Reproducible thanks to the Singularity support</p></li>
+<li><p>Easy-to-use and easy-to-install</p></li>
+<li><p>Support for multi-copy gene clusters</p></li>
+<li><p>Custom comparison of samples sub-sets</p></li>
+<li><p>Publication quality figures and excel tables</p></li>
+</ul>
+<p>Versions are incremented according to <a class="reference external" href="https://semver.org/">semver</a>.</p>
+<p><a class="reference external" href="https://uxsolutions.github.io/bootstrap-datepicker">Online Demo</a></p>
+<p><a class="reference external" href="https://www.ncbi.nlm.nih.gov/core/lw/2.0/html/tileshop_pmc/tileshop_pmc_inline.html?title=Clickonimagetozoom&amp;p=PMC3&amp;id=6222132_mbo0051841230003.jpg">Gallery</a></p>
+</div>
+<div class="section" id="requirements">
+<h2>Requirements<a class="headerlink" href="#requirements" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><p><a class="reference external" href="https://getbootstrap.com/">Bootstrap</a> 2.0.4+</p></li>
+<li><p><a class="reference external" href="https://jquery.com/">jQuery</a> 1.7.1+</p></li>
+</ul>
+<p>These are the specific versions bootstrap-datepicker is tested against (<code class="docutils literal notranslate"><span class="pre">js</span></code> files) and built against (<code class="docutils literal notranslate"><span class="pre">css</span></code> files).  Use other versions at your own risk.</p>
+</div>
+</div>
+<div class="section" id="welcome-to-gip-s-documentation">
+<h1>Welcome to GIP’s documentation!<a class="headerlink" href="#welcome-to-gip-s-documentation" title="Permalink to this headline">¶</a></h1>
+<div class="toctree-wrapper compound">
+<p class="caption"><span class="caption-text">Table of Contents</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="all-about-me.html">All about me</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usage/installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="usage/quickstart.html">quick start</a></li>
+</ul>
+</div>
+</div>
+<div class="section" id="indices-and-tables">
+<h1>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h1>
+<ul class="simple">
+<li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
+<li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p></li>
+<li><p><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></p></li>
+</ul>
+</div>
+
+
+           </div>
+           
+          </div>
+          <footer>
+  
+    <div class="rst-footer-buttons" role="navigation" aria-label="footer navigation">
+      
+        <a href="all-about-me.html" class="btn btn-neutral float-right" title="All about me" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right"></span></a>
+      
+      
+    </div>
+  
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>
+        
+        &copy; Copyright 2020, Giovanni Bussotti
+
+    </p>
+  </div>
+    
+    
+    
+    Built with <a href="http://sphinx-doc.org/">Sphinx</a> using a
+    
+    <a href="https://github.com/rtfd/sphinx_rtd_theme">theme</a>
+    
+    provided by <a href="https://readthedocs.org">Read the Docs</a>. 
+
+</footer>
+
+        </div>
+      </div>
+
+    </section>
+
+  </div>
+  
+
+  <script type="text/javascript">
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script>
+
+  
+  
+    
+   
+
+</body>
+</html>
