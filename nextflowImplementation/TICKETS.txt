@@ -1,6 +1,20 @@
+8) The user must specify the chromosomes (especially to get rid of all the short contigs that may be in unfished assemblies). e.g. chromosomes="1 2 3 4 5 6 7 8 9 ..." However I would like to set a default of chromosomes="all". In this case, all the chromosomes vailable in the input genome should be used. How to do that?
+
+-Solution1: nextflow scripting, reading the genome FASTA file with the ".withReader" method, parse the chromosome/contig names, and generate the string chromosome="1 2 3 4 5 6 7 8 9 ...."
+The difficulty here is how to master nextflow scripting, and how to return a space separate test string
+
+-Solution2 (easiest): The process prepareGenome is executed first and generates a list of chromosome identifiers with their length. I can parse the chromosome IDs from there and put the results to a "chromosome" variable that I can channel in the output. My problem here is that I want chromosomes to be always accesssible from everywhere in the pipeline, like a "value channel", not a "queue channel"
+
+7) consider reducing the size of singularity image removing the source code pacage and libraries that are unneded after you built everything you need. See apt-get autoremove, clean and autoclean
+
+6) if you use .join then the sampleId (used as index to join together the right channel) is not accessible from the process. The only way to get the sample id is though the file input.1. However, if you do that you will have anyway problems using publishDir params.resultDir/samples/$sampleId 
+copying manually the result .html file to the params.resultDir/$sampleId is not good either becuase the params.resultDir is relative to the execution dir, and not easy to guess from inside the work/ dir.
+
+- Workaround (Current): just copy the .html file in params.resultDir/reports/ instead that in params.resultDir/samples/$sampleId
+- Workaround2 (not tested): use the implicitly defined variable "launchDir" together with params.resultDir
  
 5) develop the sampleComparison master script in bash or R, processing the user input in singularity run or exec. Comparison modes:
--raxML SNV tree (consider to implement this as a nexflow pipeline to run the bootsraps and the starting trees in parallel on the cluster)  and 
+-SNV tree (consider to implement this as a nexflow pipeline to run the bootsraps and the starting trees in parallel on the cluster, ask fred for that, but he recommends to do it just on one computer and run it maybe multicore). Use IQ-Tree, it is maximum-likelihood, and faster (<3000 samples is fine) and more user friendly than RAxML. Do not use Fastree2, the accuracy is not good enough. Using just variant positions is good enough to build correct tree topologies. The only thing is that the branch length is not informative (this numally reflects the number of variants per base). Otherwise you need to run multiple genome alignments with mafft (can be CPU challenging, then also computing the tree)
 -bin/gene to CNVs (including CNV correlation map and network analysis)
 -mash k-mer PCA distance (possibly add a gip process to generate the sketch files)
 -mash k-mer screen to look for contaminants starting from short reads and the mash refsseq database

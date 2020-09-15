@@ -535,7 +535,7 @@ process covPerClstr {
 }
 
 process report {
-  publishDir "$params.resultDir/reports/"
+  publishDir "$params.resultDir/reports"
 
   input:
   file ('*') from covPerChr4.join(covPerNt).join(covPerBin).join(mappingStats).join(covPerGeDump1).join(snpEff).join(delly).join(mapDump1).join(bigWigGenomeCov)
@@ -550,22 +550,25 @@ process report {
   reportFileName=\${sampleId}.html
   cp /bin/buildReport.Rmd .
   R -e "sample='\$sampleId'; version='$version'; rmarkdown::render('buildReport.Rmd' , output_file = '\$reportFileName')"
-  #cp report_\${sampleId}.html $params.resultDir/samples/\$sampleId/ #params.resultDir is not an absolute path
   """
 }
 
+
 /*
-process publishReport {
-  publishDir "$params.resultDir/samples/$sampleId"  
-  
+process report {
+  publishDir "$params.resultDir/samples/$sampleId"
+
   input:
-  set val(sampleId), file(html) from report
+  tuple val(sampleId), file ('*') from covPerChr4.join(covPerNt).join(covPerBin).join(mappingStats).join(covPerGeDump1).join(snpEff).join(delly).join(mapDump1).join(bigWigGenomeCov).toList()
 
   output:
-  file ('*') into end
+  set val(sampleId), file("report_${sampleId}.html") into (report)
 
+  script:
   """
-
+  reportFileName=${sampleId}.html
+  cp /bin/buildReport.Rmd .
+  R -e "sample='$sampleId'; version='$version'; rmarkdown::render('buildReport.Rmd' , output_file = '\$reportFileName')"
   """
 }
 */
