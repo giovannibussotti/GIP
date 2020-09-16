@@ -2,6 +2,8 @@
 Introduction to GIP
 ###################
 
+GIP is compatible with Linux and OS X systems 
+
 Provide an overview of GIP steps, 
 why using GIP?
 

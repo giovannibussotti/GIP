@@ -1,3 +1,5 @@
+9) Test it on mac!
+
 8) The user must specify the chromosomes (especially to get rid of all the short contigs that may be in unfished assemblies). e.g. chromosomes="1 2 3 4 5 6 7 8 9 ..." However I would like to set a default of chromosomes="all". In this case, all the chromosomes vailable in the input genome should be used. How to do that?
 
 -Solution1: nextflow scripting, reading the genome FASTA file with the ".withReader" method, parse the chromosome/contig names, and generate the string chromosome="1 2 3 4 5 6 7 8 9 ...."
