@@ -50,6 +50,22 @@ Features
 * Custom comparison of samples sub-sets
 * Publication quality figures and excel tables
 
+GIP
+===
+
+.. toctree::
+   :maxdepth: 2
+
+   GIP/index
+
+giptools
+========
+
+.. toctree::
+   :maxdepth: 2
+
+   giptools/index
+
 
 Versions are incremented according to `semver <https://semver.org/>`_.
 
@@ -69,17 +85,6 @@ Requirements
 These are the specific versions bootstrap-datepicker is tested against (``js`` files) and built against (``css`` files).  Use other versions at your own risk.
 
 
-
-Welcome to GIP's documentation!
-===============================
-
-.. toctree::
-   :maxdepth: 2
-   :caption: Table of Contents
-
-   all-about-me
-   usage/installation
-   usage/quickstart
 
 Indices and tables
 ==================
