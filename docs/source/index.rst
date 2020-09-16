@@ -65,9 +65,9 @@ These are the specific versions that were tested. Use other versions at your own
 Installation
 ------------
 
-Install GIP by running:
+Download a copy of GIP
 
-    install project
+    ``git ``
 
 
 

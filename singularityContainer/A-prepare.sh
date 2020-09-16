@@ -33,7 +33,9 @@ cp -r ../Rpkgs/miniCRAN/ .
 cp ../Rpkgs/Rpkgs.tsv ../Rpkgs/installRpkgs.R .
 
 #L-GERT_jobArrays: download and convert 
-wget https://github.com/giovannibussotti/L-GERT_jobArrays/archive/v${LGERTv}.tar.gz
+#wget https://github.com/giovannibussotti/L-GERT_jobArrays/archive/v${LGERTv}.tar.gz
+#L-GERT_jobArrays: download and convert (private repo, using access token)
+wget --header="Authorization: token 19121fd18db29e4a1fca4f0182ce035c8e2f01ad"  https://github.com/giovannibussotti/L-GERT_jobArrays/archive/v${LGERTv}.tar.gz
 tar -xzf v${LGERTv}.tar.gz
 mv L-GERT_jobArrays-${LGERTv} L-GERT
 #strip off unwanted file header
