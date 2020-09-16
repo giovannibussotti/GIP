@@ -50,19 +50,37 @@ Features
 * Custom comparison of samples sub-sets
 * Publication quality figures and excel tables
 
-GIP
-===
+Requirements
+------------
+
+* `Singularity`_ 3.5.2+
+* `Nextflow`_ 20.04.1.5335+
+
+.. _Singularity: https://sylabs.io/guides/3.5/user-guide/quick_start.html#quick-installation-steps
+.. _Nextflow: https://www.nextflow.io
+
+These are the specific versions that were tested. Use other versions at your own risk.
+
+
+Installation
+------------
+
+Install GIP by running:
+
+    install project
+
+
 
 .. toctree::
    :maxdepth: 2
+   :hidden:
 
    GIP/index
 
-giptools
-========
 
 .. toctree::
    :maxdepth: 2
+   :hidden:
 
    giptools/index
 
@@ -72,17 +90,6 @@ Versions are incremented according to `semver <https://semver.org/>`_.
 `Online Demo <https://uxsolutions.github.io/bootstrap-datepicker>`_
 
 `Gallery <https://www.ncbi.nlm.nih.gov/core/lw/2.0/html/tileshop_pmc/tileshop_pmc_inline.html?title=Click on image to zoom&p=PMC3&id=6222132_mbo0051841230003.jpg>`_
-
-Requirements
-------------
-
-* `Bootstrap`_ 2.0.4+
-* `jQuery`_ 1.7.1+
-
-.. _Bootstrap: https://getbootstrap.com/
-.. _jQuery: https://jquery.com/
-
-These are the specific versions bootstrap-datepicker is tested against (``js`` files) and built against (``css`` files).  Use other versions at your own risk.
 
 
 
