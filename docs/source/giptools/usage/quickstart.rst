@@ -1,6 +1,0 @@
-###########
-quick start
-###########
-
-mannaggia
-

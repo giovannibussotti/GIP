@@ -40,6 +40,9 @@ Compare gene CNVs in 3 specific isolates
     :width: 500px
 
 
+`Gallery karyotype figure <https://www.ncbi.nlm.nih.gov/core/lw/2.0/html/tileshop_pmc/tileshop_pmc_inline.html?title=Click on image to zoom&p=PMC3&id=6222132_mbo0051841230003.jpg>`_
+
+
 Features
 --------
 
@@ -65,10 +68,35 @@ These are the specific versions that were tested. Use other versions at your own
 Installation
 ------------
 
-Download a copy of GIP
+1) Download GIP
 
-    ``git ``
+    ``github download command...``
 
+2) Pull the container
+
+    ``singularity pull command...``
+
+3) Edit the "container" parameter in the gip.config: ``container='/Absolute/Path/To/giptools'``
+
+Done!
+    
+    
+Contribute
+----------
+
+- Issue Tracker: github.com/GIP/issues
+- Source Code: github.com/GIP
+
+Support
+-------
+
+If you are having issues, please let us know.
+We have a mailing list located at: GIP@google-groups.com
+
+License
+-------
+
+The project is licensed under the XXX license.
 
 
 .. toctree::
@@ -83,13 +111,6 @@ Download a copy of GIP
    :hidden:
 
    giptools/index
-
-
-Versions are incremented according to `semver <https://semver.org/>`_.
-
-`Online Demo <https://uxsolutions.github.io/bootstrap-datepicker>`_
-
-`Gallery <https://www.ncbi.nlm.nih.gov/core/lw/2.0/html/tileshop_pmc/tileshop_pmc_inline.html?title=Click on image to zoom&p=PMC3&id=6222132_mbo0051841230003.jpg>`_
 
 
 

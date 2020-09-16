@@ -5,5 +5,9 @@
 .. toctree::
    :maxdepth: 2
 
-   all-about-me
+   Introduction-to-GIP
+   Quick-start
+   Configuration
+   Executor
+   Output
 

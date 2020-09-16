@@ -5,6 +5,6 @@
 .. toctree::
    :maxdepth: 2
 
-   usage/installation
-   usage/quickstart
+   Introduction-to-giptools
+   binCNV
 
