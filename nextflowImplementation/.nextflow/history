@@ -1,1 +1,0 @@
-2020-09-22 10:08:49	4m 9s	elegant_baekeland	OK	f8b381f07828c13a43dadcbc04855f17	3307eb34-5bdd-4907-8389-1f60ef0da0d4	nextflow gip.nf --genome ../inputData/dataset/Linf_test.fa --annotation ../inputData/dataset/Linf_test.ge.gtf --index index.tsv -c gip.config -resume
