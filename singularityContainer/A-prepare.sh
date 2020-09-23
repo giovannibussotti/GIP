@@ -152,9 +152,7 @@ chmod a+x delly
 
 #UCSC
 wget http://hgdownload.cse.ucsc.edu/admin/exe/linux.x86_64/bedGraphToBigWig
-wget http://hgdownload.cse.ucsc.edu/admin/exe/linux.x86_64/gtfToGenePred
-wget http://hgdownload.cse.ucsc.edu/admin/exe/linux.x86_64/genePredToBed
-chmod a+x bedGraphToBigWig genePredToBed gtfToGenePred
+chmod a+x bedGraphToBigWig
 
 #repeatmasker
 wget http://www.repeatmasker.org/RepeatMasker-${RepeatMaskerv}.tar.gz
@@ -175,8 +173,6 @@ mv rmblast-${RMBlastv} rmblast
 #cmake ..
 #make
 
-#Red  ###NOT USED ANYMORE
-
 #MUMmer (version MUMmer3.23.tar.gz, manual download from https://sourceforge.net/projects/mummer/files/latest/download)
 
 #leishmaniaAndAncestralSharedRepeats.fa is manually copied from repBase
@@ -191,8 +187,13 @@ wget http://circos.ca/distribution/circos-${circosv}.tgz
 tar xvfz circos-${circosv}.tgz
 mv circos-$circosv circos
 
+#Red
+wget http://toolsmith.ens.utulsa.edu/red/data/DataSet2Unix64.tar.gz
+tar -xzf DataSet2Unix64.tar.gz 
+mv redUnix64/Red .
+
 #CLEAN
-rm -rf Python-${python3v}.tgz _tmp htslib-${htslibv}.tar.bz2 samtools-${SAMTOOLSv}.tar.bz2 bwa-${BWAv}.tar.bz2 L-GERT/LSD/test v${LGERTver}.tar.gz bedtools-${bedtoolsv}.tar.gz R-${Rv}.tar.gz RepeatMasker-${RepeatMaskerv}.tar.gz v${LGERTv}.tar.gz rmblast-${RMBlastv}+-x64-linux.tar.gz clinEff V${cdhitv}.tar.gz circos-${circosv}.tgz
+rm -rf Python-${python3v}.tgz _tmp htslib-${htslibv}.tar.bz2 samtools-${SAMTOOLSv}.tar.bz2 bwa-${BWAv}.tar.bz2 L-GERT/LSD/test v${LGERTver}.tar.gz bedtools-${bedtoolsv}.tar.gz R-${Rv}.tar.gz RepeatMasker-${RepeatMaskerv}.tar.gz v${LGERTv}.tar.gz rmblast-${RMBlastv}+-x64-linux.tar.gz clinEff V${cdhitv}.tar.gz circos-${circosv}.tgz redUnix64/ DataSet2Unix64.tar.gz
 
 #compress
 mkdir -p packages

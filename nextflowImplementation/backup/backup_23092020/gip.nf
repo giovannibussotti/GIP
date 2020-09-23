@@ -33,8 +33,7 @@ def helpMessage() {
       -BITFLAG                       SAM bitflag filter
       -chromosomes                   List of chromosome identifiers to consider (included in quotes)
       -customCoverageLimits          Two numbers: N1, N2. Significant CNV genes or bins must also have a coverage > N1 or < N2   
-      -repeatLibrary                 RepeatMasker library (FASTA file)
-    Karyotype Options:
+   Karyotype Options:
       -chrPlotYlim                   karyptype boxplot y-axis limits
     Bin Coverage Options:  
       -binSize                       bin size
@@ -143,21 +142,19 @@ process prepareGenome {
   file("genome.chrSize") into chrSize_ch1
   set file("genome.fa") , file("genome.fa.fai") , file("genome.dict") , file("genome.chrSize") into (genome_ch1 , genome_ch2 , genome_ch3 , genome_ch4 , genome_ch5 , genome_ch6 , genome_ch7 , genome_ch8, genome_ch9)
   file("genome.gaps.gz") into (gaps_ch1 , gaps_ch2)
-  file("repeats") into (repeats_ch1 , repeats_ch2 , repeats_ch3)
+  file("repeatMasker") into (repeatMasker_ch1 , repeatMasker_ch2 , repeatMasker_ch3)
   file("snpEff")  into snpEffDb_ch1
   
   script:
   if( params.repeatLibrary == 'default' )
   """
-  A-prepareGenome.sh -f $genome -x $annotation -c $task.cpus -l default
+  A-prepareGenome.sh -f $genome -x $annotation -c $task.cpus
   """
 
   else
   """
   A-prepareGenome.sh -f $genome -x $annotation -c $task.cpus -l $repeatLibrary
   """
-
-
 }
 
 
@@ -275,7 +272,7 @@ process covPerGe {
   input:
   set val(sampleId), file(bam) , file(bai) , file(covPerChr) , file(covPerBin) from covPerBin4covPerGe
   set file(fa) , file(fai) , file(dict) , file(size) from genome_ch6
-  file repeats from repeats_ch1
+  file repeatMasker from repeatMasker_ch1
   file (annotation)
   file geFun from geFun_ch1
 
@@ -292,7 +289,7 @@ process covPerGe {
 
   Rscript /bin/sigPeaks_mixture.R --input ${sampleId}.covPerGe.gz --outName ${sampleId}.covPerGe.significant --minMAPQ $MAPQ --coverageThresholds $customCoverageLimits $covPerGeSigPeaksOPT
 
-  Rscript /bin/karyoplotCovPerGe.R --covPerGe ${sampleId}.covPerGe.gz --covPerBin $covPerBin --chrSize $size --CHRS $chromosomes --REPS $repeats/genome.out.gff --significant ${sampleId}.covPerGe.significant.tsv --outDir ${sampleId}.covPerGeKaryoplot --repeatRange $covPerGeRepeatRange --minMAPQ $MAPQ --geneFunction $geFun
+  Rscript /bin/karyoplotCovPerGe.R --covPerGe ${sampleId}.covPerGe.gz --covPerBin $covPerBin --chrSize $size --CHRS $chromosomes --REPS $repeatMasker/genome.out.gff --significant ${sampleId}.covPerGe.significant.tsv --outDir ${sampleId}.covPerGeKaryoplot --repeatRange $covPerGeRepeatRange --minMAPQ $MAPQ --geneFunction $geFun
   """
 }
 
@@ -303,7 +300,7 @@ process freebayes {
   input:
   set val(sampleId), file(bam) , file(bai) , file(covPerChr) from covPerChr3
   set file(fa) , file(fai) , file(dict) , file(size) from genome_ch7
-  file repeats from repeats_ch2
+  file repeatMasker from repeatMasker_ch2
 
   output:
   set val(sampleId) , file("${sampleId}.vcf.gz") , file("${sampleId}.vcf.gz.tbi") , file("${sampleId}_freebayesFiltered") into (freebayes1)
@@ -312,7 +309,7 @@ process freebayes {
   freebayes -f $fa --min-mapping-quality $MAPQ $freebayesOPT --vcf ${sampleId}.vcf $bam 
   bgzip ${sampleId}.vcf
   tabix -p vcf -f ${sampleId}.vcf.gz
-  Rscript /bin/vcf2variantsFrequency_V4.R --selectedChrs $chromosomes --vcfFile ${sampleId}.vcf.gz --chrCoverageMediansFile $covPerChr --chrSizeFile $size --outdir ./${sampleId}_freebayesFiltered --reference $fa --discardGtfRegions $repeats/genome.out.gff $filterFreebayesOPT
+  Rscript /bin/vcf2variantsFrequency_V4.R --selectedChrs $chromosomes --vcfFile ${sampleId}.vcf.gz --chrCoverageMediansFile $covPerChr --chrSizeFile $size --outdir ./${sampleId}_freebayesFiltered --reference $fa --discardGtfRegions $repeatMasker/genome.out.gff $filterFreebayesOPT
   """
 }
 
@@ -378,7 +375,7 @@ process dellySVref {
   input:
   set val(sampleId), file(bam) , file(bai) , file(covPerChr) , file (covPerNt) from covPerNt4delly
   set file(fa) , file(fai) , file(dict) , file(size) from genome_ch8
-  file repeats from repeats_ch3
+  file repeatMasker from repeatMasker_ch3
   file gaps from gaps_ch2
   file (annotation)
 
@@ -426,7 +423,7 @@ process dellySVref {
   #run filterDelly
   DF=${sampleId}.delly.filter
   mkdir -p \$DF
-  grep -v "^#" $repeats/genome.out.gff | cut -f 1,4,5 > ${sampleId}.tabu.bed
+  grep -v "^#" $repeatMasker/genome.out.gff | cut -f 1,4,5 > ${sampleId}.tabu.bed
   zcat $gaps >> ${sampleId}.tabu.bed
   SVTYPES=(DEL DUP INV)
   for SV in "\${SVTYPES[@]}"; do

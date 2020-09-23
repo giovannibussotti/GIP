@@ -1,3 +1,21 @@
+15) check 
+bedGraphToBigWig --> license
+
+14) email GATK to make sure you have the right to distribute the file GenomeAnalysisTK.jar (version version 3.6-0-g89b7209) using the tools RealignerTargetCreator and IndelRealigner. see https://gatk.broadinstitute.org/hc/en-us/articles/360045763652-Where-can-I-get-the-GATK-source-code-Is-it-open-source-
+
+13) produce consensus sequences for the new repetitive elements identified in your paper, add the SIDER element or whatever element publicly available from NCBI Nuleotides (probably they all are available from there,, i.e. the TATE elements..) and generate a file that can be used as a library for repeatmasker and distributed with the pipeline
+
+12) add to the report some info about the repeat masking process (i.e. how many bases and locations were masked)
+
+11) replace the covPerBin function with something faster and suitable for larger genomes. You can 
+  - convert the bam file into a bed4 file including MAPQ info (i.e. chr start end MAPQ) for each read
+  - bedtools makewindows to create the genome bins
+  - bedtools intersect between the bed4 and the windows
+  - summarize the data for each window (i.e. counting the number of overlapping reads, and the average MAPQ)
+  NOTE: you cannot just use bedtools coverage because this would just count the reads in the intervals, but not give the MAPQ info  
+
+10) upgrade mummer3 to mummer4
+
 9) Test it on mac!
 
 8) The user must specify the chromosomes (especially to get rid of all the short contigs that may be in unfished assemblies). e.g. chromosomes="1 2 3 4 5 6 7 8 9 ..." However I would like to set a default of chromosomes="all". In this case, all the chromosomes vailable in the input genome should be used. How to do that?

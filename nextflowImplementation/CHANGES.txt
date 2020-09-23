@@ -1,4 +1,17 @@
 ###################
+#v1.0.2- 23092020#
+###################
+-introduced Red as a default tool to mask repeat
+-removed unused:
+genePredToBed 
+gtfToGenePred 
+exonGTF_2_fasta.sh 
+prepareAssembly.sh 
+gtf2bed12.sh 
+
+
+
+###################
 #v1.0.1 - 05092020#
 ###################
 -Adopted miniCRAN local R packages repository 

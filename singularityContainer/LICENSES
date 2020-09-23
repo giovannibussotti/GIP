@@ -17,7 +17,7 @@ cdhit	GPLv2.0	https://github.com/weizhongli/cdhit/blob/master/license.txt
 R	GPL https://www.r-project.org/Licenses/
 circos	GPL	http://circos.ca/
 picard.jar	MIT	https://github.com/broadinstitute/picard/blob/master/LICENSE.txt 
-GATK(GenomeAnalysisTK.jar)	BSD 3-Clause "New" or "Revised" License	https://github.com/broadinstitute/gatk/blob/master/LICENSE.TXT you cannot use the name broadinstitute to promote the tool
+GATK(GenomeAnalysisTK.jar)	MIT	SEE https://gatk.broadinstitute.org/hc/en-us/articles/360045763652-Where-can-I-get-the-GATK-source-code-Is-it-open-source-
 delly	BSD 3-Clause "New" or "Revised" License	https://github.com/dellytools/delly/blob/master/LICENSE
 bedGraphToBigWig
 genePredToBed

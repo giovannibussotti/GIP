@@ -23,9 +23,9 @@ From: ubuntu:xenial
   cd /opt
   tar -xzf packages.tar.gz
   cd packages
-  mv bedtools2/ bwa/ htslib/ L-GERT/ samtools/ freebayes/ Python3/ R vcftools/ rmblast/ RepeatMasker snpEff circos/ MUMmer/ leishmaniaAndAncestralSharedRepeats.fa cdhit/ miniCRAN/ installRpkgs.R Rpkgs.tsv  /opt/
+  mv bedtools2/ bwa/ htslib/ L-GERT/ samtools/ freebayes/ Python3/ R vcftools/ rmblast/ RepeatMasker snpEff circos/ MUMmer/ cdhit/ miniCRAN/ installRpkgs.R Rpkgs.tsv  /opt/
   mv /opt/L-GERT/snpEff.configTemplate /opt/L-GERT/rpkginstall /opt/
-  mv picard.jar GenomeAnalysisTK.jar delly bedGraphToBigWig genePredToBed gtfToGenePred trf409.linux64 /bin/
+  mv picard.jar GenomeAnalysisTK.jar delly bedGraphToBigWig trf409.linux64 Red /bin/
   cd ..
   rm -rf packages
 
