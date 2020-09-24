@@ -37,21 +37,61 @@ prepare genome and annotation
 GIP prepares the genome assembly and annotation files in the first two processes: *processGeneFunction* and *prepareGenome*
 The output is stored in the **gipOut/genome** directory and includes:
 
-* db/
-  BWA database 
-* geneFunction.tsv
-  File provided with the `geneFunction` parameter . The default is a list of gene 
-* genome.chrSize
++-----------------+----------------------------+
+| db/             | BWA database               |
++-----------------+----------------------------+
+| geneFunction.tsv| gene functions list        |
++-----------------+----------------------------+
+| genome.chrSize  | chromosome size (bp)       |
++-----------------+----------------------------+
+| genome.dict     | genome sequence dictionary |
++-----------------+----------------------------+
+| genome.fa       | genome sequence            |
++-----------------+----------------------------+
+| genome.fa.fai   | genome sequence index      |
++-----------------+----------------------------+
+| genome.gaps.gz  | genome gaps                |
++-----------------+----------------------------+
+| repeats/        | repeats coordinates        |
++-----------------+----------------------------+
+| snpEff/         | snpEff database            |
++-----------------+----------------------------+
 
-* genome.dict
+| In many non-model organisms the gene function may be not know. If gene function information is available (or at least available for some genes) this should be provided to GIP with the ``--geneFunction`` parameter. This file must:
 
-* genome.fa
-* genome.fa.fai
-* genome.gaps.gz
-* repeatMasker
-* repeats
-* snpEff
+* include all the genes listed in the ``--annotation`` file
+* be a <Tab> separated list with the gene identifier in the first column, and the function in the second:   
 
-`geneFunction`
+| e.g.
+| LinJ.01.0010	Protein of unknown function (DUF2946)
+| LinJ.01.0020	Endonuclease/Exonuclease/phosphatase family
+| LinJ.01.0030	Kinesin-13
+| LinJ.01.0040	hypothetical protein - conserved
 
+| If ``--geneFunction`` is not specified by default the **geneFunction.tsv** file reports the gene list with not available (NA) functions.
+| The **genome.dict** and the **genome.fa.fai** are generated respectivelly with *picard CreateSequenceDictionary* and *samtools faidx* and are required by downstream analysis tools (e.g. GATK or IGV). 
+| The **genome.fa** file is a copy of the input ``--genome`` file where repetitive positions have been lowercased.
+| The **repeats/** directory stores the coordinates of the repetitive elements in a .gff formatted file.
+| By default repetitive elements are detected with Red.
+| Red features include:
+
+* the ability to detect both transposable elements and simple repeats
+* fast execution
+* the accuracy when dealing with genomes with unusual nucleotide composition (e.g. Leishmania)
+
+| If the repetitive elements in the species of interest are known the user detect the repeats using RepeatMasker instead.
+| To enble RepeatMasker search the user must provide the repeat sequences as multi-FASTA file using the parameter ``--repeatLibrary``
+
+
+
+Read mapping
+------------
+
+Genomic reads are mapped using BWA-mem
+say here about:
+The process name
+GATK steps
+markdups
+possible BITFLAG or MAPQ options
+the output files and their position in gipOut/samples/
 

@@ -35,7 +35,8 @@ def helpMessage() {
       --geneFunction                  gene function annotation file
       --MAPQ                          read MAPQ cut-off  
       --BITFLAG                       SAM bitflag filter
-      --customCoverageLimits          Two numbers: N1, N2. Significant CNV genes or bins must also have a coverage > N1 or < N2        --repeatLibrary                 RepeatMasker library (FASTA file)
+      --customCoverageLimits          Two numbers: N1, N2. Significant CNV genes or bins must also have a coverage > N1 or < N2
+      --repeatLibrary                 RepeatMasker library (FASTA file)
     Karyotype Options:
       --chrPlotYlim                   karyptype boxplot y-axis limits
     Bin Coverage Options:  
