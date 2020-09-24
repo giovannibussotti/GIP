@@ -47,7 +47,7 @@ GIP analyses overview
 
 * Identify and measure gene clusters
 
-* Identify SNVs and structural variants (gallery of MBIO circos)
+* Identify SNVs and structural variants
 
 * Generate report file providing summary statistics, tables in exel, figures
 

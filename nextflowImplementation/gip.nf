@@ -25,31 +25,33 @@ def helpMessage() {
     nextflow gip.nf --genome ../inputData/dataset/Linf_test.fa --annotation ../inputData/dataset/Linf_test.ge.gtf --index index.tsv -c gip.config -resume
     
     Mandatory arguments:
-      -params-file                   sample metadata yaml file 
-      -c                             nextflow configuration file
+      --genome                        multi-FASTA genome reference file
+      --annotation                    gene coordinates file (GTF format) 
+      --index                         list of sequencing data files
+      -c                              nextflow configuration file
     General Options:
-      -resultDir                     result directory 
-      -MAPQ                          read MAPQ cut-off  
-      -BITFLAG                       SAM bitflag filter
-      -chromosomes                   List of chromosome identifiers to consider (included in quotes)
-      -customCoverageLimits          Two numbers: N1, N2. Significant CNV genes or bins must also have a coverage > N1 or < N2   
-      -repeatLibrary                 RepeatMasker library (FASTA file)
+      --resultDir                     result directory 
+      --chromosomes                   List of chromosome identifiers to consider (included in quotes)
+      --geneFunction                  gene function annotation file
+      --MAPQ                          read MAPQ cut-off  
+      --BITFLAG                       SAM bitflag filter
+      --customCoverageLimits          Two numbers: N1, N2. Significant CNV genes or bins must also have a coverage > N1 or < N2        --repeatLibrary                 RepeatMasker library (FASTA file)
     Karyotype Options:
-      -chrPlotYlim                   karyptype boxplot y-axis limits
+      --chrPlotYlim                   karyptype boxplot y-axis limits
     Bin Coverage Options:  
-      -binSize                       bin size
-      -binPlotYlim                   bin coverage y-axis limits 
-      -covPerBinSigPeaksOPT          identify statistically significant CNV wrt the reference  
+      --binSize                       bin size
+      --binPlotYlim                   bin coverage y-axis limits 
+      --covPerBinSigPeaksOPT          identify statistically significant CNV wrt the reference  
     Gene Coverage Options:      
-      -covPerGeRepeatRange           Visualize repeats within this distance from significant genes
-      -covPerGeSigPeaksOPT           identify statistically significant gene CNV wrt the reference
+      --covPerGeRepeatRange           Visualize repeats within this distance from significant genes
+      --covPerGeSigPeaksOPT           identify statistically significant gene CNV wrt the reference
     SNV Options:  
-      -freebayesOPT                  Freebayes options
-      -filterFreebayesOPT            Downstream SNV quality filters
+      --freebayesOPT                  Freebayes options
+      --filterFreebayesOPT            Downstream SNV quality filters
     SV Options: 
-      -filterDellyOPT                Downastream, Delly filtering options
-      -minNormCovForDUP              min normalized sequencing coverage for Delly duplications
-      -maxNormCovForDEL              max normalized sequencing coverage for Delly deletions
+      --filterDellyOPT                Downastream, Delly filtering options
+      --minNormCovForDUP              min normalized sequencing coverage for Delly duplications
+      --maxNormCovForDEL              max normalized sequencing coverage for Delly deletions
     BigWig Options:  
       -bigWigOPT                     Options to generate the coverage bigWig file
     """.stripIndent()
