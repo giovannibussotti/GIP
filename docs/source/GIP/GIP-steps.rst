@@ -139,7 +139,27 @@ Measure nucleotide coverage
 
 | Mapped reads are used to measure the sequencing coverage of each nucleotide in the *covPerNt* process.
 | Tools used at this step include Samtools view and Bedtools genomecov (options "-d -split").
-| The user can exclude the reads mapping with a low map quality score (MAPQ) or presenting a specific alignment bitflag.
-| The parameters ``--MAPQ`` (default 0) and ``--BITFLAG`` (default 1028) to control this filtering.
-| The choice of ``--MAPQ`` influence not just outcome
+| The reads mapping with the bitflag (see SAM format specifications) value given by the ``--BITFLAG`` parameter (default 1028) are excluded.
+| To account for differences in sequencing library size and enable comparisons between samples, the nucleotide sequencing coverage is normalized by the median genomic coverage.
+| | The files generated at this step are placed in the **gipOut/samples/sampleId** folder, and include:
+
++-----------------------------------------+-----------------------------------------------+
+| sampleId.covPerNt.gz                      nucelotide coverage (syntax: chromosome<Tab>position)
+
+| sampleId.covPerNt.medianGenomeCoverage    median genome coverage
+
+| sampleId.covPerNt.boxplot.png             
+
+| sampleId.covPerNt.ridges.png  
+
+| sampleId.covPerNt.allMedians.tsv 
+
+| sampleId.pcMapqPerNt.gz 
+
+
+(syntax: chromosome<Tab>position)
+
+
+
+
 
