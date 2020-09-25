@@ -84,7 +84,7 @@ The output is stored in the **gipOut/genome** directory and includes:
 
 
 
-Map reads and evaluate chromosome coverage
+Map reads and collect alignment statistics
 ------------------------------------------
 
 | Genomic reads are aligned to the reference genome in the *map* process. 
@@ -109,6 +109,19 @@ Map reads and evaluate chromosome coverage
 +-----------------------------+-----------------------------------------------+
 | chrCoverageMedians_sampleId | chromosome coverage table                     |
 +-----------------------------+-----------------------------------------------+
+
+| Alignment statistics are produced in the *mappingStats* process using the picard CollectAlignmentSummaryMetrics and CollectInsertSizeMetrics (option "MINIMUM_PCT=0") tools, and include the following files:
+
++---------------------------------+--------------------------------------------------------+
+| sampleId.alignmentMetrics.table | picard CollectInsertSizeMetrics tabular output         |
++---------------------------------+--------------------------------------------------------+
+| sampleId.insertSize.histData    | picard CollectInsertSizeMetrics histogram data output  |
++---------------------------------+--------------------------------------------------------+
+| sampleId.insertSize.hist.png    | plot of picard CollectInsertSizeMetrics histogram data |
++---------------------------------+--------------------------------------------------------+
+| sampleId.insertSize.table       | picard CollectInsertSizeMetrics tabular output         |
++---------------------------------+--------------------------------------------------------+
+
 
 
 Evaluate chromosome coverage
@@ -156,12 +169,21 @@ Measure nucleotide coverage
 | The file syntax is: chromosome	position	%reads
 | These files are used to evaluate the chromosomes somy score distritributions and generate these additional results: 
 
++----------------------------------+----------------------------------+
+| sampleId.covPerNt.allMedians.tsv |  chromosomes median somy scores  | 
++----------------------------------+----------------------------------+
+| sampleId.covPerNt.boxplot.png    |  somy scores boxplot             |
++----------------------------------+----------------------------------+
+| sampleId.covPerNt.ridges.png     |  somy scores ridge plot          |
++----------------------------------+----------------------------------+
 
-| sampleId.covPerNt.boxplot.png             
+| To reduce noise, CPU and memory requirements GIP downsamples the **sampleId.covPerNt.gz** nucleotide coverage scores by binnig the genome into 2500 nucleotide long windows. 
+| Then for each window the somy score is computed measuring the mean nucleotide coverage scores and multiplying by 2.
+| The chromosome median somy score reflects the chromosome copy number under the assuption that most nucleotides in the genome are present in two copies (e.g. disomic chromosomes).
 
-| sampleId.covPerNt.ridges.png  
 
-| sampleId.covPerNt.allMedians.tsv          chromosome median coverage 
+
+
 
 
 

@@ -183,6 +183,27 @@ process map {
   """
 }
 
+process mappingStats {
+  publishDir "$params.resultDir/samples/$sampleId"
+  tag { "${sampleId}" }
+
+  input:
+  set val(sampleId), file(bam) , file(bai) from map2
+  set file(fa) , file(fai) , file(dict) , file(size) from genome_ch5
+
+  output:
+  set val(sampleId), file ("${sampleId}.alignmentMetrics.table") , file ("${sampleId}.insertSize.histData") , file ("${sampleId}.insertSize.hist.png") , file ("${sampleId}.insertSize.table") into (mappingStats)
+
+  """ 
+  mkdir \$PWD/tmpDir
+  #mapping stats
+  java -jar /bin/picard.jar CollectAlignmentSummaryMetrics R=$fa I=$bam O=${sampleId}.alignmentMetrics TMP_DIR=\$PWD/tmpDir
+  #insert size
+  java -jar /bin/picard.jar CollectInsertSizeMetrics I=$bam O=${sampleId}.insertSize.metrics H=${sampleId}.insertSize.pdf REFERENCE_SEQUENCE=$fa TMP_DIR=\$PWD/tmpDir MINIMUM_PCT=0
+  rm -rf \$PWD/tmpDir ${sampleId}.insertSize.pdf
+  reformatMapStats.sh ${sampleId}
+  """
+}
 
 process covPerChr {
   publishDir "$params.resultDir/samples/$sampleId"
@@ -246,28 +267,6 @@ process covPerBin {
   Rscript /bin/sigPeaks_CLT.R --input ${sampleId}.covPerBin.gz --outName ${sampleId}.covPerBin.significant --minMAPQ $MAPQ --coverageThresholds $customCoverageLimits  $covPerBinSigPeaksOPT
 
   Rscript /bin/plotCovPerBin.R --covPerBin ${sampleId}.covPerBin.gz --outName ${sampleId}.covPerBin.plot --chrs $chromosomes --significant ${sampleId}.covPerBin.significant.bins.tsv.gz --chrSizeFile genome.chrSize --minMAPQ $MAPQ --ylim $binPlotYlim --coverageColorLimits $customCoverageLimits
-  """
-}
-
-process mappingStats {
-  publishDir "$params.resultDir/samples/$sampleId"
-  tag { "${sampleId}" }
-
-  input:
-  set val(sampleId), file(bam) , file(bai) from map2
-  set file(fa) , file(fai) , file(dict) , file(size) from genome_ch5
-
-  output:
-  set val(sampleId), file ("${sampleId}.alignmentMetrics.table") , file ("${sampleId}.insertSize.histData") , file ("${sampleId}.insertSize.hist.png") , file ("${sampleId}.insertSize.table") into (mappingStats)
-
-  """ 
-  mkdir \$PWD/tmpDir
-  #mapping stats
-  java -jar /bin/picard.jar CollectAlignmentSummaryMetrics R=$fa I=$bam O=${sampleId}.alignmentMetrics TMP_DIR=\$PWD/tmpDir
-  #insert size
-  java -jar /bin/picard.jar CollectInsertSizeMetrics I=$bam O=${sampleId}.insertSize.metrics H=${sampleId}.insertSize.pdf REFERENCE_SEQUENCE=$fa TMP_DIR=\$PWD/tmpDir MINIMUM_PCT=0
-  rm -rf \$PWD/tmpDir ${sampleId}.insertSize.pdf
-  reformatMapStats.sh ${sampleId}
   """
 }
 
