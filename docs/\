@@ -152,9 +152,7 @@ Measure nucleotide coverage
 +----------------------------------------+-------------------------------------+
 
 | The syntax of the **sampleId.covPerNt.gz** file is: chromosome        position        normalized sequencing coverage
-| The **sampleId.pcMapqPerNt.gz** file reports the percent of reads with MAPQ greater or equal to the ``--MAPQ`` value.
-| The file syntax is: chromosome	position	%reads
-| These files are used to evaluate the chromosomes somy score distritributions and generate these additional results: 
+| The **sampleId.pcMapqPerNt.gz** file 
 
 
 | sampleId.covPerNt.boxplot.png             
@@ -163,7 +161,11 @@ Measure nucleotide coverage
 
 | sampleId.covPerNt.allMedians.tsv          chromosome median coverage 
 
+| sampleId.pcMapqPerNt.gz 
 
 
 
 
+cio
+
+bb
