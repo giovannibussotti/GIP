@@ -142,7 +142,7 @@ Evaluate chromosome coverage
 +--------------------+---------------------------------------------+
 
 | While reads are mapped in the previous step against the entire genome, the user may want to instruct GIP to consider for this step and all the downstream analyses just a sub-set of chromosomes. 
-| This GIP feature is useful when dealing with unfinished genome assemblies, containing large amounts of unplaced contigs with very poor annotation available
+| This GIP feature is useful when dealing with unfinished genome assemblies, containing large amounts of unplaced contigs with very poor annotation available.
 | For this purpose, the user can set the parameter ``--chromosomes``, listing the identifiers of the chromosomes of interest.
 | By default this parameter reports the 36 *Leishmania* chromosome identifiers.
 
@@ -164,10 +164,10 @@ Measure nucleotide coverage
 | sampleId.pcMapqPerNt.gz                | % of high MAPQ reads per nucleotide |
 +----------------------------------------+-------------------------------------+
 
-| The syntax of the **sampleId.covPerNt.gz** file is: chromosome        position        normalized sequencing coverage
+| The syntax of the **sampleId.covPerNt.gz** file is: chromosome<Tab>position<Tab>normalized sequencing coverage
 | The **sampleId.pcMapqPerNt.gz** file reports the percent of reads with MAPQ greater or equal to the ``--MAPQ`` value.
-| The file syntax is: chromosome	position	%reads
-| These files are used to evaluate the chromosomes somy score distritributions and generate these additional results: 
+| The file syntax is: chromosome<Tab>position<Tab>%reads
+| These files are used to evaluate the chromosomes somy score distritributions and generate additional results providing a karyotype overview: 
 
 +----------------------------------+----------------------------------+
 | sampleId.covPerNt.allMedians.tsv |  chromosomes median somy scores  | 
@@ -180,6 +180,13 @@ Measure nucleotide coverage
 | To reduce noise, CPU and memory requirements GIP downsamples the **sampleId.covPerNt.gz** nucleotide coverage scores by binnig the genome into 2500 nucleotide long windows. 
 | Then for each window the somy score is computed measuring the mean nucleotide coverage scores and multiplying by 2.
 | The chromosome median somy score reflects the chromosome copy number under the assuption that most nucleotides in the genome are present in two copies (e.g. disomic chromosomes).
+
+
+Measure bin coverage
+--------------------
+
+| Mapped reads are used to measure the sequencing coverage of genomic bins in the *covPerBin* process.
+
 
 
 
