@@ -32,7 +32,7 @@ GIP accepts the following mandatory input parameters:
 
 In the following we provide a description of GIP steps operated by the Nextflow processes.
 
-prepare genome and annotation
+Prepare genome and annotation
 -----------------------------
 GIP prepares the genome assembly and annotation files in the first two processes: *processGeneFunction* and *prepareGenome*
 The output is stored in the **gipOut/genome** directory and includes:
@@ -70,7 +70,7 @@ The output is stored in the **gipOut/genome** directory and includes:
 
 | If ``--geneFunction`` is not specified by default the **geneFunction.tsv** file reports the gene list with not available (NA) functions.
 | The **genome.dict** and the **genome.fa.fai** are generated respectivelly with *picard CreateSequenceDictionary* and *samtools faidx* and are required by downstream analysis tools (e.g. GATK or IGV). 
-| The **genome.fa** file is a copy of the input ``--genome`` file where repetitive positions have been lowercased.
+| The **genome.fa** file is a copy of the input ``--genome`` file where the chromosome identifiers containing white spaces are changed into underscores, and the repetitive positions have been lowercased.
 | The **repeats/** directory stores the coordinates of the repetitive elements in a .gff formatted file.
 | By default repetitive elements are detected with Red.
 | Red features include:
@@ -84,14 +84,62 @@ The output is stored in the **gipOut/genome** directory and includes:
 
 
 
-Read mapping
-------------
+Map reads and evaluate chromosome coverage
+------------------------------------------
 
-Genomic reads are mapped using BWA-mem
-say here about:
-The process name
-GATK steps
-markdups
-possible BITFLAG or MAPQ options
-the output files and their position in gipOut/samples/
+| Genomic reads are aligned to the reference genome in the *map* process. 
+| Tools used at this step include:
+
+* Samotools modules including fixmate, sort and index to reformat the aliment files
+* GATK RealignerTargetCreator and IndelRealigner to homogenize the indels
+* Picad MarkDuplicates with option VALIDATION_STRINGENCY=LENIENT to label potential optical or PCR read duplicates
+
+| The files generated at this step are placed in the **gipOut/samples/sampleId** folder, and include:
+
++-----------------------------+-----------------------------------------------+
+| sampleId.bam                | alignment file                                |
++-----------------------------+-----------------------------------------------+
+| sampleId.bam.bai            | alignment index file                          |
++-----------------------------+-----------------------------------------------+
+| sampleId.MarkDup.table      | picard MarkDuplicates tabular output          |
++-----------------------------+-----------------------------------------------+
+| sampleId.MarkDup.histData   | picard MarkDuplicates histogram data output   |
++-----------------------------+-----------------------------------------------+
+| sampleId.MarkDup.hist.png   | plot of picard MarkDuplicates histogram data  |
++-----------------------------+-----------------------------------------------+
+| chrCoverageMedians_sampleId | chromosome coverage table                     |
++-----------------------------+-----------------------------------------------+
+
+
+Evaluate chromosome coverage
+----------------------------
+
+| Alignment files are used to evaluate the chromosome sequencing coverage in the *covPerChr* process.
+| At this step the  **chrCoveraMedians_sampleId** table is generated in the **gipOut/samples/sampleId** folder.
+| This table is used by GIP for downstream normalization steps, and reports the following fields:
+
++--------------------+---------------------------------------------+
+| CHR	             | chromosome identifier                       |
++--------------------+---------------------------------------------+
+| MEDIANCOV	     | median chromosome sequencing coverage       |
++--------------------+---------------------------------------------+
+| MEDIANCOVminus2MAD | MEDIANCOV plus 2 median absolute deviation  |	
++--------------------+---------------------------------------------+
+| MEDIANCOVplus2MAD  | MEDIANCOV minus 2 median absolute deviation |
++--------------------+---------------------------------------------+
+
+| While reads are mapped in the previous step against the entire genome, the user may want to instruct GIP to consider for this step and all the downstream analyses just a sub-set of chromosomes. 
+| This GIP feature is useful when dealing with unfinished genome assemblies, containing large amounts of unplaced contigs with very poor annotation available
+| For this purpose, the user can set the parameter ``--chromosomes``, listing the identifiers of the chromosomes of interest.
+| By default this parameter reports the 36 *Leishmania* chromosome identifiers.
+
+
+Measure nucleotide coverage
+---------------------------
+
+| Mapped reads are used to measure the sequencing coverage of each nucleotide in the *covPerNt* process.
+| Tools used at this step include Samtools view and Bedtools genomecov (options "-d -split").
+| The user can exclude the reads mapping with a low map quality score (MAPQ) or presenting a specific alignment bitflag.
+| The parameters ``--MAPQ`` (default 0) and ``--BITFLAG`` (default 1028) to control this filtering.
+| The choice of ``--MAPQ`` influence not just outcome
 

@@ -19,4 +19,15 @@ circos	GPL	http://circos.ca/
 picard.jar	MIT	https://github.com/broadinstitute/picard/blob/master/LICENSE.txt 
 GATK(GenomeAnalysisTK.jar)	MIT	SEE https://gatk.broadinstitute.org/hc/en-us/articles/360045763652-Where-can-I-get-the-GATK-source-code-Is-it-open-source-
 delly	BSD 3-Clause "New" or "Revised" License	https://github.com/dellytools/delly/blob/master/LICENSE
-bedGraphToBigWig
+
+bedGraphToBigWig	MIT	see email from Daniel Schmelter
+from genome-www@soe.ucsc.edu
+Hello Giovanni,
+Thank you for using the Genome Browser software and for contacting us.
+Our utilities are freely available for all uses including distribution. There is no license at all required for that use. The only things that require licenses (free for non-profit institutions) are our LiftOver program, Genome Browser Virtual Machine (GBiB/ GBiC), Browser source code, BLAT, and isPCR.
+I hope this was helpful. If you have any more questions, please reply-all to genome@soe.ucsc.edu. All messages sent to that address are publicly archived. If your question includes sensitive data, please reply-all to genome-www@soe.ucsc.edu.
+All the best,
+Daniel Schmelter
+UCSC Genome Browser
+
+
