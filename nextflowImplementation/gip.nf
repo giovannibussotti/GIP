@@ -373,7 +373,7 @@ process snpEff {
   """
 }
 
-process dellySVref {
+process delly {
   publishDir "$params.resultDir/samples/$sampleId"
   tag { "${sampleId}" }
 

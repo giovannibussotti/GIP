@@ -153,6 +153,7 @@ Measure nucleotide coverage
 | Mapped reads are used to measure the sequencing coverage of each nucleotide in the *covPerNt* process.
 | Tools used at this step include Samtools view and Bedtools genomecov (options "-d -split").
 | The reads mapping with the bitflag (see `SAM format specifications <https://samtools.github.io/hts-specs/SAMv1.pdf>`_) value given by the ``--BITFLAG`` parameter (default 1028) are excluded.
+| This parameter applies with the same function also to downstream processes, namely: *covPerBin*, *covPerGe* and *delly*.
 | To account for differences in sequencing library size and enable comparisons between samples, the nucleotide sequencing coverage is normalized by the median genomic coverage.
 | The files generated at this step are placed in the **gipOut/samples/sampleId** folder, and include:
 
@@ -186,6 +187,28 @@ Measure bin coverage
 --------------------
 
 | Mapped reads are used to measure the sequencing coverage of genomic bins in the *covPerBin* process.
+| The ``--binSize`` parameter (default 300bp) controls the bin size.
+| The sequencing coverage of each bin normalized by 
+
+| GIP At this step:
+1. Computes the sequencing depth of each nucleotide without normalizing 
+2. Divides the genome in contiguous genomic bins whose size is determined by the ``--binSize`` parameter (default 300nt)
+3. Computes mean and median sequencing coveage scores for each bin, and normalize them by median chromosome sequencing coverage
+5. Estimates the mean MAPQ score for each bin  
+
+| Please note that it is possible to obtain genomic bins with 0 mean or median coverage, but MAPQ greather than 0.
+| This is the case in genomic depletions where very few reads map to the bin with a certain MAPQ score greather than 0. 
+| Bin coverage scores are then corrected for GC content to limit potential sequencing biases during DNA amplification.
+| GIP uses a loess regression  a 5-fold cross validat 
+
+
+
+
+#given a covPerBin file this script plot the GC% of each bin vs the mean (and median) coverage. 
+#Then if fits a loess regression on the the mean using just a sub-sample (default all points, but you can specify a number in --sampling to speed up the process, this is sampling1) using a 5 folds cross validation exploring the loess span parameter (which relates with the fraction of points used to fit the local regressions, and influence the model smoothness). 
+#Then corrects the original bin mean (or median) coverage by subtracting the values on the loess model. If there is a GC bias the loess has a bump. So bins with GC values corresponnding to a loess bump will be more penalized than other bins were the loess is straight
+#another loess is computed after GC correction (sampling2 and sampling3, without cross-validation) and expected to be more or less straigth
+#Finally the script plots the GC% of each bin vs the mean (and median) coverage, before and after the GCcorrection, showing also the loess, a linear model and the R pearson coefficient before and after correction.
 
 
 
