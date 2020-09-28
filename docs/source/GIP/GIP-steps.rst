@@ -251,20 +251,14 @@ Measure genomic bin sequencing coverage
 Measure gene sequencing coverage
 --------------------------------
 
-| Mapped reads are used to measure the mean sequencing coverage of annotated genes in the *covPerGe* process. 
-| To estimate the mean coverage the N bases are not considered. GIP normalizes the coverage scores by the chromosome median coverage. To correct for potential GC-content biases at gene level GIP utilizes the same approach described for genomic bins (see above).
-| To detect statistically significant CNV genes GIP fits a gaussian mixture distribution with 2 components. 
-One distribution accounting for the vast majority of observations fitting the coverage of non-CNV genes (central distribution), and another distribution fitting the CNV genes (outliers distribution).
-| The cental distributions represents the-null hypothesis under which a given coverage value is merely caused by artefact fluctuations in sequencing depth, rather than a genuine, biologically meaningful gene amplification or depletion. 
-To test CNV significance GIP uses the mean and the standard deviation of the central distribution and assigns a z-score and a p-value to all genes. Significant genes with a mean MAPQ score lower than ``--MAPQ`` are discarded.
-| In the same way as for genomic bins, the parameter ``--customCoverageLimits``can be used to enforce custom coverage threshold on significant genes.  
-| The parameter ``--covPerGeSigPeaksOPT`` accepts  a string of 3 parameters and can be used to control the statical test.
+| Mapped reads are used to measure the mean sequencing coverage of annotated genes in the *covPerGe* process.  
+| To estimate the mean coverage the N bases are not considered. GIP normalizes the coverage scores by the chromosome median coverage. correct for potential GC-content biases at gene level GIP utilizes the same approach described for genomic bins (see above).To detect statistically significant CNV genes GIP fits a gaussian mixture distribution with 2 components. One distribution accounting for the vast majority of observations fitting the coverage of non-CNV genes (central distribution), and another distribution fitting the CNV genes (outliers distribution). The cental distributions represents the-null hypothesis under which a given coverage value is merely caused by artefact fluctuations in sequencing depth, rather than a genuine, biologically meaningful gene amplification or depletion. To test CNV significance GIP uses the mean and the standard deviation of the central distribution and assigns a z-score and a p-value to all genes. Significant genes with a mean MAPQ score lower than ``--MAPQ`` are discarded. In the same way as for genomic bins, the parameter ``--customCoverageLimits``can be used to enforce custom coverage threshold on significant genes. The parameter ``--covPerGeSigPeaksOPT`` accepts  a string of 3 parameters and can be used to control the statical test.
 
 * pThresh: adjusted p-value threshold 
 * padjust: method for multiple testing correction
 * minLen:  minimum gene size (bp)
 
-The default is ``covPerGeSigPeaksOPT="--pThresh 0.001 --padjust BH --minLen 0"``. As for genomic bins, the available methods for multiple testing corrections are: "holm", "hochberg", "hommel", "bonferroni", "BH", "BY", "fdr", "none". Please refer to documentation of the `p.adjust <https://www.rdocumentation.org/packages/stats/versions/3.6.2/topics/p.adjust>`_ R function for more details.
+| The default is ``covPerGeSigPeaksOPT="--pThresh 0.001 --padjust BH --minLen 0"``. As for genomic bins, the available methods for multiple testing corrections are: "holm", "hochberg", "hommel", "bonferroni", "BH", "BY", "fdr", "none". Please refer to documentation of the `p.adjust <https://www.rdocumentation.org/packages/stats/versions/3.6.2/topics/p.adjust>`_ R function for more details.
 
 | The *covPerGe* process returns the following files in the **gipOut/samples/sampleId** folder
 
