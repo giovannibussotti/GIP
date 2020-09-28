@@ -191,30 +191,27 @@ Measure bin coverage
 | The sequencing coverage of each bin normalized by 
 
 | GIP At this step:
+
 1. Computes the sequencing depth of each nucleotide without normalizing 
 2. Divides the genome in contiguous genomic bins whose size is determined by the ``--binSize`` parameter (default 300nt)
 3. Computes mean and median sequencing coveage scores for each bin, and normalize them by median chromosome sequencing coverage
-5. Estimates the mean MAPQ score for each bin  
+4. Estimates the mean MAPQ score for each bin  
 
-| Please note that it is possible to obtain genomic bins with 0 mean or median coverage, but MAPQ greather than 0.
-| This is the case in genomic depletions where very few reads map to the bin with a certain MAPQ score greather than 0. 
-| Bin coverage scores are then corrected for GC content to limit potential sequencing biases during DNA amplification.
-| GIP uses a loess regression  a 5-fold cross validat 
-
+| Please note that it is possible to obtain genomic bins with 0 mean or median coverage, but MAPQ greather than 0. This is the case in genomic depletions where very few reads map to the bin with a certain MAPQ score greather than 0. 
+| Bin coverage scores are then corrected for GC content to limit potential sequencing biases during DNA amplification. Given the distribution of bin mean coverage scores and GC-content, GIP fits a loess regression using using a 5 folds cross validation to explore the loess *span* parameter (which relates with the fraction of points used to fit the local regressions, and influence the model smoothness).
+| Then GIP corrects the original bin coverage by subtracting the values on the loess model, and adding back the difference between the median coverage of all bin before and after subtraction (i.e. recentering the median bin coverage to 1). Genomic bins that after correction have negative coverage are reported with a 0 value.
 
 
+| The resulting bin are evaluated for significant copy number variation (CNV) with respect to the reference genome. Often, the CNV span regions larger than the bin size. In order to match the size of the CNV region (at a bin size resolution), GIP collapses adjacent significant CNV bins of the same type (i.e. adjacent bins composing a depletion, or adjacent bins composing an amplification), then averages their coverage score. We refer to these sets of collapsed bins as **segments**.
+| The ``--covPerBinSigPeaksOPT`` parameter accepts a string of 3 parameters, and can be used to customize the detection of bin and segments of interest.
 
-#given a covPerBin file this script plot the GC% of each bin vs the mean (and median) coverage. 
-#Then if fits a loess regression on the the mean using just a sub-sample (default all points, but you can specify a number in --sampling to speed up the process, this is sampling1) using a 5 folds cross validation exploring the loess span parameter (which relates with the fraction of points used to fit the local regressions, and influence the model smoothness). 
-#Then corrects the original bin mean (or median) coverage by subtracting the values on the loess model. If there is a GC bias the loess has a bump. So bins with GC values corresponnding to a loess bump will be more penalized than other bins were the loess is straight
-#another loess is computed after GC correction (sampling2 and sampling3, without cross-validation) and expected to be more or less straigth
-#Finally the script plots the GC% of each bin vs the mean (and median) coverage, before and after the GCcorrection, showing also the loess, a linear model and the R pearson coefficient before and after correction.
+* *--minLen*:  minimum segment length
+* *--pThresh*: adjusted p-value threshold 
+* *--padjust*: multiple-testing correction method
 
+| The ``--covPerBinSigPeaksOPT`` default is ``"--minLen 0 --pThresh 0.001 --padjust BY"``. The available methods for multiple testing corrections are: "holm", "hochberg", "hommel", "bonferroni", "BH", "BY", "fdr", "none". Please refer to documentation of the `p.adjust <https://www.rdocumentation.org/packages/stats/versions/3.6.2/topics/p.adjust>`_ R function for more details.
 
-
-
-
-
+| The used can specify the ``--customCoverageLimits`` parameter providing two numbers: N1, N2. Significant CNV bins must also have a coverage > N1 or < N2.
 
 
 
