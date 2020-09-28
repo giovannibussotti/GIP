@@ -183,11 +183,11 @@ Measure nucleotide coverage
 | The chromosome median somy score reflects the chromosome copy number under the assuption that most nucleotides in the genome are present in two copies (e.g. disomic chromosomes).
 
 
-Measure bin coverage
---------------------
+Measure genomic bin sequencing coverage
+---------------------------------------
 
 | Mapped reads are used to measure the sequencing coverage of genomic bins in the *covPerBin* process.
-| The ``--binSize`` parameter (default 300bp) controls the bin size.
+| The ``--binSize`` parameter (default 300) controls the bin size (i.e. the number of nucleotides for each bin).
 | The sequencing coverage of each bin normalized by 
 
 | GIP At this step:
@@ -203,6 +203,16 @@ Measure bin coverage
 
 
 | The resulting bin are evaluated for significant copy number variation (CNV) with respect to the reference genome. Often, the CNV span regions larger than the bin size. In order to match the size of the CNV region (at a bin size resolution), GIP collapses adjacent significant CNV bins of the same type (i.e. adjacent bins composing a depletion, or adjacent bins composing an amplification), then averages their coverage score. We refer to these sets of collapsed bins as **segments**.
+
+| For the statistical test GIP derives the single nucleotide coverage distribution after binning (SNCDab) where the coverage of each nucleotide is approximated with the mean bin coverage.  
+| For the central limit theorem (CLT):
+
+* Regardless the shape of SNCDab, the sampling distribution of the sample means (SDSM) is gaussian
+* The mean (mu) and the standard error (se) of SNCDab correspond to the mean (mu) and the standard deviation (sd) of SDSM with sample size equal n
+              
+| For each bin the null-hypothesis is that it is possible to observe its sequencing coverage just by chance under a normal (i.e. non-CNV) condition due to coverage fluctuations intruduced by the sequencing technology. The competing hypothesis is that the oberved coverage is the readout of a genuine CNV region.
+| Based on the CLT, GIP computes the P-value of each bin by measuring how many se away each bin score is from the SNCDab mu.
+
 | The ``--covPerBinSigPeaksOPT`` parameter accepts a string of 3 parameters, and can be used to customize the detection of bin and segments of interest.
 
 * *--minLen*:  minimum segment length
@@ -211,7 +221,44 @@ Measure bin coverage
 
 | The ``--covPerBinSigPeaksOPT`` default is ``"--minLen 0 --pThresh 0.001 --padjust BY"``. The available methods for multiple testing corrections are: "holm", "hochberg", "hommel", "bonferroni", "BH", "BY", "fdr", "none". Please refer to documentation of the `p.adjust <https://www.rdocumentation.org/packages/stats/versions/3.6.2/topics/p.adjust>`_ R function for more details.
 
-| The used can specify the ``--customCoverageLimits`` parameter providing two numbers: N1, N2. Significant CNV bins must also have a coverage > N1 or < N2.
+| The ``--customCoverageLimits`` parameter can be used to enforce an additional custom coverage cut-offs on the statistically significant bins and segments. This parameter accepts two numbers: N1, N2 (default 1.5 0.5). Significant CNV bins and segments are selected to have a coverage > N1 (for amplifications) or < N2 (for depletions). 
+
+| The *covPerBin* process returns the following files in the **gipOut/samples/sampleId** folder
+
+
++------------------------------------------------+------------------------------------------------+
+| sampleId.covPerBin.gz                          | genomic bin coverage                           |
++------------------------------------------------+------------------------------------------------+
+| sampleId.covPerBin.plot.all.png                | bin coverage genome overview                   |
++------------------------------------------------+------------------------------------------------+
+| sampleId.covPerBin.plot.byChr.pdf              | bin coverage chromosome overview (slides)      |
++------------------------------------------------+------------------------------------------------+
+| sampleId.covPerBin.plot.faceting.png           | bin coverage chromosome overview (multi-panel) |      
++------------------------------------------------+------------------------------------------------+
+| sampleId.covPerBin.plot.tsv.gz                 | bin coverage plots data                        |
++------------------------------------------------+------------------------------------------------+
+| sampleId.covPerBin.significant.bins.tsv.gz     | significant bins                               |
++------------------------------------------------+------------------------------------------------+
+| sampleId.covPerBin.significant.segments.tsv.gz | significant segments                           |
++------------------------------------------------+------------------------------------------------+
+| sampleId.covPerBin.significant.stats           | statistical test info                          |
++------------------------------------------------+------------------------------------------------+
+
+| In all three plots, the bins with mean MAPQ lower than ``--MAPQ`` are shown in gray. The statistically significant bins corresponding to amplifications and depletions are shown respectivelly in orange and blu. The y-axis minimum and maximum limits can be set with the parameter ``--binPlotYlim`` (default ``"0 3"``). The values specified with the ``--customCoverageLimits`` parameter will be highligthed with red dashed lines.
+
+
+
+Measure gene sequencing coverage
+--------------------------------
+
+| Mapped reads are used to measure the sequencing coverage of annotated genes in the *covPerGe* process.
+
+
+
+
+
+
+
 
 
 
