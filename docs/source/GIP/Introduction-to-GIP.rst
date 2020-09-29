@@ -8,7 +8,7 @@ GIP is a tool for scientific investigation, compatible with Linux and OS X syste
 
 GIP consists in 3 files:
 
-* gip.nf: The Nextflow pipeline
+* gip: The Nextflow pipeline
 * gip.config: The configuration file
 * giptools: The Singularity image  
 

@@ -1,5 +1,6 @@
-15) 
-- make that you can click on the figure to see the zoom or download it
+16) make a new module simply loading the samples chrMedianCoverage files and producing an heatmap with the depth of coverage of each chromosome in each sample. You can make it read also the medinGenomicCoverage files, so that you can normalize the chromosome coverage of each sample with that to generate also a normalized heatmap 
+
+15)  make that you can click on the figure to see the zoom or download it
 
 14) email GATK to make sure you have the right to distribute the file GenomeAnalysisTK.jar (version version 3.6-0-g89b7209) using the tools RealignerTargetCreator and IndelRealigner. see https://gatk.broadinstitute.org/hc/en-us/articles/360045763652-Where-can-I-get-the-GATK-source-code-Is-it-open-source-
 

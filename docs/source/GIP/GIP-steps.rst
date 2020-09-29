@@ -273,10 +273,13 @@ Measure gene sequencing coverage
 | sampleId.covPerGeKaryoplot/          | folder with CNV genes plots |
 +--------------------------------------+-----------------------------+
 
+The **sampleId.covPerGeKaryoplot/** folder includes plot generated with the `karyoploteR <https://www.bioconductor.org/packages/release/bioc/html/karyoploteR.html>`_ package. Only chromosomes hosting significant gene CNVs are shown. Amplified genes are shown in orange, whereas depleted genes are shown in blue. If any, the repetitive elements located in proximity of gene CNVs are marked in the bottom part of the plots. The ``--repeatRange`` parameter can be used to set the maximum distance (in nucleotides) from each gene CNVs in which repeats are labelled.
 
 
-continue descrbing here karyoploteR output..
+Detect and annotate single nucleotide variants
+----------------------------------------------
 
+| The single nucleotide variants (SNVs) are detected in the *freebayes* process using the `freebayes <https://arxiv.org/abs/1207.3907>`_ program. Reads with MAPQ score < than ``--MAPQ`` are not used for detection. The user can specify freebayes options through the ``--freebayesOPT`` parameter. Its default is ``--read-indel-limit 1 --read-mismatch-limit 3 --read-snp-limit 3 --hwe-priors-off --binomial-obs-priors-off --allele-balance-priors-off  --min-alternate-fraction 0.05 --min-base-quality 5 --min-alternate-count 2 --pooled-continuous``. Please refer to the `freebayes manual <https://github.com/ekg/freebayes>`_ for more details.
 
 
 

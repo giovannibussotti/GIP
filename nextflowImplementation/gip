@@ -22,7 +22,7 @@ def helpMessage() {
     
     Usage:
     The typical command for running the pipeline is as follows:
-    nextflow gip.nf --genome ../inputData/dataset/Linf_test.fa --annotation ../inputData/dataset/Linf_test.ge.gtf --index index.tsv -c gip.config -resume
+    nextflow gip --genome genome.fa --annotation annotations.gtf --index index.tsv -c gip.config
     
     Mandatory arguments:
       --genome                        multi-FASTA genome reference file
@@ -107,11 +107,11 @@ binPlotYlim  = params.binPlotYlim
 binOverviewSize = params.binOverviewSize
 binSize      = params.binSize
 customCoverageLimits = params.customCoverageLimits
-covPerBinSigPeaksOPT      = params.covPerBinSigPeaksOPT
-covPerGeRepeatRange       = params.covPerGeRepeatRange
-covPerGeSigPeaksOPT       = params.covPerGeSigPeaksOPT
-freebayesOPT              = params.freebayesOPT
-filterFreebayesOPT        = params.filterFreebayesOPT
+covPerBinSigPeaksOPT = params.covPerBinSigPeaksOPT
+covPerGeRepeatRange  = params.covPerGeRepeatRange
+covPerGeSigPeaksOPT  = params.covPerGeSigPeaksOPT
+freebayesOPT         = params.freebayesOPT
+filterFreebayesOPT   = params.filterFreebayesOPT
 filterDellyOPT   = params.filterDellyOPT
 minNormCovForDUP = params.minNormCovForDUP
 maxNormCovForDEL = params.maxNormCovForDEL
