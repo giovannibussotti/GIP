@@ -266,7 +266,7 @@ process covPerBin {
 
   Rscript /bin/sigPeaks_CLT.R --input ${sampleId}.covPerBin.gz --outName ${sampleId}.covPerBin.significant --minMAPQ $MAPQ --coverageThresholds $customCoverageLimits  $covPerBinSigPeaksOPT
 
-  Rscript /bin/plotCovPerBin.R --covPerBin ${sampleId}.covPerBin.gz --outName ${sampleId}.covPerBin.plot --chrs $chromosomes --significant ${sampleId}.covPerBin.significant.bins.tsv.gz --chrSizeFile genome.chrSize --minMAPQ $MAPQ --ylim $binPlotYlim --coverageColorLimits $customCoverageLimits
+  Rscript /bin/plotCovPerBin.R --covPerBin ${sampleId}.covPerBin.gz --outName ${sampleId}.covPerBin.plot --chrs $chromosomes --significant ${sampleId}.covPerBin.significant.bins.tsv.gz --chrSizeFile genome.chrSize --minMAPQ $MAPQ --ylim $binPlotYlim --coverageColorLimits $customCoverageLimits --binOverviewSize $binOverviewSize
   """
 }
 
