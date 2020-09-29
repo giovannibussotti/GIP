@@ -1,10 +1,4 @@
 15) 
-- the report itself should be copied in publushDir, or anyway the link should be relative and not absolute
-- all the files provided by the report should have a relative path
-- fig4 density plot score distribution, caption: typo , n missing
-- fig 5, genomic bin overview, increase default x-axis size, and maybe make a variable to control the size
-- fig8, SNV density, scale or cap the max density value
-- relax a lot the default for delly SV detection
 - make that you can click on the figure to see the zoom or download it
 
 14) email GATK to make sure you have the right to distribute the file GenomeAnalysisTK.jar (version version 3.6-0-g89b7209) using the tools RealignerTargetCreator and IndelRealigner. see https://gatk.broadinstitute.org/hc/en-us/articles/360045763652-Where-can-I-get-the-GATK-source-code-Is-it-open-source-

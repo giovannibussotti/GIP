@@ -104,6 +104,7 @@ BITFLAG = params.BITFLAG
 chromosomes  = params.chromosomes
 chrPlotYlim  = params.chrPlotYlim
 binPlotYlim  = params.binPlotYlim
+binOverviewSize = params.binOverviewSize
 binSize      = params.binSize
 customCoverageLimits = params.customCoverageLimits
 covPerBinSigPeaksOPT      = params.covPerBinSigPeaksOPT
@@ -144,9 +145,9 @@ process prepareGenome {
   output:
   file ("db") into bwaDb_ch1
   file("genome.chrSize") into chrSize_ch1
-  set file("genome.fa") , file("genome.fa.fai") , file("genome.dict") , file("genome.chrSize") into (genome_ch1 , genome_ch2 , genome_ch3 , genome_ch4 , genome_ch5 , genome_ch6 , genome_ch7 , genome_ch8, genome_ch9)
+  set file("genome.fa") , file("genome.fa.fai") , file("genome.dict") , file("genome.chrSize") into (genome_ch1 , genome_ch2 , genome_ch3 , genome_ch4 , genome_ch5 , genome_ch6 , genome_ch7 , genome_ch8, genome_ch9, genome_ch10)
   file("genome.gaps.gz") into (gaps_ch1 , gaps_ch2)
-  file("repeats") into (repeats_ch1 , repeats_ch2 , repeats_ch3)
+  file("repeats") into (repeats_ch1 , repeats_ch2 , repeats_ch3, repeats_ch4)
   file("snpEff")  into snpEffDb_ch1
   
   script:
@@ -544,7 +545,10 @@ process report {
 
   input:
   file ('*') from covPerChr4.join(covPerNt).join(covPerBin).join(mappingStats).join(covPerGeDump1).join(snpEff).join(delly).join(mapDump1).join(bigWigGenomeCov)
-
+  file repeats from repeats_ch4
+  file('*') from genome_ch10
+   
+ 
   output:
   //set val(sampleId), file("report_${sampleId}.html") into (report)
   file('*.html') into end
