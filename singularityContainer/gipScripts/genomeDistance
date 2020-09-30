@@ -1,0 +1,91 @@
+#contextGenomes="contextGenomes"
+#samples=c("Dog1-P2","Dog3","DogX")
+#gipOut="gipOut"
+#outName=NA
+#debug=FALSE
+
+suppressPackageStartupMessages(library("argparse"))
+parser <- ArgumentParser(description="Compares samples genomic distance")
+parser$add_argument("--samples" , nargs="+", required=TRUE, help="Sample names [default %(default)s]" )
+parser$add_argument("--gipOut"  , required=TRUE , help="GIP output directory [default %(default)s]" , default="NA")
+parser$add_argument("--outName" , help="Output name [default %(default)s]" , default="NA")
+parser$add_argument("--contextGenomes" , help="two columns (Tab-separated) file listing additional genomes. Syntax: genomeName<Tab>genomeFilePath [default %(default)s]" , default="NA")
+parser$add_argument("--debug"  , action="store_true" , help="dump session and quit [default %(default)s]" , default=FALSE)
+args <- parser$parse_args()
+
+#patch NA
+for (n in names(args)){if(args[[n]][1] == "NA"){args[[n]] <- NA}  }
+for (n in names(args)){assign(n,args[[n]]) }
+
+suppressPackageStartupMessages(library("openxlsx"))
+suppressPackageStartupMessages(library("gtools"))
+suppressPackageStartupMessages(library("session"))
+suppressPackageStartupMessages(library("FactoMineR"))
+
+options(datatable.fread.input.cmd.message=FALSE)
+if(debug){library(session);save.session("session_DEBUG_genomeDistance");quit()}
+
+#setup
+outDir <- paste0(gipOut,"/sampleComparison/")
+system(paste0("mkdir -p ", outDir))
+if (is.na(outName)){
+  outName <- paste0(outDir,"genomeDistance")
+}
+
+data <- data.frame(name=samples,file=paste0(gipOut,"/samples/",samples,"/",samples,"_freebayesFiltered/pseudoReference.fa.gz"),stringsAsFactors=F)
+if (! is.na(contextGenomes)){
+  extraData  <- read.table("contextGenomes",header=F,stringsAsFactors=F,col.names=c("name","file"))
+  data <- rbind(data,extraData)
+}
+row.names(data) <- data$name
+
+#compute Average Nucleotide Identity (ANI) for all genome pair
+contrasts <- as.data.frame(gtools::combinations(n=length(data$name),r=2,data$name),stringsAsFactors=F)
+aniMat <- matrix(0L, nrow = length(data$name), ncol = length(data$name))
+colnames(aniMat) <- data$name
+rownames(aniMat) <- data$name
+for (i in 1:nrow(contrasts)){
+  s1=contrasts[i,"V1"]
+  s2=contrasts[i,"V2"]
+  f1=data[s1,"file"]
+  f2=data[s2,"file"]
+  u1=paste0("._tmp_",s1)
+  u2=paste0("._tmp_",s2)
+  dd="._tmp_dnadiff"
+  system(paste0("gunzip -c ",f1," > ",u1))
+  system(paste0("gunzip -c ",f2," > ",u2))
+  cmd <- paste("/opt/MUMmer/dnadiff -p ", dd , u1 , u2)
+  print(cmd)
+  system(cmd)
+  ani <- as.numeric(system("grep  AvgIdentity ._tmp_dnadiff.report | head -1 | awk '{print $2}'",intern=T))
+  aniMat[s1,s2] = ani
+  aniMat[s2,s1] = ani
+  aniMat[s1,s1] = 100
+  aniMat[s2,s2] = 100
+  system(paste0("rm -rf ", u1 , " " , u2 , " " , dd,".1coords " ,  dd,".delta " , dd,".mdelta " , dd,".rdiff " , dd,".snps " , dd,".1delta " , dd,".mcoords " , dd,".qdiff " , dd,".report " ))
+}
+
+pdf(paste0(outName,".pdf"))
+#dendrogram
+hcd <- as.dendrogram(hclust(dist(aniMat)))
+edgePar = list(col = c("steelblue") , lwd=2)
+par(lwd=2,font=2, cex=0.9 , mar=c(8,4,4,4))
+plot(hcd,  ylab = "", edgePar = edgePar,horiz=FALSE , cex=0.9 , axes=FALSE) 
+par(cex.axis=1.5)
+axis(2)
+mtext("distance", side = 2, line = 3, outer = FALSE )
+#pca
+res.pca <- PCA(aniMat, graph=FALSE)
+plot.PCA(res.pca , choix="ind" , habillage="ind")
+plot.PCA(res.pca , choix="var")
+invisible(dev.off())
+
+#table
+df <- cbind(row.names(aniMat), as.data.frame(aniMat))
+names(df)[1] <- "sample"
+write.xlsx(x=list(genomePairANI=df),file=paste0(outName,".xlsx"),asTable=T)
+
+
+
+
+

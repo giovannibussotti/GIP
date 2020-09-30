@@ -10,6 +10,7 @@ From: ubuntu:xenial
 
 %files
   files/packages.tar.gz /opt
+  gipScripts/  /opt 
 
 %environment
   export LC_ALL=C
@@ -23,7 +24,7 @@ From: ubuntu:xenial
   cd /opt
   tar -xzf packages.tar.gz
   cd packages
-  mv bedtools2/ bwa/ htslib/ gipScripts/ samtools/ freebayes/ Python3/ R vcftools/ rmblast/ RepeatMasker snpEff circos/ MUMmer/ cdhit/ miniCRAN/ installRpkgs.R Rpkgs.tsv  /opt/
+  mv bedtools2/ bwa/ htslib/ samtools/ freebayes/ Python3/ R vcftools/ rmblast/ RepeatMasker snpEff circos/ MUMmer/ cdhit/ miniCRAN/ installRpkgs.R Rpkgs.tsv  /opt/
   mv /opt/gipScripts/snpEff.configTemplate /opt/
   mv picard.jar GenomeAnalysisTK.jar delly bedGraphToBigWig trf409.linux64 Red /bin/
   cd ..

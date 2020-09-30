@@ -1,0 +1,203 @@
+#samples=c("Dog3","Dog1-P2")
+#gipOut="gipOut"
+#clstrGe=TRUE
+#outName=NA
+#chrs=NA
+#MAPQ=50
+#highLowRatio=c(1.5,0.5)
+#pseudocount=0.1
+#debug=FALSE
+#plot1_ylim=5
+#plot3_min=0
+#plot3_max=100
+#plot24_min=-1
+#plot24_max=3
+#scaleFree="yes"
+
+suppressPackageStartupMessages(library("argparse"))
+parser <- ArgumentParser(description="Compare gene sequencing coverage in 2 samples")
+parser$add_argument("--samples" , nargs="+", required=TRUE, help="Sample names. It determines the plotting order [default %(default)s]" )
+parser$add_argument("--gipOut"  , required=TRUE , help="GIP output directory [default %(default)s]" , default="NA")
+parser$add_argument("--outName" , help="Output name [default %(default)s]" , default="NA")
+parser$add_argument("--chrs"    , nargs="+" , help="chromosomes to use. If not defined, it considers the chromosomes selected at gip runtime [default %(default)s]" , default="NA")
+parser$add_argument("--MAPQ"  , type="integer" , help="points with MAPQ < --MAPQ will be labeled [default %(default)s]" , default=-1)
+parser$add_argument("--highLowRatio" , nargs="+" , type="character" , help="Provide two numbers. Bins > num1 or < num2 will be colored differently (default 1.5 0.5)" , default= "NA" )
+parser$add_argument("--pseudocount" , type="double" , help="value to add to the normalized median coverage. Avoid infinite (1/0) and NaN (0/0) ratio values [default %(default)s]" , default=0.1)
+parser$add_argument("--debug"  , action="store_true" , help="dump session and quit [default %(default)s]" , default=FALSE)
+parser$add_argument("--plot1_ylim" , type="double" , help="graphical parameter plot1: max ratio value before saturation [default %(default)s]" , default=5)
+parser$add_argument("--plot3_min"  , type="double" , help="graphical parameter plot3: min shown value. DEPENDENCY:--scaleFree no [default %(default)s]" , default=0)
+parser$add_argument("--plot3_max"  , type="double" , help="graphical parameter plot3: max shown value. DEPENDENCY:--scaleFree no [default %(default)s]" , default=100)
+parser$add_argument("--plot24_min" , type="double" , help="graphical parameter plot2&4: min shown value. DEPENDENCY:--scaleFree no [default %(default)s]" , default=-1)
+parser$add_argument("--plot24_max" , type="double" , help="graphical parameter plot2&4: max shown value. DEPENDENCY:--scaleFree no [default %(default)s]" , default=3)
+parser$add_argument("--scaleFree"  , help="graphical parameter plot3&4: should faceting plot be scale free? [yes|no] [default %(default)s]" , default="yes")
+args <- parser$parse_args()
+#patch NA
+for (n in names(args)){if(args[[n]][1] == "NA"){args[[n]] <- NA}  }
+for (n in names(args)){assign(n,args[[n]]) }
+
+suppressPackageStartupMessages(library("ggplot2"))
+suppressPackageStartupMessages(library("GenomicRanges"))
+suppressPackageStartupMessages(library("openxlsx"))
+suppressPackageStartupMessages(library("session"))
+if(debug){save.session("session_DEBUG_geCNV");quit()}
+
+
+#setup
+outDir <- paste0(gipOut,"/sampleComparison/")
+system(paste0("mkdir -p ", outDir))
+if (is.na(outName)){
+  outName <- paste0(outDir,"geCNV")
+}
+s1=samples[1]
+s2=samples[2]
+chrSel      <- as.character(read.table(paste0(gipOut,"/samples/",s1,"/chrCoverageMedians_",s1),header=T)[,1])
+chrSize     <- read.table(paste0(gipOut,"/genome/genome.chrSize"),sep="\t", stringsAsFactors = F, header=F , col.names=c("chr","size"))
+chrSize$chr <- as.character(chrSize$chr)
+chrSize     <- chrSize[match(chrSel,chrSize$chr),]
+if (is.na (chrs[1])){
+  chrs <- chrSize$chr
+}
+chrSize <- chrSize[chrSize$chr %in% chrs,]
+if (! is.na(highLowRatio[1])){
+  highLowRatio <- as.numeric(highLowRatio)
+} else {
+  highLowRatio <- c(1.5,0.5)
+}
+
+#READ
+allSamples <- list()
+allSamples[[s1]] <- read.delim(paste0(gipOut,"/samples/",s1,"/",s1,".covPerGe.gz") , header=T,stringsAsFactors=F,row.names=1)
+allSamples[[s2]] <- read.delim(paste0(gipOut,"/samples/",s2,"/",s2,".covPerGe.gz") , header=T,stringsAsFactors=F,row.names=1)
+geFunDf <- read.delim(paste0(gipOut,"/genome/geneFunction.tsv") , sep="\t", stringsAsFactors = F, header=F ,col.names=c("geId","geneFunction"))
+repeats <- tryCatch(read.table(paste0(gipOut,"/genome/repeatMasker/genome.out.gff") , sep="\t", stringsAsFactors = F, header=F )[,c(1,4,5)] ,error=function(cond){message(cond);return(NULL)})
+gaps    <- tryCatch(read.table(paste0(gipOut,"/genome/genome.gaps.gz") , sep="\t", stringsAsFactors = F, header=F),error=function(cond){message(cond);return(NULL)}) 
+clstr <- list()
+clstr[[s1]] <- tryCatch(read.delim(paste0(gipOut,"/covPerClstr/",s1,".covPerClstr.gz") , header=T,stringsAsFactors=F,row.names=1),error=function(cond){message(cond);return(NULL)})
+clstr[[s2]] <- tryCatch(read.delim(paste0(gipOut,"/covPerClstr/",s2,".covPerClstr.gz") , header=T,stringsAsFactors=F,row.names=1),error=function(cond){message(cond);return(NULL)})
+clstrFun <- tryCatch(read.delim(paste0(gipOut,"/covPerClstr/clstrAnnFormat2.tsv") , header=F,stringsAsFactors=F,col.names=c("geId","clstrFunction","clstrId")),error=function(cond){message(cond);return(NULL)})
+
+
+#MAKE DF
+makeDf <- function(List){
+ #consider just the ids available on the both samples
+ ids <- intersect( row.names(List[[1]]) , row.names(List[[2]])  )
+ d <- data.frame(
+  chromosome = as.character(gsub(x=List[[s1]][ids,]$locus,pattern="^([^\\:]+)\\:.+",replacement="\\1")) , 
+  geneStart  = as.numeric(gsub(x=List[[s1]][ids,]$locus,pattern="^([^\\:]+)\\:(\\d+)-(\\d+)$",replacement="\\2")) , 
+  geneEnd    = as.numeric(gsub(x=List[[s1]][ids,]$locus,pattern="^([^\\:]+)\\:(\\d+)-(\\d+)$",replacement="\\3")) , 
+  covS1 = List[[s1]][ids,"normalizedMeanCoverage"] , 
+  covS2 = List[[s2]][ids,"normalizedMeanCoverage"] ,
+  log10covS1 = log10(List[[s1]][ids,"normalizedMeanCoverage"]+pseudocount) , 
+  log10covS2 = log10(List[[s2]][ids,"normalizedMeanCoverage"]+pseudocount) , 
+  ratio = (List[[s2]][ids,"normalizedMeanCoverage"]+pseudocount) /  (List[[s1]][ids,"normalizedMeanCoverage"]+pseudocount) ,
+  log10ratio = log10((List[[s2]][ids,"normalizedMeanCoverage"]+pseudocount) / (List[[s1]][ids,"normalizedMeanCoverage"]+pseudocount)) , 
+  color = "black" ,
+  MAPQ  = pmin(List[[s1]][ids,"MAPQ"] , List[[s2]][ids,"MAPQ"]) , 
+  stringsAsFactors=FALSE)
+ row.names(d)=ids
+ #select chrs and sort by position
+ d <- d[d$chromosome %in% chrs,]
+ d <- d[with(d, order(chromosome , geneStart)), ]
+ #color extreme genes
+ d$color[d$ratio > highLowRatio[1]] = "orange"
+ d$color[d$ratio < highLowRatio[2]] = "blue"
+ d$status <- "background"
+ d$status[d$color == "orange"]="amplified"
+ d$status[d$color == "blue"]  ="depleted"
+ d$status <- factor(d$status,levels=c("amplified","depleted","background","lowMAPQ"))
+ #label low MAPQ
+ d$color[d$MAPQ < MAPQ] = "gray"
+ d$status[d$MAPQ < MAPQ] = "lowMAPQ"
+ return(d)
+}
+df   <- makeDf(allSamples)
+dfCl <- tryCatch(makeDf(clstr),error=function(cond){message(cond);return(NULL)})
+
+#PLOT
+pdf(paste0(outName,".pdf"))
+#PLOT1: cloud plot (all genes)
+dfSaturatedRatio = df
+dfSaturatedRatio$ratio[dfSaturatedRatio$ratio >= plot1_ylim] = plot1_ylim
+plot(dfSaturatedRatio$ratio , pch=19, ylim=c(0,plot1_ylim) , col=dfSaturatedRatio$color , ylab=paste0("sequencing coverage ratio ",s2,"/",s1) , xlab="gene index")
+legend(fill=c("orange","blue","black","gray"),x="topleft",legend=c(paste(s2,"amplified") , paste(s2,"depleted"),"background","lowMAPQ") , cex=0.7 )
+abline(h=c(highLowRatio[1],highLowRatio[2]),col="grey",lty=2)
+abline(h=c(1),col="black",lty=1)
+#PLOT2: scatter plot (all genes, log transformed) (genes with log10 > threshold are not shown)
+plot(x=df$log10covS1 , y=df$log10covS2,col=df$color,pch=19 , xlab=paste("log10 coverage",s1,"genes") , ylab=paste("log10 coverage",s2,"genes") , xlim=c(plot24_min,plot24_max) , ylim=c(plot24_min,plot24_max) )
+abline(0,1 , lty=2,col="gray") 
+grid()
+legend(fill=c("orange","blue","black","gray"),x="topleft",legend=c(paste(s2,"amplified") , paste(s2,"depleted") ,"background","lowMAPQ") , cex=0.7 )
+#PLOT3: one scatterplot per chromosme (genes with coverage > plot3_max are excluded, and do not contribute to the legend colorbar)
+cols=c("background" = "black","amplified" = "#E69F00","depleted" = "#56B4E9" , "lowMAPQ" = "gray")
+scatterplotNormal <- ggplot(df, aes(x=covS1, y=covS2)) + geom_abline(intercept=0,slope=1,size=0.3,colour="red", linetype="solid") + geom_point(size=1,aes(colour=status)) + scale_color_manual(values=cols) + xlab(paste("coverage",s1)) + ylab(paste("coverage",s2)) + theme_bw() + theme(legend.title=element_blank() , legend.text = element_text(size = 8), legend.position="bottom" , axis.text.x = element_text(angle = 90, hjust = 1) , panel.grid.major = element_line(size=0.6,colour="gray") ) 
+if(scaleFree == "yes"){scatterplotNormal <- scatterplotNormal + facet_wrap(~ chromosome , scales="free") } else {scatterplotNormal <- scatterplotNormal + facet_wrap(~ chromosome) + ylim(plot3_min,plot3_max) + xlim(plot3_min,plot3_max)}
+print(scatterplotNormal)
+#PLOT4: one scatterplot per chromosme (log transformed) (genes with log10 coverage > plot4_max are not shown, and do not contribute to the legend colorbar)
+scatterplotLogged <- ggplot(df, aes(x=log10covS1, y=log10covS2))  + geom_abline(intercept=0,slope=1,size=0.3,colour="red", linetype="solid") + geom_point(size=1,aes(colour=status)) + scale_color_manual(values=cols) + xlab(paste("log10 coverage",s1)) + ylab(paste("log10 coverage",s2)) + theme_bw()  +  theme(legend.title=element_blank() , legend.text = element_text(size = 8), legend.position="bottom" , axis.text.x = element_text(angle = 90, hjust = 1), panel.grid.major = element_line(size=0.6,colour="gray") )
+if(scaleFree == "yes"){ scatterplotLogged <- scatterplotLogged + facet_wrap(~ chromosome , scales="free") } else {scatterplotLogged <- scatterplotLogged + facet_wrap(~ chromosome) + ylim(plot24_min,plot24_max) + xlim(plot24_min,plot24_max)}
+print(scatterplotLogged)
+#PLOT5: cloud plot with gene clstr (lowMAPQ is meaningless for clstrs)
+if( ! is.null(dfCl) ) {
+  dfClSaturatedRatio = dfCl
+  dfClSaturatedRatio$ratio[dfClSaturatedRatio$ratio >= plot1_ylim] = plot1_ylim
+  plot(dfClSaturatedRatio$ratio , pch=1, ylim=c(0,plot1_ylim) , col=dfClSaturatedRatio$color , ylab=paste0("sequencing coverage ratio ",s2,"/",s1) , xlab="gene cluster index")
+  legend(fill=c("orange","blue","black"),x="topleft",legend=c(paste(s2,"amplified") , paste(s2,"depleted"),"background") , cex=0.7 )
+  abline(h=c(highLowRatio[1],highLowRatio[2]),col="grey",lty=2)
+  abline(h=c(1),col="black",lty=1)
+#PLOT6: scatter plot (all clstrs, log transformed) (clstrs with log10 > threshold are not shown) (lowMAPQ is meaningless for clstrs)
+  plot(x=dfCl$log10covS1 , y=dfCl$log10covS2,col=dfCl$color,pch=1 , xlab=paste("log10 coverage",s1,"gene clusters") , ylab=paste("log10 coverage",s2,"gene clusters") , xlim=c(plot24_min,plot24_max) , ylim=c(plot24_min,plot24_max) )
+  abline(0,1 , lty=2,col="gray") 
+  grid()
+  legend(fill=c("orange","blue","black"),x="topleft",legend=c(paste(s2,"amplified") , paste(s2,"depleted") ,"background") , cex=0.7 )
+  #genes belonging to clstrs may be on multiple chromosomes
+  #thus it is not possile to show for the clstrs the equivalent of PLOT3 and PLOT4
+
+}
+invisible(dev.off())
+
+#OUTPUT TABLE
+#label overlap with gaps or repeats
+addOverlapAnnotations <- function(bed){
+  ovAnnotations <- rep("no",length(df[,1]))
+  if(is.null(bed)) {
+    return(ovAnnotations)
+  }
+  names(bed) <- c("chr","start","end")
+  bed        <- bed[bed$chr %in% df$chromosome,]
+  bedGr      <- with(bed, GRanges(chr, IRanges(start, end)))
+  genesGr    <- with(df,  GRanges(chromosome, IRanges(geneStart, geneEnd)))
+  ov  <- findOverlaps(genesGr,bedGr)
+  ovAnnotations[queryHits(ov)]="yes"
+  return(ovAnnotations) 
+}
+df$repeatsOverlap <- addOverlapAnnotations(repeats)
+df$gapsOverlap    <- addOverlapAnnotations(gaps)
+#rounding-off
+is.num     <- sapply(df, is.numeric)
+df[is.num] <- lapply(df[is.num], round, 3)
+#add gene function
+geFunDf$geneFunction[is.na(geFunDf$geneFunction)]="NA"
+df$geneFunction <- geFunDf[ match(row.names(df),geFunDf$geId) , "geneFunction"]
+#rename
+df$geneId <- row.names(df)
+names(df)=c("chromosome" , "start" , "end" , paste0("normalizedMeanCoverage_",s1) , paste0("normalizedMeanCoverage_",s2) , paste0("log10_normalizedMeanCoverage_",s1) , paste0("log10_normalizedMeanCoverage_",s2) , paste0("ratio_",s2,"/",s1) , paste0("log10_ratio_",s2,"/",s1) , "color" , "min_MAPQ" , "status" , "repeats_overlap" , "gaps_overlap" , "gene_function" , "gene_id")
+df <- df[,c(ncol(df),1:(ncol(df)-1)) ]
+
+#prepare clstr table
+if( ! is.null(dfCl) ) {
+ is.num      <- sapply(dfCl, is.numeric)
+ dfCl[is.num] <- lapply(dfCl[is.num], round, 3)
+ dfCl$clstr_id <- row.names(dfCl)
+ dfCl <- dfCl[,c(ncol(dfCl),1:(ncol(dfCl)-1)) ]
+ #removing featurs that are meaningless for clstrs
+ dfCl[,c("chromosome", "geneStart", "geneEnd","MAPQ")] <-list(NULL)
+ clstrFunS <- split(clstrFun,f=clstrFun$clstrId)
+ clstrFun2 <- t(as.data.frame(sapply(clstrFunS,function(x){list(clstr_members=paste(x$geId,collapse=",") , clstrFunction=paste(unique(x$clstrFunction),collapse=","))}),stringsAsFactors=F))
+ dfCl$clstr_members <- clstrFun2[row.names(dfCl),"clstr_members"]
+ dfCl$clstrFunction <- clstrFun2[row.names(dfCl),"clstrFunction"]
+ names(dfCl) <- c("clstr_id",paste0("normalizedMeanCoverage_",s1) , paste0("normalizedMeanCoverage_",s2) , paste0("log10_normalizedMeanCoverage_",s1) , paste0("log10_normalizedMeanCoverage_",s2) , paste0("ratio_",s2,"/",s1) , paste0("log10_ratio_",s2,"/",s1),"color","status","clstr_members","clstr_function")
+ write.xlsx(file=paste0(outName,".xlsx") , x=list(gene_comparison=df,clstr_comparison=dfCl) , asTable=TRUE)
+} else{
+  write.xlsx(file=paste0(outName,".xlsx") , x=df , asTable=TRUE)
+}
+
