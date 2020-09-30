@@ -63,7 +63,7 @@ parser$add_argument("--snvOnly"      , help="select just single nucleotide varia
 parser$add_argument("--discardGtfRegions" , help="SNVs overlapping in any strand the positions specified in the gtf file are discarded (e.g. repeats annotations) [default %(default)s]" , default="NA")
 parser$add_argument("--minFreq" , type="double" , help="min variant frequency [default %(default)s]" , default="0")
 parser$add_argument("--maxFreq" , type="double" , help="max variant frequency. Set to 0.99 to remove homozygous variants (which can be reference assembly errors) [default %(default)s]" , default="1")
-parser$add_argument("--howManyMads" , type="double" , help="define how many MAD from the median to consider. Activated by --chrCoverageMediansFile  [default %(default)s]" , default="2")
+parser$add_argument("--MADrange" , type="double" , help="define how many MAD from the median to consider. Activated by --chrCoverageMediansFile  [default %(default)s]" , default="2")
 parser$add_argument("--minDp"   , type="integer" , help="min sequencing depth on the loci  [default %(default)s]" , default="0")
 parser$add_argument("--maxDp"   , type="integer" , help="max sequencing depth on the loci [default %(default)s]" , default="1000")
 parser$add_argument("--chrCoverageMediansFile"  , help="file with the medianCoverage, maxDp and minDp for each chr. It has priority over --minDp and --maxDp. Recommended since different chromosomes can have different median coverages (in different experiments and in different ploydies) [default %(default)s]" , default="NA")
@@ -79,7 +79,7 @@ parser$add_argument("--minMQM"  , type="double" , help="min mean mapping quality
 parser$add_argument("--densityYlim" , help="graphical parameter: coord_cartesian ylim density plots [default %(default)s]" , default="NA")
 parser$add_argument("--histogramYlim" , help="graphical parameter: coord_cartesian ylim (counts) histogram plots [default %(default)s]" , default="NA")
 parser$add_argument("--alphaCovergeVSfrequency" , type="integer" , help="graphical parameter: alpha transparency in _coverageVSfreq.pdf plot [default %(default)s]" , default="255")
-parser$add_argument("--useENDfield" , help="VariantAnnotation uses the info(vcf) END field to define the variant end [yes|no]. Not recommended if you process freebayes vcfs  [default %(default)s]" )
+parser$add_argument("--useENDfield" , help="VariantAnnotation uses the info(vcf) END field to define the variant end [yes|no]. Not recommended if you process freebayes vcfs [default %(default)s]" , default="no")
 
 args <- parser$parse_args()
 #patch NA

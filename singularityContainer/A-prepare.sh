@@ -3,7 +3,7 @@
 #I am unpacking the packages without version number, so that if we change the tool version I just need to change this script, but not the singularity definition file
 #The main output is the packages.tar.gz file that is loaded by the singularity definition file
 
-#IMPORTANT!!! gipScripts/ , GenomeAnalysisTK.jar, MUMmer and trf409.linux64 must be manually downloaded/provided 
+#IMPORTANT!!! GenomeAnalysisTK.jar, MUMmer and trf409.linux64 must be manually downloaded/provided 
 SAMTOOLSv=1.8
 BWAv=0.7.17
 htslibv=1.8
@@ -22,9 +22,6 @@ circosv=0.69-9
 #create the output dir
 mkdir -p files/
 cd files
-
-#copy manually downloded packages
-cp -r ../manuallyDownlodedPkgs/* .
 
 #copy miniCRAN
 cp -r ../Rpkgs/miniCRAN/ .

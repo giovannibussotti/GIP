@@ -280,6 +280,21 @@ Detect and annotate single nucleotide variants
 ----------------------------------------------
 
 | The single nucleotide variants (SNVs) are detected in the *freebayes* process using the `freebayes <https://arxiv.org/abs/1207.3907>`_ program. Reads with MAPQ score < than ``--MAPQ`` are not used for detection. The user can specify freebayes options through the ``--freebayesOPT`` parameter. Its default is ``--read-indel-limit 1 --read-mismatch-limit 3 --read-snp-limit 3 --hwe-priors-off --binomial-obs-priors-off --allele-balance-priors-off  --min-alternate-fraction 0.05 --min-base-quality 5 --min-alternate-count 2 --pooled-continuous``. Please refer to the `freebayes manual <https://github.com/ekg/freebayes>`_ for more details.
-| SNV mapping to predicted repetitive elements are discarded. The ``--filterFreebayesOPT`` parameter can be use to enforce additional quality filters on the predicted SNVs. 
+| SNV mapping to predicted repetitive elements are discarded. The ``--filterFreebayesOPT`` parameter can be use to enforce additional quality filters on the predicted SNVs. Sensitive parameters are:
+
+* minFreq
+* maxFreq
+* minAO
+* minAOhomopolymer
+* contextSpan
+* homopolymerFreq
+* minMQMR
+* minMQM
+* MADrange
+
+| The parameter default is ``filterFreebayesOPT="--minFreq 0.1 --maxFreq 1.1 --minAO 2 --minAOhomopolymer 20 --contextSpan 5 --homopolymerFreq 0.4 --minMQMR 20 --minMQM 20 --MADrange 4"``.
+
+
+
 
 
