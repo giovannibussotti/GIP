@@ -23,8 +23,8 @@ From: ubuntu:xenial
   cd /opt
   tar -xzf packages.tar.gz
   cd packages
-  mv bedtools2/ bwa/ htslib/ gipScripts/ samtools/ freebayes/ Python3/ R vcftools/ rmblast/ RepeatMasker snpEff circos/ MUMmer/ cdhit/ miniCRAN/ installRpkgs.R Rpkgs.tsv  /opt/
-  mv /opt/gipScripts/snpEff.configTemplate /opt/
+  mv bedtools2/ bwa/ htslib/ L-GERT/ samtools/ freebayes/ Python3/ R vcftools/ rmblast/ RepeatMasker snpEff circos/ MUMmer/ cdhit/ miniCRAN/ installRpkgs.R Rpkgs.tsv  /opt/
+  mv /opt/L-GERT/snpEff.configTemplate /opt/L-GERT/rpkginstall /opt/
   mv picard.jar GenomeAnalysisTK.jar delly bedGraphToBigWig trf409.linux64 Red /bin/
   cd ..
   rm -rf packages
@@ -63,8 +63,8 @@ From: ubuntu:xenial
   cd /opt/bedtools2
   make install
 
-  #gipScripts/
-  mv /opt/gipScripts/* /bin/
+  #L-GERT
+  mv /opt/L-GERT/* /bin/
   # put the containt of your script in a file /.singularity.d/env/91-environment.sh
   # which is automatically source by singularity befor run/shell/exec command
   cat /bin/bashFunctions.sh >> $SINGULARITY_ENVIRONMENT

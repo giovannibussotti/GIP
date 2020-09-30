@@ -1,9 +1,11 @@
 #download a local version of most of the packages needed to build the singularity container
 #storing a local varsion ofthe package is good because in the future they may be not available for download anymore. This would prevent the singularity build command to work
 #I am unpacking the packages without version number, so that if we change the tool version I just need to change this script, but not the singularity definition file
+#here I download L-GERT (jobarray version) from github, then I clean up the bashFunctions file, I replace the MarkDuplicates and GATK commands, I export the functions to a subshell with typeset (very important, otherwise the functions are not available), I remove unneded scripts 
 #The main output is the packages.tar.gz file that is loaded by the singularity definition file
 
-#IMPORTANT!!! gipScripts/ , GenomeAnalysisTK.jar, MUMmer and trf409.linux64 must be manually downloaded/provided 
+#IMPORTANT!!! GenomeAnalysisTK.jar  leishmaniaAndAncestralSharedRepeats.fa  MUMmer  trf409.linux64 must be downloaded/provided manually and available from a local folder named: manuallyDownlodedPkgs/ 
+LGERTv=1.0
 SAMTOOLSv=1.8
 BWAv=0.7.17
 htslibv=1.8
@@ -29,6 +31,45 @@ cp -r ../manuallyDownlodedPkgs/* .
 #copy miniCRAN
 cp -r ../Rpkgs/miniCRAN/ .
 cp ../Rpkgs/Rpkgs.tsv ../Rpkgs/installRpkgs.R .
+
+#L-GERT_jobArrays: download and convert 
+#wget https://github.com/giovannibussotti/L-GERT_jobArrays/archive/v${LGERTv}.tar.gz
+#L-GERT_jobArrays: download and convert (private repo, using access token)
+wget --header="Authorization: token 19121fd18db29e4a1fca4f0182ce035c8e2f01ad"  https://github.com/giovannibussotti/L-GERT_jobArrays/archive/v${LGERTv}.tar.gz
+tar -xzf v${LGERTv}.tar.gz
+mv L-GERT_jobArrays-${LGERTv} L-GERT
+#strip off unwanted file header
+perl -e 'open(F,"L-GERT/LSD/bashFunctions.sh");$spy=0; while(<F>){if(($_=~/^function bwaMapSample/)or($spy==1)){print $_; $spy=1;}  } close F; ' > L-GERT/LSD/_tmp
+mv L-GERT/LSD/_tmp L-GERT/LSD/bashFunctions.sh
+#replace MarkDuplicates command
+#cat L-GERT/LSD/bashFunctions.sh | sed -e 's/MarkDuplicates /java -jar \/bin\/picard.jar MarkDuplicates /' > L-GERT/LSD/_tmp
+#mv L-GERT/LSD/_tmp L-GERT/LSD/bashFunctions.sh
+#remove the GATK key parameters
+cat L-GERT/LSD/bashFunctions.sh | sed -e 's/-et NO_ET -K $GATKKEY//' > L-GERT/LSD/_tmp
+mv L-GERT/LSD/_tmp L-GERT/LSD/bashFunctions.sh
+# mandatory to export a function to a subshell
+# at the end of sourcing environment a subshell is launch by singularity
+# exec /bin/bash --norc "$@"
+grep ^function  L-GERT/LSD/bashFunctions.sh | sed -e 's/function/typeset -fx/' | sed -e 's/{//' > _tmp ; cat _tmp >> L-GERT/LSD/bashFunctions.sh
+#clean and sort files
+mv L-GERT/scripts/*                          L-GERT/
+rm -rf L-GERT/README.md  L-GERT/sequenceOfPipelineTasks.txt L-GERT/description.docx L-GERT/scripts L-GERT/.gitignore
+mv L-GERT/giovanniLibrary.pl L-GERT/customPerlLib.pl
+#replace file paths
+cat L-GERT/gtf2bed12.sh | sed -e "s/\/pasteur\/entites\/HubBioIT\/gio\/apps\/my_scripts\/UCSC\///"  > _tmp ; mv _tmp L-GERT/gtf2bed12.sh
+cat L-GERT/exonGTF_2_fasta.sh | sed -e "s/\/pasteur\/entites\/HubBioIT\/gio\/apps\/my_scripts\/GTF_manipulator_package\///"  > _tmp ; mv _tmp L-GERT/exonGTF_2_fasta.sh 
+cat L-GERT/exonGTF_2_transcriptGTF.pl | sed -e "s/\/pasteur\/entites\/HubBioIT\/gio\/apps\/my_scripts\/Scripts_Matthias\/Perl\/Lib\//\/bin\//"  > _tmp ; mv _tmp L-GERT/exonGTF_2_transcriptGTF.pl
+cat L-GERT/exonGTF_2_geneGTF.pl       | sed -e "s/\/pasteur\/entites\/HubBioIT\/gio\/apps\/my_scripts\/Scripts_Matthias\/Perl\/Lib\//\/bin\//"  > _tmp ; mv _tmp L-GERT/exonGTF_2_geneGTF.pl
+cat L-GERT/exonGTF_2_transcriptGTF.pl | sed -e "s/giovanniLibrary.pl/customPerlLib.pl/"  > _tmp ; mv _tmp L-GERT/exonGTF_2_transcriptGTF.pl
+cat L-GERT/exonGTF_2_geneGTF.pl       | sed -e "s/giovanniLibrary.pl/customPerlLib.pl/"  > _tmp ; mv _tmp L-GERT/exonGTF_2_geneGTF.pl
+#replace variable names
+for X in `ls L-GERT/`; do cat L-GERT/$X | sed -e 's/\$SAMTOOLS/samtools/' |  sed -e "s/\'samtools\'/samtools/" > _tmp ; mv _tmp L-GERT/$X ; done
+for X in `ls L-GERT/`; do cat L-GERT/$X | sed -e 's/\$BEDTOOLS/bedtools/' |  sed -e "s/\'bedtools\'/bedtools/" > _tmp ; mv _tmp L-GERT/$X ; done
+for X in `ls L-GERT/`; do cat L-GERT/$X | sed -e 's/\$BWA/bwa/' > _tmp ; mv _tmp L-GERT/$X ; done
+for X in `ls L-GERT/`; do cat L-GERT/$X | sed -e 's/\$GATK/\/bin\/GenomeAnalysisTK.jar/' > _tmp ; mv _tmp L-GERT/$X ; done
+for X in `ls L-GERT/`; do cat L-GERT/$X | sed -e 's/\$TABIX/tabix/' > _tmp ; mv _tmp L-GERT/$X ; done
+for X in `ls L-GERT/`; do cat L-GERT/$X | sed -e 's/\$BGZIP/bgzip/' > _tmp ; mv _tmp L-GERT/$X ; done
+chmod a+x L-GERT/*
 
 #SAMTOOLS
 wget https://github.com/samtools/samtools/releases/download/${SAMTOOLSv}/samtools-${SAMTOOLSv}.tar.bz2
@@ -134,6 +175,8 @@ mv rmblast-${RMBlastv} rmblast
 
 #MUMmer (version MUMmer3.23.tar.gz, manual download from https://sourceforge.net/projects/mummer/files/latest/download)
 
+#leishmaniaAndAncestralSharedRepeats.fa is manually copied from repBase
+
 #cd-hit
 wget https://github.com/weizhongli/cdhit/archive/V${cdhitv}.tar.gz
 tar -xzf V${cdhitv}.tar.gz
@@ -150,7 +193,7 @@ tar -xzf DataSet2Unix64.tar.gz
 mv redUnix64/Red .
 
 #CLEAN
-rm -rf Python-${python3v}.tgz _tmp htslib-${htslibv}.tar.bz2 samtools-${SAMTOOLSv}.tar.bz2 bwa-${BWAv}.tar.bz2 bedtools-${bedtoolsv}.tar.gz R-${Rv}.tar.gz RepeatMasker-${RepeatMaskerv}.tar.gz v${LGERTv}.tar.gz rmblast-${RMBlastv}+-x64-linux.tar.gz clinEff V${cdhitv}.tar.gz circos-${circosv}.tgz redUnix64/ DataSet2Unix64.tar.gz
+rm -rf Python-${python3v}.tgz _tmp htslib-${htslibv}.tar.bz2 samtools-${SAMTOOLSv}.tar.bz2 bwa-${BWAv}.tar.bz2 L-GERT/LSD/test v${LGERTver}.tar.gz bedtools-${bedtoolsv}.tar.gz R-${Rv}.tar.gz RepeatMasker-${RepeatMaskerv}.tar.gz v${LGERTv}.tar.gz rmblast-${RMBlastv}+-x64-linux.tar.gz clinEff V${cdhitv}.tar.gz circos-${circosv}.tgz redUnix64/ DataSet2Unix64.tar.gz
 
 #compress
 mkdir -p packages
