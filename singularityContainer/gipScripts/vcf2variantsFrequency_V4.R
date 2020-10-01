@@ -14,7 +14,7 @@
 #OUTPUT
 #-_df.gz:			data frame with all the filtered variants that are also plotted
 #-_vcf.gz:			vcf with all the filtered variants that are also plotted
-#-_summary: 		tot variants per chromosome normalised by chromosomeKilobases (and optionally also by median chromosome coverage if --chrCoverageMediansFile is specified)
+#-_summary: 		tot variants per chromosome normalised by chromosomeKilobases 
 #-_summary: 		distribution of variant frequencies per chromosome
 #-_summary:			histogram of variant frequencies versus position per chromosome
 #-_summary:                     faceting position vs VRF
@@ -108,9 +108,7 @@ plotAll <- function(varPerChrNormalised , df , outName , chrSizes){
     #tot var perChr (normalised)
     #pdf(paste(outdir,"/",outName,"_summary.pdf",sep=""),width=10,height=10)
     png(paste0(outdir,"/",outName,"_totVarPerChr.png"),type='cairo')
-    plot(varPerChrNormalised,main="", pch=19, cex=0.5,xlab="chromosome",ylab="SNVs per chromosome Kb",xaxt="n")
-    axis(1, names(varPerChrNormalised), las=2,col.axis="black")
-    abline(v=1:length(varPerChrNormalised) , col="cornsilk2" , lty=3)
+    barplot(varPerChrNormalised , main="", ylab="chromosome",xlab="number of SNVs per Kb", names.arg=names(varPerChrNormalised),horiz=TRUE , col="#69b3a2",las=1)
     dev.off()
 
     #all density plots
@@ -258,12 +256,6 @@ plotAll <- function(varPerChrNormalised , df , outName , chrSizes){
 normalise <- function (varPerChr , chrSizes ){
     kiloChrSize         <- chrSizes[match(names(varPerChr),chrSizes$chr),"size"] / 1000
     varPerChrNormalised <- varPerChr / kiloChrSize
-    #millionMappedReads normalization
-    if(! is.na(chrCoverageMediansFile)){
-        chrCoverageMedians  <- read.table(chrCoverageMediansFile,stringsAsFactors=F,header=T)
-        medianCovs          <- chrCoverageMedians[match(names(varPerChr),chrCoverageMedians$CHR),"MEDIANCOV"]
-        varPerChrNormalised <- varPerChrNormalised / medianCovs
-    }
     return(varPerChrNormalised)
 }
 makeDf <- function (chr , position , freq , AO , alt , depthForEachAllele , QaForEachAllele , QrForEachAllele , MQMforEachAllele , MQMRforEachAllele , ref_altForEachAllele){
