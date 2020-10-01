@@ -412,6 +412,7 @@ library(IRanges)
 library(GenomicRanges)
 library(Biostrings)
 library(seqLogo)
+library(gridExtra)
 system(paste("mkdir -p",outdir))
 
 #library(session)
