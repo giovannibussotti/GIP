@@ -73,8 +73,6 @@ From: ubuntu:xenial
   #give permissions
   chmod a+x /bin/*
   chmod a+r /bin/*
-  chmod a+x /opt/rpkginstall
-  chmod a+r /opt/leishmaniaAndAncestralSharedRepeats.fa
 
   #Python3
   cd /opt/Python3

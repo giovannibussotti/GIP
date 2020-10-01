@@ -228,14 +228,17 @@ plotAll <- function(varPerChrNormalised , df , outName , chrSizes){
         print(dots)
     }
     dev.off()
+
     #dotplot combined with marginal dist
     pdf(paste0(outdir,"/",outName,"_combinedDotPlotAndDistribution.pdf"))
-    for (chr in chrs){
-	sp2 <- ggplot(df[(df$chr == chr) , ], aes(position,freq)) + geom_point(aes(colour=log10(totDepth))) + xlim(0 , chrSizes[chrSizes$chr == chr, "size"]) + ylim(0,1) + theme_bw() +  ggtitle(paste("chromosome",chr)) + theme(legend.position="left" ) + ylab("variant frequency") + scale_colour_gradient(low = "black" , high="gold", name="log10\nSequencing\nDepth")
-	print(ggMarginal(sp2 ,margins=c("y") , type = "histogram", fill = '#BDBBB6', col = '#403B3B'))
-    }
-    dev.off()
-    
+    pl <- lapply(chrs, function(chr){
+      sp2 <- ggplot(df[(df$chr == chr) , ], aes(position,freq)) + geom_point(aes(colour=log10(totDepth))) + xlim(0 , chrSizes[chrSizes$chr == chr, "size"]) + ylim(0,1) + theme_bw() +  ggtitle(paste("chromosome",chr)) + theme(legend.position="left" ) + ylab("variant frequency") + scale_colour_gradient(low = "black" , high="gold", name="log10\nSequencing\nDepth")
+      ggMarginal(sp2 ,margins=c("y") , type = "histogram", fill = '#BDBBB6', col = '#403B3B')
+    })
+    ml <- marrangeGrob(pl, nrow=1, ncol=1 , top="")
+    print(ml)
+    dev.off() 
+ 
     #context
     system(paste0("mkdir -p ",outdir,"/context"))
     for (mut in unique(df$ref_alt)){
