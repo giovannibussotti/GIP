@@ -288,11 +288,11 @@ Detect single nucleotide variants
 
 * *--minFreq*          - Min. variant frequency
 * *--maxFreq*          - Max. variant frequency
-* *--minAO*            - Min. number of reads supporting the SNV
+* *--minAO*            - Min. number of reads supporting the alternate allele
 * *--minMQMR*          - Min. mean mapping quality of observed reference alleles
 * *--minMQM*           - Min. mean mapping quality of observed alternate alleles
 * *--MADrange*         - Discard SNVs whose sequencing depth is > or < *MADrange* MADs from the chromosome median coverage
-* *--minAOhomopolymer* - Min. number of reads supporting SNVs mapping inside an homopolymer
+* *--minAOhomopolymer* - Min. number of reads supporting the alternate allele mapping inside an homopolymer
 * *--contextSpan*      - Size on each side of SNV genomic context (bp)
 * *--homopolymerFreq*  - Base frequency cut-off to consider a genomic context a homopolymer
 
@@ -302,39 +302,39 @@ Detect single nucleotide variants
 
 
 +-------------------------------------------------+-----------------------------+
-| singleVariants.df.gz                              SNVs table
+| singleVariants.df.gz                            | SNVs table
 +-------------------------------------------------+-----------------------------+
-| singleVariants.vcf.gz                             SNVs vcf
+| singleVariants.vcf.gz                           | SNVs vcf
 +-------------------------------------------------+-----------------------------+
-| singleVariants.vcf.gz.tbi                         SNVs vcf index
+| singleVariants.vcf.gz.tbi                       | SNVs vcf index
 +-------------------------------------------------+-----------------------------+
-| single_allDensities.png                           VRF density plot
+| single_allDensities.png                         | VRF density plot
 +-------------------------------------------------+-----------------------------+
-| single_allHists.png                               VRF histogram plot
+| single_allHists.png                             | VRF histogram plot
 +-------------------------------------------------+-----------------------------+
-| single_allHistsSqrt.png                           VRF histogram plot (sqrt scale)
+| single_allHistsSqrt.png                         | VRF histogram plot (sqrt scale)
 +-------------------------------------------------+-----------------------------+
-| single_combinedDotPlotAndDistribution.pdf
+| single_combinedDotPlotAndDistribution.pdf       | position/VRF plot with marginal distribution
 +-------------------------------------------------+-----------------------------+
-| single_depthVsVRFletters.png
+| single_depthVsVRF.png                           | VRF/depth plot
 +-------------------------------------------------+-----------------------------+
-| single_depthVsVRF.png
+| single_depthVsVRFletters.png                    | VRF/depth plot (chromosome mapping) 
 +-------------------------------------------------+-----------------------------+
-| single_onePlotPerChr_colouredByVariantType.pdf
+| single_onePlotPerChr.pdf                        | position/VRF and density plots per chromosome
 +-------------------------------------------------+-----------------------------+
-| single_onePlotPerChr.pdf
+| single_onePlotPerChr_colouredByVariantType.pdf  | position/VRF colored by SNV type
 +-------------------------------------------------+-----------------------------+
-| single_totVarPerChr.png
+| single_totVarPerChr.png                         | 
 +-------------------------------------------------+-----------------------------+
-| single_variantTypeCombined.png
+| single_variantType.png                          |
 +-------------------------------------------------+-----------------------------+
-| single_variantType.png
+| single_variantTypeCombined.png                  |
 +-------------------------------------------------+-----------------------------+
-| single_VRFvsAOletters.png
+| single_VRFvsAO.png                              | VRF/ alternate allele read support
 +-------------------------------------------------+-----------------------------+
-| single_VRFvsAO.png
+| single_VRFvsAOletters.png                       | VRF/ alternate allele read support (chromosome mapping)
 +-------------------------------------------------+-----------------------------+
-| single_VRFvsPosFaceting.png
+| single_VRFvsPosFaceting.png                     |
 +-------------------------------------------------+-----------------------------+
 
 

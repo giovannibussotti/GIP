@@ -108,7 +108,7 @@ plotAll <- function(varPerChrNormalised , df , outName , chrSizes){
     #tot var perChr (normalised)
     #pdf(paste(outdir,"/",outName,"_summary.pdf",sep=""),width=10,height=10)
     png(paste0(outdir,"/",outName,"_totVarPerChr.png"),type='cairo')
-    plot(varPerChrNormalised,main="", pch=19, cex=0.5,xlab="chromosome",ylab="number of 1 alt variants",xaxt="n")
+    plot(varPerChrNormalised,main="", pch=19, cex=0.5,xlab="chromosome",ylab="SNVs per chromosome Kb",xaxt="n")
     axis(1, names(varPerChrNormalised), las=2,col.axis="black")
     abline(v=1:length(varPerChrNormalised) , col="cornsilk2" , lty=3)
     dev.off()
