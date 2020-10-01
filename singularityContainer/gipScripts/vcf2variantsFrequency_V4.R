@@ -292,7 +292,7 @@ makeDf <- function (chr , position , freq , AO , alt , depthForEachAllele , QaFo
 }
 filterDF <- function(df){
 	#filter by VRF
-	df <- df[(df$freq > minFreq) & (df$freq < maxFreq) , ]
+	df <- df[(df$freq >= minFreq) & (df$freq <= maxFreq) , ]
 	#filter SNV involving N
         df <- df[! grepl(x=df$ref_alt , pattern="N") , ]
 	#add SNV sequence context
@@ -384,7 +384,7 @@ filterVCF <- function (vcf){
 			maxDp  <- chrCoverageMedians[r,"MEDIANCOVplus2MAD"]
 			minAlternateCount <- (medCov / 100) * minAlternatePercent
 			MAD     <- (maxDp - medCov) / 2
-			madSpan <- MAD * howManyMads
+			madSpan <- MAD * MADrange
 			minDp   <- medCov - madSpan
 			maxDp   <- medCov + madSpan
 			allVcfs[[chr]] <- vcf[(seqnames(vcf) == chr) & (info(vcf)$DP < maxDp) & (info(vcf)$DP > minDp) & (unlist(geno(vcf)[["AO"]]) >= minAlternateCount),]  
