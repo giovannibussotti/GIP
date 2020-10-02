@@ -276,10 +276,11 @@ Measure gene sequencing coverage
 The **sampleId.covPerGeKaryoplot/** folder includes plot generated with the `karyoploteR <https://www.bioconductor.org/packages/release/bioc/html/karyoploteR.html>`_ package. Only chromosomes hosting significant gene CNVs are shown. Amplified genes are shown in orange, whereas depleted genes are shown in blue. If any, the repetitive elements located in proximity of gene CNVs are marked in the bottom part of the plots. The ``--repeatRange`` parameter can be used to set the maximum distance (in nucleotides) from each gene CNVs in which repeats are labelled.
 
 
-Detect single nucleotide variants
----------------------------------
+Detect, annotate and filter single nucleotide variants
+------------------------------------------------------
 
-| The single nucleotide variants (SNVs) are detected in the *freebayes* process using the `freebayes <https://arxiv.org/abs/1207.3907>`_ program. Reads with MAPQ score < than ``--MAPQ`` are not used for detection. The user can specify freebayes options through the ``--freebayesOPT`` parameter. Its default is:
+| The single nucleotide variants (SNVs) are detected in the *freebayes* process using the `freebayes <https://arxiv.org/abs/1207.3907>`_ program, and their effects are predicted in the *snpEff* process running `snpEff <https://pcingola.github.io/SnpEff/se_introduction/>_` with option "-ud 0".
+| Reads with MAPQ score < than ``--MAPQ`` are not used for detecti on. The user can specify freebayes options through the ``--freebayesOPT`` parameter. Its default is:
 
 .. code-block:: bash
 
@@ -289,7 +290,18 @@ Detect single nucleotide variants
 
 
 Please refer to the `freebayes manual <https://github.com/ekg/freebayes>`_ for more details.
-| GIP returns the freebayes output in the .vcf gzip compressed file **gipOut/samples/sampleId/sampleId.vcf.gz**.
+| GIP returns the following outputs in the **gipOut/samples/sampleId/** folder:
+
++--------------------------------------+---------------------------------------------+
+| sampleId.vcf.gz                      | SNVs (gzip compressed vcf file)             |
++--------------------------------------+---------------------------------------------+
+| sampleId.vcf.gz.tbi                  | tabix vcf index                             |
++--------------------------------------+---------------------------------------------+
+| snpEff_summary_sampleId.genes.txt.gz | SNVs per gene, snpEff summary table         |
++--------------------------------------+---------------------------------------------+
+| snpEff_summary_sampleId.html         | snpEff summary (html)                       |
++--------------------------------------+---------------------------------------------+
+
 | SNV mapping to predicted repetitive elements, or mapping inside low-complexity regions (homopolymer) are at higher risk to be sequencing artefacts. 
 | To diminish the number of false positives and short-list high quality SNVs GIP operates additional filters. 
 | GIP discards all SNVs mapping inside repetitive elements, removes the variant positions with multiple alternate alleles, evaluates the nucleotide composition complexity of the genomic context of each SNV (i.e. the neighbour bases) and allows the user to apply different, more stringent, filterering criteria for variants detected inside homopolymers.  
@@ -317,11 +329,11 @@ Please refer to the `freebayes manual <https://github.com/ekg/freebayes>`_ for m
 
 
 +-------------------------------------------------+------------------------------------------------------------+
-| singleVariants.df.gz                            | SNVs table                                                 |
+| singleVariants.df.gz                            | SNVs (table)                                               |
 +-------------------------------------------------+------------------------------------------------------------+
-| singleVariants.vcf.gz                           | SNVs vcf                                                   |
+| singleVariants.vcf.gz                           | SNVs (gzip compressed vcf file)                            |
 +-------------------------------------------------+------------------------------------------------------------+
-| singleVariants.vcf.gz.tbi                       | SNVs vcf index                                             |
+| singleVariants.vcf.gz.tbi                       | tabix vcf index                                            |
 +-------------------------------------------------+------------------------------------------------------------+
 | single_allDensities.png                         | VRF density plot                                           |
 +-------------------------------------------------+------------------------------------------------------------+
@@ -349,9 +361,9 @@ Please refer to the `freebayes manual <https://github.com/ekg/freebayes>`_ for m
 |                                                 |                                                            |
 |                                                 | equivalent variants combined                               |
 +-------------------------------------------------+------------------------------------------------------------+
-| single_VRFvsAO.png                              | VRF/ alternate allele read support                         |
+| single_VRFvsAO.png                              | VRF/alternate allele read support                          |
 +-------------------------------------------------+------------------------------------------------------------+
-| single_VRFvsAOletters.png                       | VRF/ alternate allele read support                         |
+| single_VRFvsAOletters.png                       | VRF/alternate allele read support                          |
 |                                                 |                                                            |
 |                                                 | SNV chromosomes are mapped to different colors and letters |
 +-------------------------------------------------+------------------------------------------------------------+
@@ -359,26 +371,46 @@ Please refer to the `freebayes manual <https://github.com/ekg/freebayes>`_ for m
 |                                                 |                                                            |
 |                                                 | in different panels                                        |
 +-------------------------------------------------+------------------------------------------------------------+
+| snpEff_summary_sampleId.genes.txt.gz            | SNVs per gene, snpEff summary table                        |
++-------------------------------------------------+------------------------------------------------------------+
+| snpEff_summary_sampleId.html                    | snpEff summary (html)                                      |
++-------------------------------------------------+------------------------------------------------------------+
+| dNdS.stats                                      | dNdS analysis statistics                                   |
++-------------------------------------------------+------------------------------------------------------------+
+| dNdStable.tsv.gz                                | dNdS analysis per gene                                     |
++-------------------------------------------------+------------------------------------------------------------+
+| pseudoReference.fa.gz                           | genome sequence incorporating alternate alleles            |
++-------------------------------------------------+------------------------------------------------------------+
+| context/                                        | folder containing the nucleotide frequency logo plots of   |
+|                                                 |                                                            |
+|                                                 | the genomic contexts of different SNV types                |
++-------------------------------------------------+------------------------------------------------------------+
+
+
+| For the dNdS analysis the snpEff effects counting as synonimous substitutions are:
+
+* SYNONYMOUS_CODING
+* SYNONYMOUS_STOP
+
+| The snpEff effects counting as non-synonimous substitutions are:
+
+* NON_SYNONYMOUS_CODING
+* NON_SYNONYMOUS_START 
+* START_LOST
+* STOP_GAINED
+* STOP_LOST
 
 
 
+Detect structural variants
+--------------------------
+ 
+| The genomic structural variants (SVs) are detected in the *delly* process using the `delly <https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3436805/>_` program. The SVs are predicted based on pair-end mapping orientation and split-read information, and include unbalanced reaffangements (i.e. CNV deletions or amplifications), as well as balanced rearrangements (inversions and translocations).
+| At this step delly is used to predict the four SV types using just the reads passing both the ``--MAPQ`` and ``--BITFLAG`` filters.
+| Additionally, GIP allows to apply custom quality filters to select a short-list of SV predictions.  
 
 
-
-
-
-
-
-
-
-
-
-
-Annotate single nucleotide variants
------------------------------------
-
-| GIP runs `snpEff <https://pcingola.github.io/SnpEff/se_introduction/>_` with option "-ud 0" in the *snpEff* process to predict and annotate the effect of SNVs. 
-
+TO CONTINUE. NOTE, The filterDellyOPT parameter is not used in the command line!!!! you must fix this bug
 
 
 

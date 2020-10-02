@@ -4,7 +4,7 @@ parser$add_argument("--ALLGEANN" , required=TRUE , help="tsv file listing geneID
 parser$add_argument("--SNPEFFDF" , required=TRUE , help="freebayes/snpEff df file containing the EFF field [default %(default)s]" )
 parser$add_argument("--ID" , help="sample ID [default %(default)s]" , default="sampleSNVs" )
 parser$add_argument("--synNames" , nargs="+" , help="snpEff effects counting as synonimous substitutions. The default is SYNONYMOUS_CODING and SYNONYMOUS_STOP [default %(default)s]" , default="NA")
-parser$add_argument("--nonSynNames" , nargs="+" , help="snpEff effects counting as non-synonimous substitutions. The default is NON_SYNONYMOUS_CODING NON_SYNONYMOUS_START START_LOST STOP_GAINED STOP_LOST [default %(default)s]" , default="NA")
+parser$add_argument("--nonSynNames" , nargs="+" , help="snpEff effects counting as synonimous substitutions. The default is NON_SYNONYMOUS_CODING NON_SYNONYMOUS_START START_LOST STOP_GAINED STOP_LOST [default %(default)s]" , default="NA")
 parser$add_argument("--debug"  , action="store_true" , help="dump session and quit [default %(default)s]" , default=FALSE)
 args <- parser$parse_args()
 for (n in names(args)){if(args[[n]][1] == "NA"  ){args[[n]] <- NA  } }
