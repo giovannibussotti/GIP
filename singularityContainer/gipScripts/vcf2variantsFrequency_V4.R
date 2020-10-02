@@ -158,7 +158,7 @@ plotAll <- function(varPerChrNormalised , df , outName , chrSizes){
     meanFrequenciesPerMutation <- NULL;  for (mut in unique(df$ref_alt)) { mf <- mean(df[df$ref_alt == mut , "freq"]); names(mf)<-mut; meanFrequenciesPerMutation <- c(meanFrequenciesPerMutation , mf)   }
     mutId <- names(meanFrequenciesPerMutation)
     mutDf <- data.frame(variantId=mutId, meanFrequenciesPerMutation= meanFrequenciesPerMutation , mutationCount=as.numeric(table(df$ref_alt)[mutId]))
-    print(ggplot(mutDf, aes(y=mutationCount,x=variantId,fill=meanFrequenciesPerMutation)) + geom_bar(stat="identity") + theme_minimal()   +  scale_fill_continuous(guide = guide_legend(title = "mean frequencies\nper variant type")) + xlab("variant type") + ylab("count"))
+    print(ggplot(mutDf, aes(y=mutationCount,x=variantId,fill=meanFrequenciesPerMutation)) + geom_bar(stat="identity") + theme_minimal()   +  scale_fill_continuous(guide = guide_legend(title = "mean varyant type\nfrequency")) + xlab("variant type") + ylab("number"))
    dev.off()
   
     #combining equivalent types 
@@ -170,7 +170,7 @@ plotAll <- function(varPerChrNormalised , df , outName , chrSizes){
     mutDfCombo <- rbind(data.frame(variantId="C_A,G_T" , meanFrequenciesPerMutation=mean(c(mutDf["C_A","meanFrequenciesPerMutation"], mutDf["G_T","meanFrequenciesPerMutation"])) , mutationCount=sum(c(mutDf["C_A","mutationCount"], mutDf["G_T","mutationCount"]))) , mutDfCombo )
     mutDfCombo <- rbind(data.frame(variantId="C_G,G_C" , meanFrequenciesPerMutation=mean(c(mutDf["C_G","meanFrequenciesPerMutation"], mutDf["G_C","meanFrequenciesPerMutation"])) , mutationCount=sum(c(mutDf["C_G","mutationCount"], mutDf["G_C","mutationCount"]))) , mutDfCombo )
     mutDfCombo <- rbind(data.frame(variantId="C_T,G_A" , meanFrequenciesPerMutation=mean(c(mutDf["C_T","meanFrequenciesPerMutation"], mutDf["G_A","meanFrequenciesPerMutation"])) , mutationCount=sum(c(mutDf["C_T","mutationCount"], mutDf["G_A","mutationCount"]))) , mutDfCombo )
-    print(ggplot(mutDfCombo, aes(y=mutationCount,x=variantId,fill=meanFrequenciesPerMutation)) + geom_bar(stat="identity") + theme_minimal()   +  scale_fill_continuous(guide = guide_legend(title = "mean frequencies\nper variant type")) + xlab("variant type") + ylab("count"))
+    print(ggplot(mutDfCombo, aes(y=mutationCount,x=variantId,fill=meanFrequenciesPerMutation)) + geom_bar(stat="identity") + theme_minimal()   +  scale_fill_continuous(guide = guide_legend(title = "mean variant type\nfrequency")) + xlab("variant type") + ylab("number"))
     dev.off()
     
     #coverage vs VRF

@@ -279,15 +279,24 @@ The **sampleId.covPerGeKaryoplot/** folder includes plot generated with the `kar
 Detect single nucleotide variants
 ---------------------------------
 
-| The single nucleotide variants (SNVs) are detected in the *freebayes* process using the `freebayes <https://arxiv.org/abs/1207.3907>`_ program. Reads with MAPQ score < than ``--MAPQ`` are not used for detection. The user can specify freebayes options through the ``--freebayesOPT`` parameter. Its default is ``--read-indel-limit 1 --read-mismatch-limit 3 --read-snp-limit 3 --hwe-priors-off --binomial-obs-priors-off --allele-balance-priors-off  --min-alternate-fraction 0.05 --min-base-quality 5 --min-alternate-count 2 --pooled-continuous``. Please refer to the `freebayes manual <https://github.com/ekg/freebayes>`_ for more details.
+| The single nucleotide variants (SNVs) are detected in the *freebayes* process using the `freebayes <https://arxiv.org/abs/1207.3907>`_ program. Reads with MAPQ score < than ``--MAPQ`` are not used for detection. The user can specify freebayes options through the ``--freebayesOPT`` parameter. Its default is:
+
+.. code-block:: bash
+
+ --freebayesOPT="--read-indel-limit 1 --read-mismatch-limit 3 --read-snp-limit 3 \
+ --hwe-priors-off --binomial-obs-priors-off --allele-balance-priors-off \
+ --min-alternate-fraction 0.05 --min-base-quality 5 --min-alternate-count 2 --pooled-continuous"
+
+
+Please refer to the `freebayes manual <https://github.com/ekg/freebayes>`_ for more details.
 | GIP returns the freebayes output in the .vcf gzip compressed file **gipOut/samples/sampleId/sampleId.vcf.gz**.
-| However, SNV mapping to predicted repetitive elements, or mapping inside low-complexity regions (homopolymer) are at higher risk to be sequencing artefacts. 
-| To diminish the number of false positives and generate an high quality SNV selection GIP operates additional filters. 
-| GIP discards all SNVs mapping inside repetitive elements, evaluates the nucleotide composition complexity of the genomic context of each SNV (i.e. the neighbour bases) and allows the user to apply different, more stringent, filterering criteria for SNVs inside homopolymers.  
+| SNV mapping to predicted repetitive elements, or mapping inside low-complexity regions (homopolymer) are at higher risk to be sequencing artefacts. 
+| To diminish the number of false positives and short-list high quality SNVs GIP operates additional filters. 
+| GIP discards all SNVs mapping inside repetitive elements, removes the variant positions with multiple alternate alleles, evaluates the nucleotide composition complexity of the genomic context of each SNV (i.e. the neighbour bases) and allows the user to apply different, more stringent, filterering criteria for variants detected inside homopolymers.  
 | For this purpose the ``--filterFreebayesOPT`` parameter can be used to set the following variables:
 
-* *--minFreq*          - Min. variant frequency
-* *--maxFreq*          - Max. variant frequency
+* *--minFreq*          - Min. variant read frequency (VRF)
+* *--maxFreq*          - Max. VRF
 * *--minAO*            - Min. number of reads supporting the alternate allele
 * *--minMQMR*          - Min. mean mapping quality of observed reference alleles
 * *--minMQM*           - Min. mean mapping quality of observed alternate alleles
@@ -297,45 +306,62 @@ Detect single nucleotide variants
 * *--homopolymerFreq*  - Base frequency cut-off to consider a genomic context a homopolymer
 
 
-| The parameter default is ``filterFreebayesOPT="--minFreq 0.1 --maxFreq 1 --minAO 2 --minAOhomopolymer 20 --contextSpan 5 --homopolymerFreq 0.4 --minMQMR 20 --minMQM 20 --MADrange 4"``.
+| The parameter default is:
+
+.. code-block:: bash
+
+   filterFreebayesOPT="--minFreq 0.1 --maxFreq 1 --minAO 2 --minAOhomopolymer 20 \ 
+   --contextSpan 5 --homopolymerFreq 0.4 --minMQMR 20 --minMQM 20 --MADrange 4"
+
 | The results relative to the filtered SNVs are stored in the **gipOut/samples/sampleId/sampleId_freebayesFiltered/** folder including:
 
 
-+-------------------------------------------------+-----------------------------+
-| singleVariants.df.gz                            | SNVs table
-+-------------------------------------------------+-----------------------------+
-| singleVariants.vcf.gz                           | SNVs vcf
-+-------------------------------------------------+-----------------------------+
-| singleVariants.vcf.gz.tbi                       | SNVs vcf index
-+-------------------------------------------------+-----------------------------+
-| single_allDensities.png                         | VRF density plot
-+-------------------------------------------------+-----------------------------+
-| single_allHists.png                             | VRF histogram plot
-+-------------------------------------------------+-----------------------------+
-| single_allHistsSqrt.png                         | VRF histogram plot (sqrt scale)
-+-------------------------------------------------+-----------------------------+
-| single_combinedDotPlotAndDistribution.pdf       | position/VRF plot with marginal distribution
-+-------------------------------------------------+-----------------------------+
-| single_depthVsVRF.png                           | VRF/depth plot
-+-------------------------------------------------+-----------------------------+
-| single_depthVsVRFletters.png                    | VRF/depth plot (chromosome mapping) 
-+-------------------------------------------------+-----------------------------+
-| single_onePlotPerChr.pdf                        | position/VRF and density plots per chromosome
-+-------------------------------------------------+-----------------------------+
-| single_onePlotPerChr_colouredByVariantType.pdf  | position/VRF colored by SNV type
-+-------------------------------------------------+-----------------------------+
-| single_totVarPerChr.png                         | 
-+-------------------------------------------------+-----------------------------+
-| single_variantType.png                          |
-+-------------------------------------------------+-----------------------------+
-| single_variantTypeCombined.png                  |
-+-------------------------------------------------+-----------------------------+
-| single_VRFvsAO.png                              | VRF/ alternate allele read support
-+-------------------------------------------------+-----------------------------+
-| single_VRFvsAOletters.png                       | VRF/ alternate allele read support (chromosome mapping)
-+-------------------------------------------------+-----------------------------+
-| single_VRFvsPosFaceting.png                     |
-+-------------------------------------------------+-----------------------------+
++-------------------------------------------------+------------------------------------------------------------+
+| singleVariants.df.gz                            | SNVs table                                                 |
++-------------------------------------------------+------------------------------------------------------------+
+| singleVariants.vcf.gz                           | SNVs vcf                                                   |
++-------------------------------------------------+------------------------------------------------------------+
+| singleVariants.vcf.gz.tbi                       | SNVs vcf index                                             |
++-------------------------------------------------+------------------------------------------------------------+
+| single_allDensities.png                         | VRF density plot                                           |
++-------------------------------------------------+------------------------------------------------------------+
+| single_allHists.png                             | VRF histogram plot                                         |
++-------------------------------------------------+------------------------------------------------------------+
+| single_allHistsSqrt.png                         | VRF histogram plot (sqrt scale)                            |
++-------------------------------------------------+------------------------------------------------------------+
+| single_combinedDotPlotAndDistribution.pdf       | position/VRF plot with marginal distribution               |
++-------------------------------------------------+------------------------------------------------------------+
+| single_depthVsVRF.png                           | VRF/depth plot                                             |
++-------------------------------------------------+------------------------------------------------------------+
+| single_depthVsVRFletters.png                    | VRF/depth plot                                             |
+|                                                 |                                                            |
+|                                                 | SNV chromosomes are mapped to different colors and letters |
++-------------------------------------------------+------------------------------------------------------------+
+| single_onePlotPerChr.pdf                        | position/VRF and density plots per chromosome              |
++-------------------------------------------------+------------------------------------------------------------+
+| single_onePlotPerChr_colouredByVariantType.pdf  | position/VRF colored by SNV type                           |
++-------------------------------------------------+------------------------------------------------------------+
+| single_totVarPerChr.png                         | num. SNVs per chromsome kb                                 |
++-------------------------------------------------+------------------------------------------------------------+
+| single_variantType.png                          | occurrence of different SNV types                          |
++-------------------------------------------------+------------------------------------------------------------+
+| single_variantTypeCombined.png                  | occurrence of different SNV types                          |
+|                                                 |                                                            |
+|                                                 | equivalent variants combined                               |
++-------------------------------------------------+------------------------------------------------------------+
+| single_VRFvsAO.png                              | VRF/ alternate allele read support                         |
++-------------------------------------------------+------------------------------------------------------------+
+| single_VRFvsAOletters.png                       | VRF/ alternate allele read support                         |
+|                                                 |                                                            |
+|                                                 | SNV chromosomes are mapped to different colors and letters |
++-------------------------------------------------+------------------------------------------------------------+
+| single_VRFvsPosFaceting.png                     | position/VRF plot with different chromosomes               |
+|                                                 |                                                            |
+|                                                 | in different panels                                        |
++-------------------------------------------------+------------------------------------------------------------+
+
+
+
 
 
 
