@@ -122,6 +122,9 @@ Map reads and collect alignment statistics
 | sampleId.insertSize.table       | picard CollectInsertSizeMetrics tabular output         |
 +---------------------------------+--------------------------------------------------------+
 
+| The genome sequencing coverage density is available in bigWig format and computed in the *bigWigGenomeCov* process.
+| The bigWig file format is compatible with genome browsers such as`IGV <http://software.broadinstitute.org/software/igv/>_`. A description of the bigWig format is available from `here <https://genome.ucsc.edu/goldenPath/help/bigWig.html>_`. GIP generates the bigWig output file **gipOut/samples/sampleId/sampleId.bw** by applying the bamCoverage module of `deepTools2 <https://academic.oup.com/nar/article/44/W1/W160/2499308>_`. 
+
 
 
 Evaluate chromosome coverage
