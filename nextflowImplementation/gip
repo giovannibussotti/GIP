@@ -53,6 +53,7 @@ def helpMessage() {
       --filterDellyOPT                Downastream, Delly filtering options
       --minNormCovForDUP              min normalized sequencing coverage for Delly duplications
       --maxNormCovForDEL              max normalized sequencing coverage for Delly deletions
+      --binSizeCircos                 bin size for circos plot
     BigWig Options:  
       -bigWigOPT                     Options to generate the coverage bigWig file
     """.stripIndent()
@@ -115,6 +116,7 @@ filterFreebayesOPT   = params.filterFreebayesOPT
 filterDellyOPT   = params.filterDellyOPT
 minNormCovForDUP = params.minNormCovForDUP
 maxNormCovForDEL = params.maxNormCovForDEL
+binSizeCircos    = params.binSizeCircos
 bigWigOPT        = params.bigWigOPT
 
 
@@ -455,7 +457,7 @@ process delly {
   
   #circos
   cp /bin/ideogram.conf /bin/ticks.conf .
-  prepare4Circos.sh -i $sampleId -m $bam -s $size -g $annotation -c "$chromosomes" -n $covPerNt -b 25000 -t /bin/templateCircos.conf -z ${sampleId}.delly.TRA.filter.circosBed -j ${sampleId}.delly.INV.filter.circosBed -k ${sampleId}.delly.DUP.filter.circosBed -w ${sampleId}.delly.DEL.filter.circosBed
+  prepare4Circos.sh -i $sampleId -m $bam -s $size -g $annotation -c "$chromosomes" -n $covPerNt -b $binSizeCircos -t /bin/templateCircos.conf -z ${sampleId}.delly.TRA.filter.circosBed -j ${sampleId}.delly.INV.filter.circosBed -k ${sampleId}.delly.DUP.filter.circosBed -w ${sampleId}.delly.DEL.filter.circosBed
 
   #reorganize output
   mkdir -p ${sampleId}_dellyFiltered/

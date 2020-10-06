@@ -406,7 +406,7 @@ Detect structural variants
 --------------------------
  
 | The genomic structural variants (SVs) are detected in the *delly* process using the `delly <https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3436805/>_` program. The SVs are predicted based on pair-end mapping orientation and split-read information, and include unbalanced reaffangements (i.e. CNV deletions or amplifications), as well as balanced rearrangements (inversions and translocations). delly is used to predict the four SV types using just the reads passing both the ``--MAPQ`` and ``--BITFLAG`` filters. The output is the .vcf gzip compressed file  **gipOut/samples/sampleId/sampleId.delly.vcf.gz** and its tabix intex with .tbi extension.
-|GIP allows to apply custom quality filters and select a short-list of SV predictions using the ``--filterDellyOPT`` parameter, and setting the following variables:
+| GIP allows to apply custom quality filters and select a short-list of SV predictions using the ``--filterDellyOPT`` parameter, and setting the following variables:
 
 * *--minDV*          - min. num. of read pairs supporting the variant [int] 
 * *--minPercentDVDR* - min. percent of read pairs supporting the variant [num] 
@@ -421,7 +421,7 @@ Detect structural variants
    filterDellyOPT="--minDV 2 --minPercentDVDR 5 --PRECISE no \
    --maxBanSeq 90 --chrEndFilter 100"
 
-
+| Additionally, GIP allows to filter the tandem duplications and deletions predicted with delly based on their sequencing coverage relative to the chromosome median coverage. Predicted tandem duplication must have a normalized coverage > ``--minNormCovForDUP`` (e.g. 1.5), while deletions must have a normalized coverage < ``--maxNormCovForDEL`` (e.g. 0.5). However these filters are not effective by default (values set to 0 and 100, respectively) because genuine deletions or depletions may not always defined by variation in sequencing coverage. Whole genome sequencing data obtained from cell populations is such that a given locus under evolutive pressure can be amplified in a sub-population, and deleted in in another sub-population. Moreover, in biological systems with high DNA plasiticity such as the human pathogen *Leishmania*, a genomic region can undergo multiple, complex genomic rearrangements and shuffling whose presence may be revealed by read pair mapping orientation or split-read information, but not necessarily by sequencing coverage variations.            
 | The results relative to the filtered SVs are stored in the **gipOut/samples/sampleId/sampleId_dellyFiltered/** folder including:
 
 
@@ -459,9 +459,7 @@ Detect structural variants
 8. *genes*                 - comma separated list of genes overlapping the SV 
 
 
-CIRCOS PLOT TRACKS EXPLANATION!
-
-
+For circos plot representation the chromosomes of interest are binned in into genomic intervals whose size (bp) is regulated by ``--binSizeCircos`` (default 25000). In the the inner part of circos plot the predicted translocations events are shown as black lines. The genes on the positive and negative strands are shown respectivelly in green and red. Ticks are shown ong the kayotype track every 100kb, and a label is shown every 1Mb. Moving outwards the circos plot shows a track where the mean reads MAPQ score in each bin is shown in a color scale ranging from black (MAPQ ≤ 5) to white (MAPQ ≥ 50). Outside follow the tracks relative to predicted duplication (orange), deletion (green) and inversion (blue) regions. The outmost track shows the genomic bin sequencing coverage (light blue bars) normalized by chromosome median coverage and ranging from 0 to 3. To ease visualization, amplifications with normalized coverage greather than 3 are shown with a value of 3.       
 
 
 
