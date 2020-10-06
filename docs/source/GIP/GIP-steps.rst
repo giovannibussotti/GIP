@@ -405,7 +405,7 @@ Please refer to the `freebayes manual <https://github.com/ekg/freebayes>`_ for m
 Detect structural variants
 --------------------------
  
-| The genomic structural variants (SVs) are detected in the *delly* process using the `delly <https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3436805/>_` program. The SVs are predicted based on pair-end mapping orientation and split-read information, and include unbalanced reaffangements (i.e. CNV deletions or amplifications), as well as balanced rearrangements (inversions and translocations). delly is used to predict the four SV types using just the reads passing both the ``--MAPQ`` and ``--BITFLAG`` filters. The output is the .vcf gzip compressed file  **gipOut/samples/sampleId/sampleId.delly.vcf.gz**.
+| The genomic structural variants (SVs) are detected in the *delly* process using the `delly <https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3436805/>_` program. The SVs are predicted based on pair-end mapping orientation and split-read information, and include unbalanced reaffangements (i.e. CNV deletions or amplifications), as well as balanced rearrangements (inversions and translocations). delly is used to predict the four SV types using just the reads passing both the ``--MAPQ`` and ``--BITFLAG`` filters. The output is the .vcf gzip compressed file  **gipOut/samples/sampleId/sampleId.delly.vcf.gz** and its tabix intex with .tbi extension.
 |GIP allows to apply custom quality filters and select a short-list of SV predictions using the ``--filterDellyOPT`` parameter, and setting the following variables:
 
 * *--minDV*          - min. num. of read pairs supporting the variant [int] 
@@ -447,11 +447,19 @@ Detect structural variants
 | sampleId.SV.circos.png              | circos plot                      |
 +-------------------------------------+----------------------------------+
 
-All coordinates files are in bed format, except for **sampleId.delly.TRA.filter.circosBed**, where the six fields correspond to the coordinates (chromosome<Tab>start<Tab>end) of the two translocation break points.
+| All coordinates files are in bed format, except for **sampleId.delly.TRA.filter.circosBed**, where the six fields correspond to the coordinates (chromosome<Tab>start<Tab>end) of the two translocation break points. All SV tables have the following fields:
+
+1. *locus*                 - SV coordinates (chromosome:start-end)
+2. *normCov*               - mean sequencing coverage normalized by chromosome median coverage
+3. *percReadsSupportingSV* - percent of read pairs supporting the variant 
+4. *MAPQ*                  - mean MAPQ score of reads mapping to the SV locus
+5. *SV*                    - SV type
+6. *sampleId*              - sample identifier
+7. *SVid*                  - SV identifier
+8. *genes*                 - comma separated list of genes overlapping the SV 
 
 
-
-
+CIRCOS PLOT TRACKS EXPLANATION!
 
 
 

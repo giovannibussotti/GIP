@@ -682,7 +682,7 @@ function filterByCov {
     gunzip ${COV}.gz
     SV=`echo ${OUT: -7} | cut -f1 -d "."`
     echo "#cmd: filterByCov BED is $BED ;;; COV is $COV ;;; SV is $SV" 
-    echo -e "locus\tnormCov\tpercReadsSupportingSV\tMAPQ\tSV\trawSampleId\tSVid" > $OUT
+    echo -e "locus\tnormCov\tpercReadsSupportingSV\tMAPQ\tSV\tsampleId\tSVid" > $OUT
     perl -e '
     open(F,"<'$COV'") or die "error opening COV\n";
     $_=<F>;
@@ -726,7 +726,7 @@ function ovWithGenes {
     tail -n +2 $FBC  | perl -ne 'if($_=~/^([^:]+):([^-]+)-(\S+).*(\S+)\s+\S+$/){$chr=$1; $start=$2; $end=$3; $sample=$4; $locus="${chr}:${start}-${end}"; print "$chr\t$start\t$end\t$locus\n"; }' > ${DF}_tmp.bed
     cat $GENES | perl -ne 'if($_=~/gene_id \"([^\"]+)\"/){$ge=$1;} if($_=~/(\S+)\s+\S+\s+\S+\s+(\S+)\s+(\S+)/){print "$1\t$2\t$3\t$ge\n";}' > ${DF}_genes.bed
     bedtools intersect -loj -a ${DF}_tmp.bed -b ${DF}_genes.bed > ${DF}_tmp.ov
-    echo -e "locus\tnormCov\tpercReadsSupportingSV\tMAPQ\tSV\trawSampleId\tSVid\tgenes" > $OUT
+    echo -e "locus\tnormCov\tpercReadsSupportingSV\tMAPQ\tSV\tsampleId\tSVid\tgenes" > $OUT
     perl -e '
     my %h;
     open(F,"<'$DF'_tmp.ov");
@@ -747,7 +747,7 @@ function ovWithGenes {
             $h{$locus}{'percReadsSupportingSV'}=$3;
             $h{$locus}{'MAPQ'}=$4;
             $h{$locus}{'SV'}=$5;
-            $h{$locus}{'rawSampleId'}=$6;
+            $h{$locus}{'sampleId'}=$6;
             $h{$locus}{'SVid'}=$7;
         }
     }
@@ -757,11 +757,11 @@ function ovWithGenes {
         my $percReadsSupportingSV = $h{$locus}{'percReadsSupportingSV'};
         my $MAPQ                  = $h{$locus}{'MAPQ'};
         my $SV                    = $h{$locus}{'SV'};
-        my $rawSampleId           = $h{$locus}{'rawSampleId'};
+        my $sampleId           = $h{$locus}{'sampleId'};
         my $SVid                  = $h{$locus}{'SVid'};
         my $svGenes               = join("," , @{$h{$locus}{'genes'}} );
         $locus=~s/_.*//;
-        print "$locus\t$normCov\t$percReadsSupportingSV\t$MAPQ\t$SV\t$rawSampleId\t$SVid\t$svGenes\n";
+        print "$locus\t$normCov\t$percReadsSupportingSV\t$MAPQ\t$SV\t$sampleId\t$SVid\t$svGenes\n";
     }
     close F;
     ' | sort -k1,1n -k2,2n >> $OUT
