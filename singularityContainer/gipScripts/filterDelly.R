@@ -38,7 +38,7 @@ parser$add_argument("--PRECISE" , help="select just the structural variants labe
 parser$add_argument("--outName" , help="output name [default %(default)s]", default="_outFilterDelly")
 parser$add_argument("--chrSizeFile" , help="chr size file [default %(default)s]", default="NA")
 parser$add_argument("--badSequencesBed"  , help="bed3 file including intervals of bad sequences (e.g. gaps or repeats). SVs embedding too many (see --maxBanSeq) of those will be filtered [default %(default)s]", default="NA")
-parser$add_argument("--maxBanSeq" , type="integer" , help="filter SVs with a percent of bad sequences (see --badSequencesBed) is > maxBanSeq  [default %(default)s]", default="100")
+parser$add_argument("--maxBanSeq" , type="double" , help="filter SVs with a percent of bad sequences (see --badSequencesBed) is > maxBanSeq  [default %(default)s]", default="100")
 parser$add_argument("--chrEndFilter" , type="integer", help="number of bases from the chr ends to consider when filtering SV overlapping the telomers. Depends on --chrSizeFile  [default %(default)s]", default="0")
 parser$add_argument("--useENDfield" , help="VariantAnnotation uses the info(vcf) END field to define the variant end [yes|no]. Recommended if you process delly vcf files unless it is a traslocation (TRA)  [default %(default)s]" )
 parser$add_argument("--chrsToKeep" , nargs="+", help="if specified, filter out all the SVs laying on chrs not in this list  [default %(default)s]" , default="NA" )

@@ -215,9 +215,9 @@ Measure genomic bin sequencing coverage
 
 | The ``--covPerBinSigPeaksOPT`` parameter accepts a string of 3 parameters, and can be used to customize the detection of bin and segments of interest.
 
-* *--minLen*  - minimum segment length (bp)
-* *--pThresh* - adjusted p-value threshold 
-* *--padjust* - multiple-testing correction method
+* *--minLen*  - minimum segment length (bp) [int]
+* *--pThresh* - adjusted p-value threshold [num]
+* *--padjust* - multiple-testing correction method [num]
 
 | The ``--covPerBinSigPeaksOPT`` default is ``"--minLen 0 --pThresh 0.001 --padjust BY"``. The available methods for multiple testing corrections are: "holm", "hochberg", "hommel", "bonferroni", "BH", "BY", "fdr", "none". Please refer to documentation of the `p.adjust <https://www.rdocumentation.org/packages/stats/versions/3.6.2/topics/p.adjust>`_ R function for more details.
 
@@ -254,9 +254,9 @@ Measure gene sequencing coverage
 | Mapped reads are used to measure the mean sequencing coverage of annotated genes in the *covPerGe* process.  
 | To estimate the mean coverage the N bases are not considered. GIP normalizes the coverage scores by the chromosome median coverage. correct for potential GC-content biases at gene level GIP utilizes the same approach described for genomic bins (see above).To detect statistically significant CNV genes GIP fits a gaussian mixture distribution with 2 components. One distribution accounting for the vast majority of observations fitting the coverage of non-CNV genes (central distribution), and another distribution fitting the CNV genes (outliers distribution). The cental distributions represents the-null hypothesis under which a given coverage value is merely caused by artefact fluctuations in sequencing depth, rather than a genuine, biologically meaningful gene amplification or depletion. To test CNV significance GIP uses the mean and the standard deviation of the central distribution and assigns a z-score and a p-value to all genes. Significant genes with a mean MAPQ score lower than ``--MAPQ`` are discarded. In the same way as for genomic bins, the parameter ``--customCoverageLimits``can be used to enforce custom coverage threshold on significant genes. The parameter ``--covPerGeSigPeaksOPT`` accepts  a string of 3 parameters and can be used to control the statical test.
 
-* *--pThresh* - adjusted p-value threshold 
-* *--padjust* - method for multiple testing correction
-* *--minLen*  - minimum gene size (bp)
+* *--pThresh* - adjusted p-value threshold [num] 
+* *--padjust* - method for multiple testing correction [num]
+* *--minLen*  - minimum gene size (bp) [int]
 
 | The default is ``covPerGeSigPeaksOPT="--pThresh 0.001 --padjust BH --minLen 0"``. As for genomic bins, the available methods for multiple testing corrections are: "holm", "hochberg", "hommel", "bonferroni", "BH", "BY", "fdr", "none". Please refer to documentation of the `p.adjust <https://www.rdocumentation.org/packages/stats/versions/3.6.2/topics/p.adjust>`_ R function for more details.
 
@@ -307,15 +307,15 @@ Please refer to the `freebayes manual <https://github.com/ekg/freebayes>`_ for m
 | GIP discards all SNVs mapping inside repetitive elements, removes the variant positions with multiple alternate alleles, evaluates the nucleotide composition complexity of the genomic context of each SNV (i.e. the neighbour bases) and allows the user to apply different, more stringent, filterering criteria for variants detected inside homopolymers.  
 | For this purpose the ``--filterFreebayesOPT`` parameter can be used to set the following variables:
 
-* *--minFreq*          - Min. variant read frequency (VRF)
-* *--maxFreq*          - Max. VRF
-* *--minAO*            - Min. number of reads supporting the alternate allele
-* *--minMQMR*          - Min. mean mapping quality of observed reference alleles
-* *--minMQM*           - Min. mean mapping quality of observed alternate alleles
-* *--MADrange*         - Discard SNVs whose sequencing depth is > or < *MADrange* MADs from the chromosome median coverage
-* *--minAOhomopolymer* - Min. number of reads supporting the alternate allele mapping inside an homopolymer
-* *--contextSpan*      - Size on each side of SNV genomic context (bp)
-* *--homopolymerFreq*  - Base frequency cut-off to consider a genomic context a homopolymer
+* *--minFreq*          - Min. variant read frequency (VRF) [num]
+* *--maxFreq*          - Max. VRF [num]
+* *--minAO*            - Min. number of reads supporting the alternate allele [int] 
+* *--minMQMR*          - Min. mean mapping quality of observed reference alleles [num]
+* *--minMQM*           - Min. mean mapping quality of observed alternate alleles [num]
+* *--MADrange*         - Discard SNVs whose sequencing depth is > or < *MADrange* MADs from the chromosome median coverage [num]
+* *--minAOhomopolymer* - Min. number of reads supporting the alternate allele mapping inside an homopolymer [int]
+* *--contextSpan*      - Size on each side of SNV genomic context (bp) [int]
+* *--homopolymerFreq*  - Base frequency cut-off to consider a genomic context a homopolymer [num]
 
 
 | The parameter default is:
@@ -405,12 +405,60 @@ Please refer to the `freebayes manual <https://github.com/ekg/freebayes>`_ for m
 Detect structural variants
 --------------------------
  
-| The genomic structural variants (SVs) are detected in the *delly* process using the `delly <https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3436805/>_` program. The SVs are predicted based on pair-end mapping orientation and split-read information, and include unbalanced reaffangements (i.e. CNV deletions or amplifications), as well as balanced rearrangements (inversions and translocations).
-| At this step delly is used to predict the four SV types using just the reads passing both the ``--MAPQ`` and ``--BITFLAG`` filters.
-| Additionally, GIP allows to apply custom quality filters to select a short-list of SV predictions.  
+| The genomic structural variants (SVs) are detected in the *delly* process using the `delly <https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3436805/>_` program. The SVs are predicted based on pair-end mapping orientation and split-read information, and include unbalanced reaffangements (i.e. CNV deletions or amplifications), as well as balanced rearrangements (inversions and translocations). delly is used to predict the four SV types using just the reads passing both the ``--MAPQ`` and ``--BITFLAG`` filters. The output is the .vcf gzip compressed file  **gipOut/samples/sampleId/sampleId.delly.vcf.gz**.
+|GIP allows to apply custom quality filters and select a short-list of SV predictions using the ``--filterDellyOPT`` parameter, and setting the following variables:
+
+* *--minDV*          - min. num. of read pairs supporting the variant [int] 
+* *--minPercentDVDR* - min. percent of read pairs supporting the variant [num] 
+* *--PRECISE*        - delly "PRECISE" attribute [yes|no] 
+* *--maxBanSeq*      - discard SVs where the percent of overlapping repeats or gap sequences is > --maxBanSeq [num]
+* *--chrEndFilter*   - num. of bases spanning from the chromosome ends inwards. SVs overlapping such telomeric or sub-telomeric regions are discarded [int]
+
+| The parameter default is:
+
+.. code-block:: bash
+
+   filterDellyOPT="--minDV 2 --minPercentDVDR 5 --PRECISE no \
+   --maxBanSeq 90 --chrEndFilter 100"
 
 
-TO CONTINUE. NOTE, The filterDellyOPT parameter is not used in the command line!!!! you must fix this bug
+| The results relative to the filtered SVs are stored in the **gipOut/samples/sampleId/sampleId_dellyFiltered/** folder including:
+
+
++-------------------------------------+----------------------------------+
+| sampleId.delly.DEL.filter           | deletions table                  |
++-------------------------------------+----------------------------------+
+| sampleId.delly.DEL.filter.circosBed | deletions coordinates            |
++-------------------------------------+----------------------------------+
+| sampleId.delly.DUP.filter           | tandem duplications table        |
++-------------------------------------+----------------------------------+
+| sampleId.delly.DUP.filter.circosBed | tandem duplications coordinates  |
++-------------------------------------+----------------------------------+
+| sampleId.delly.INV.filter           | inversions table                 |
++-------------------------------------+----------------------------------+
+| sampleId.delly.INV.filter.circosBed | inversions coordinates           |
++-------------------------------------+----------------------------------+
+| sampleId.delly.TRA.filter           | translocations table             |
++-------------------------------------+----------------------------------+
+| sampleId.delly.TRA.filter.circosBed | translocations coordinates       |
++-------------------------------------+----------------------------------+
+| sampleId_circosData/                | data for circos plot             |
++-------------------------------------+----------------------------------+
+| sampleId.SV.circos.png              | circos plot                      |
++-------------------------------------+----------------------------------+
+
+All coordinates files are in bed format, except for **sampleId.delly.TRA.filter.circosBed**, where the six fields correspond to the coordinates (chromosome<Tab>start<Tab>end) of the two translocation break points.
+
+
+
+
+
+
+
+
+
+
+
 
 
 
