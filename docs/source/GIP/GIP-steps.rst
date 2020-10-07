@@ -2,7 +2,7 @@
 GIP steps
 #########
 
-GIP accepts the following mandatory input parameters:
+GIP requires the following mandatory input parameters:
 
 +----------------+-----------------------------------+    
 | \-\-genome     | multi-FASTA genome reference file |
@@ -25,12 +25,34 @@ GIP accepts the following mandatory input parameters:
 | sample1 /home/user/data/s1.r1.fastq.gz  /home/user/data/s1.r2.fastq.gz  
 | sample2 /home/user/data/s1.r1.fastq.gz  /home/user/data/s1.r2.fastq.gz  
 
-| GIP results are cached in the **work** directory inside subfolders named with the hexadecimal numbers identifying the executed processes.       
-| GIP results are organized and accessible from the **gipOut** directory, hosting symbolic links to the data in **work**.
-| The ``--resultDir`` parameter can be used to set an alternative name for the result directory.
+| Additional GIP parameters can be passed with the commandline execution, or set in the **gip.config** configuration file.
+| The configuration file hosts the defalt values of all parameters under the ``params{}`` scope. 
+| The ``process{}`` scope can be used to customize the configuration of all GIP processes, including the allocation of memory or CPUs.
+| Other important process parameters include:
+
+* ``executor``       - indicates whether the processes must be executed on the local machine (default) or on a computing cluster (e.g. 'slurm'). 
+* ``clusterOptions`` - provides optional cluster configurations, like the nodes partition where to allocate jobs (e.g. '-p hubbioit --qos hubbioit')
+* ``container``      - absolute path of the giptools singularity image to use to execute the processes
 
 
-In the following we provide a description of GIP steps operated by the Nextflow processes.
+| GIP results are accessible from the **gipOut/** output directory which contains the following subfolders:
+
++------------------+-----------------------------+
+| **genome/**      | reference genome data       |
++------------------+-----------------------------+
+| **samples/**     | individual samples results  |
++------------------+-----------------------------+
+| **covPerClstr/** | gene cluster quantification |
++------------------+-----------------------------+
+| **reports/**     | report files                |
++------------------+-----------------------------+
+
+| The *report* process executed at the end of the pipeline returns .html files in the **reports/** subfolder, summarizing main results and figures for each sample.   
+| All the other files in the **gipOut/** directory are symbolic links to the data cached in the **work/** directory, which in turn is organized in subfolders named with the hexadecimal numbers identifying the executed processes.         
+| The ``--resultDir`` parameter can be used to set a name alternative to "gipOut" for the result directory.
+
+
+In the following we provide a description of GIP steps operated by the Nextflow processes and all result files.
 
 Prepare genome and annotation
 -----------------------------
@@ -469,8 +491,36 @@ For circos plot representation the chromosomes of interest are binned in into ge
 Define and quantify gene clusters
 --------------------------------- 
 
-Depending on the sequencing technology and the experimental design, annotated genes presenting very high levels of sequence similarity may be difficoult to quantify.
-The length of the genomic reads and the fragment size influence the read MAPQ scores, thus the unicity of the read alignment.
+Depending on the sequencing technology and the experimental design, annotated genes presenting very high levels of sequence similarity may be difficoult to quantify.The length of the genomic reads and the fragment size influence the read MAPQ scores, thus the unicity of the read alignment.Instead of quantifying individual genes, GIP allows to quantify homologous genes as clusters. Given the set of gene coverage (.covPerGe.gz) files generated for each sample, GIP:
+ 
+1. selects genes that cannot be directly quantified, i.e. have a mean MAPQ lower than the ``--MAPQ`` value in all samples 
+2. runs `cd-hit-est <http://weizhongli-lab.org/cd-hit/>_` with option "-g 1" to cluster these genes by sequence similarity 
+3. evaluates the sequencing coverage of the genes belonging to clusters
+4. computes mean sequencing coverage for each gene cluster
+
+The gene clusters analysis is run in the *covPerClstr* process, and the results are stored in the **gipOut/covPerClstr** folder.
+
++-------------------------+--------------------------------------------------------+
+| clstrAnn.tsv            | predicted gene clusters (list format)                  |
++-------------------------+--------------------------------------------------------+
+| clstrAnnFormat2.tsv     | predicted gene clusters (table format)                 |
++-------------------------+--------------------------------------------------------+
+| sampleId.covPerClstr.gz | mean sequencing gene cluster coverage (gzip compressed)|
++-------------------------+--------------------------------------------------------+
+| lowMapq.clstr/          | folder storing the gene cluster sequences              |
++-------------------------+--------------------------------------------------------+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

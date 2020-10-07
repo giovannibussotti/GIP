@@ -176,7 +176,7 @@ for i in "${!covPerGeNames[@]}"; do
   OUT="${outDir}/${N}.covPerLowMapqClstrGe_allReads"
   echo $N
   #covPerGe_allReads for all samples
-  covPerGe_allReads $BAM $OUT ${outDir}/lowMapq.clstr.ge.gtf $CHRM 1028 $genome
+  covPerGe_allReads $BAM $OUT ${outDir}/lowMapq.clstr.ge.gtf $CHRM $BITFLAG $genome
   #average cluster coverage
   echo -e "gene_id\tlocus\tmeanCoverage\tnormalizedMeanCoverage\tMAPQ" > ${outDir}/${N}.covPerClstr
   for clstr in `ls ${outDir}/lowMapq.clstr`; do
