@@ -123,7 +123,7 @@ Map reads and collect alignment statistics
 +---------------------------------+--------------------------------------------------------+
 
 | The genome sequencing coverage density is available in bigWig format and computed in the *bigWigGenomeCov* process.
-| The bigWig file format is compatible with genome browsers such as`IGV <http://software.broadinstitute.org/software/igv/>_`. A description of the bigWig format is available from `here <https://genome.ucsc.edu/goldenPath/help/bigWig.html>_`. GIP generates the bigWig output file **gipOut/samples/sampleId/sampleId.bw** by applying the bamCoverage module of `deepTools2 <https://academic.oup.com/nar/article/44/W1/W160/2499308>_`. 
+| The bigWig file format is compatible with genome browsers such as`IGV <http://software.broadinstitute.org/software/igv/>_`. A description of the bigWig format is available from `here <https://genome.ucsc.edu/goldenPath/help/bigWig.html>_`. GIP generates the bigWig output file **gipOut/samples/sampleId/sampleId.bw** by applying the bamCoverage module of `deepTools2 <https://academic.oup.com/nar/article/44/W1/W160/2499308>_`. The coverage values are generated ignoring duplicated reads and applying an RPKM normalization on separate chromosomes (bamCoverage options "--normalizeUsingRPKM --ignoreDuplicates"). GIP approach makes the coverage density estimates comparable between chromosomes that may have different copy numbers. The user can provide additional options to bamCoverage with the ``--bigWigOPT`` parameter. The default is ``bigWigOPT="--binSize 10 --smoothLength 30"``, where the two options control the sizes of the bigWig bins (bp) and the size of the window to average the number of reads. Please refer to the bamCoverage `documentation <http://gensoft.pasteur.fr/docs/deepTools/2.4.2/content/tools/bamCoverage.html>_` for more details.
 
 
 
@@ -462,8 +462,15 @@ Detect structural variants
 8. *genes*                 - comma separated list of genes overlapping the SV 
 
 
-For circos plot representation the chromosomes of interest are binned in into genomic intervals whose size (bp) is regulated by ``--binSizeCircos`` (default 25000). In the the inner part of circos plot the predicted translocations events are shown as black lines. The genes on the positive and negative strands are shown respectivelly in green and red. Ticks are shown ong the kayotype track every 100kb, and a label is shown every 1Mb. Moving outwards the circos plot shows a track where the mean reads MAPQ score in each bin is shown in a color scale ranging from black (MAPQ ≤ 5) to white (MAPQ ≥ 50). Outside follow the tracks relative to predicted duplication (orange), deletion (green) and inversion (blue) regions. The outmost track shows the genomic bin sequencing coverage (light blue bars) normalized by chromosome median coverage and ranging from 0 to 3. To ease visualization, amplifications with normalized coverage greather than 3 are shown with a value of 3.       
+For circos plot representation the chromosomes of interest are binned in into genomic intervals whose size (bp) is regulated by ``--binSizeCircos`` (default 25000). In the the inner part of circos plot the predicted translocations events are shown as black lines. The genes on the positive and negative strands are shown respectivelly in green and red. Ticks are shown ong the kayotype track every 100kb, and a label is shown every 1Mb. Moving outwards the circos plot shows a track where the mean reads MAPQ score in each bin is shown in a color scale ranging from black (MAPQ ≤ 5) to white (MAPQ ≥ 50). Outside follow the tracks relative to predicted duplication (orange), deletion (green) and inversion (blue) regions. The outmost track shows the genomic bin sequencing coverage (light blue bars) normalized by chromosome median coverage and ranging from 0 to 3. To ease visualization, amplifications with normalized coverage greather than 3 are shown with a value of 3.      
 
+
+
+Define and quantify gene clusters
+--------------------------------- 
+
+Depending on the sequencing technology and the experimental design, annotated genes presenting very high levels of sequence similarity may be difficoult to quantify.
+The length of the genomic reads and the fragment size influence the read MAPQ scores, thus the unicity of the read alignment.
 
 
 
