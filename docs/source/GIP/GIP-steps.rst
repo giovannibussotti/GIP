@@ -2,58 +2,6 @@
 GIP steps
 #########
 
-GIP requires the following mandatory input parameters:
-
-+----------------+-----------------------------------+    
-| \-\-genome     | multi-FASTA genome reference file |
-+----------------+-----------------------------------+
-| \-\-annotation | gene coordinates file (GTF format)|
-+----------------+-----------------------------------+
-| \-\-index      | list of sequencing data files     |
-+----------------+-----------------------------------+
-| \-c            | nextflow configuration file       |
-+----------------+-----------------------------------+
-
-| The index file must comply with the following syntax rules:
-
-1. tsv format (i.e. <Tab> separated), 
-2. first header row with the labels: sampleId   read1    read2
-3. all the following rows must indicate the sample identifier, and the position of the first and second pair-end sequencing data files in fastq.gz format
-
-| Example:   
-| sampleId        read1    read2  
-| sample1 /home/user/data/s1.r1.fastq.gz  /home/user/data/s1.r2.fastq.gz  
-| sample2 /home/user/data/s1.r1.fastq.gz  /home/user/data/s1.r2.fastq.gz  
-
-| Additional GIP parameters can be passed with the commandline execution, or set in the **gip.config** configuration file.
-| The configuration file hosts the defalt values of all parameters under the ``params{}`` scope. 
-| The ``process{}`` scope can be used to customize the configuration of all GIP processes, including the allocation of memory or CPUs.
-| Other important process parameters include:
-
-* ``executor``       - indicates whether the processes must be executed on the local machine (default) or on a computing cluster (e.g. 'slurm'). 
-* ``clusterOptions`` - provides optional cluster configurations, like the nodes partition where to allocate jobs (e.g. '-p hubbioit --qos hubbioit')
-* ``container``      - absolute path of the giptools singularity image to use to execute the processes
-
-
-| GIP results are accessible from the **gipOut/** output directory which contains the following subfolders:
-
-+------------------+-----------------------------+
-| **genome/**      | reference genome data       |
-+------------------+-----------------------------+
-| **samples/**     | individual samples results  |
-+------------------+-----------------------------+
-| **covPerClstr/** | gene cluster quantification |
-+------------------+-----------------------------+
-| **reports/**     | report files                |
-+------------------+-----------------------------+
-
-| The *report* process executed at the end of the pipeline returns .html files in the **reports/** subfolder, summarizing main results and figures for each sample.   
-| All the other files in the **gipOut/** directory are symbolic links to the data cached in the **work/** directory, which in turn is organized in subfolders named with the hexadecimal numbers identifying the executed processes.         
-| The ``--resultDir`` parameter can be used to set a name alternative to "gipOut" for the result directory.
-
-
-In the following we provide a description of GIP steps operated by the Nextflow processes and all result files.
-
 Prepare genome and annotation
 -----------------------------
 GIP prepares the genome assembly and annotation files in the first two processes: *processGeneFunction* and *prepareGenome*

@@ -1,0 +1,89 @@
+#############################
+Input and output organization
+#############################
+
+Input
+-----
+
+GIP requires the following mandatory input parameters:
+
++----------------+-----------------------------------+    
+| \-\-genome     | multi-FASTA genome reference file |
++----------------+-----------------------------------+
+| \-\-annotation | gene coordinates file (GTF format)|
++----------------+-----------------------------------+
+| \-\-index      | list of sequencing data files     |
++----------------+-----------------------------------+
+| \-c            | nextflow configuration file       |
++----------------+-----------------------------------+
+
+| All additional GIP parameters can be passed with the command line execution, or set in the **gip.config** configuration file.
+| The configuration file hosts the defalt values of all parameters under the ``params{}`` scope. 
+| The ``process{}`` scope can be used to customize the configuration of all GIP processes, including the allocation of memory or CPUs.
+| Other important process parameters include:
+
+* ``executor``       - indicates whether the processes must be executed on the local machine (default) or on a computing cluster (e.g. 'slurm'). 
+* ``clusterOptions`` - provides optional cluster configurations, like the nodes partition where to allocate jobs (e.g. '-p hubbioit --qos hubbioit')
+* ``container``      - absolute path of the giptools singularity image to use to execute the processes
+
+|  The ``singularity{}`` scope contains the configuration options to interface the nextflow pipeline with the `singularity container <https://www.nextflow.io/docs/latest/singularity.html>_`. Singularity allows to mount (a.k.a. bind) host input data at specific container locations defined by the user. GIP container (i.e. the giptools file) comes with a set of built-in folders that can be used as access points for data:
+
+* /fq
+* /genome
+* /repLib
+* /geneFunction
+* /gipOut
+* /mnt
+
+
+| The parameter ``runOptions`` parameter can be used to specify bind points with the --bind (or -B) option and the following syntax:
+| *'-B host_directory:container_binding_point'*.
+| Then the user must have the caution to specify all the input parameters not relative to the host system, but relative to where the data is visible in the container. 
+| For instance, the user can mount the host folder containing the genome file (e.g. /home/user/data/assemblies/reference.fa) to the /genome container folder by specifying ``runOtions='-B /home/user/data/assemblies:/genome'`` in the configuration file.
+| Then, when executing GIP, the user can simply pass the input genome command line with ``--genome /genome/reference.fa``.
+| Multiple host directories can be mounted with additional -B directives. For instance, to mount also the directory containing the sequencing data:
+| ``runOtions='-B /home/user/data/assemblies:/genome -B /home/user/sequencingData:/fq'``  
+| Please refer to the `Nextflow documentation <https://www.nextflow.io/docs/latest/config.html>_` for the pipeline configuration file to discover all available options.
+
+ 
+| The index file must comply with the following syntax rules:
+
+1. tsv format (i.e. <Tab> separated), 
+2. first header row with the labels: sampleId   read1    read2
+3. all the following rows must indicate the sample identifier, and the file names first and second pair-end sequencing data files in fastq.gz format
+
+| Example:   
+| sampleId        read1    read2  
+| sample1 /fq/s1.r1.fastq.gz  /fq/s1.r2.fastq.gz  
+| sample2 /fq/s2.r1.fastq.gz  /fq/s2.r2.fastq.gz  
+
+
+Output
+------
+
+| GIP results are accessible from the **gipOut/** output directory which contains the following subfolders:
+
++------------------+-----------------------------+
+| **genome/**      | reference genome data       |
++------------------+-----------------------------+
+| **samples/**     | individual samples results  |
++------------------+-----------------------------+
+| **covPerClstr/** | gene cluster quantification |
++------------------+-----------------------------+
+| **reports/**     | report files                |
++------------------+-----------------------------+
+
+| The *report* process executed at the end of the pipeline returns .html files in the **reports/** subfolder, summarizing main results and figures for each sample.   
+| All the other files in the **gipOut/** directory are symbolic links to the data cached in the **work/** directory, which in turn is organized in subfolders named with the hexadecimal numbers identifying the executed processes. 
+| Thanks to the Nextflow implementation the user can easily test different GIP parameterization without the need to re-execute the entire pipeline. Just by adding ``-resume`` to the command line GIP will re-run just the process that are affected by the parameter change, and use the cached results of all the other processes.
+        
+| The ``--resultDir`` parameter can be used to set a name alternative to "gipOut" for the result directory.
+
+
+In the following we provide a description of GIP steps operated by the Nextflow processes and all result files.
+
+
+
+
+
+
