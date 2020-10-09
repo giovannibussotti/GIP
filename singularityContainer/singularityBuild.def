@@ -30,11 +30,13 @@ From: ubuntu:xenial
   cd ..
   rm -rf packages
 
-  # To work on tars use singularity run -B /pasteur 
-  # it mounts all /pasteur so your home is in /pasteur in /pasteur of the image
-  mkdir -p /pasteur
-  mkdir -p /mnt/fq
-  mkdir -p /mnt/data
+  #dirs to mount with singularity -B to for data access in the container 
+  mkdir /pasteur
+  mkdir /fq
+  mkdir /genome
+  mkdir /repLib
+  mkdir /geneFunction
+  mkdir /gipOut
   
   #apt-get
   export DEBIAN_FRONTEND=noninteractive
