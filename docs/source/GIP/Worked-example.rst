@@ -50,6 +50,10 @@ It is possible to downlod them from ENSEMBL protist with wget:
  gunzip Leishmania_infantum_jpcm5.GCA_000002875.2.29.dna.toplevel.fa.gz
 
 
+TO CONTINUE
+For the gene function, you can parse it from the gff file:
+ftp://ftp.ensemblgenomes.org/pub/protists/release-29/gff3/protists_euglenozoa1_collection/leishmania_infantum_jpcm5/Leishmania_infantum_jpcm5.GCA_000002875.2.29.gff3.gz 
+
 
 GIP configuration
 -----------------
