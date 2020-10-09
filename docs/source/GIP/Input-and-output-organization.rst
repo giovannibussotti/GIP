@@ -30,6 +30,7 @@ GIP requires the following mandatory input parameters:
 
 * /fq
 * /genome
+* /annotation
 * /repLib
 * /geneFunction
 * /gipOut
