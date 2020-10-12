@@ -31,7 +31,12 @@ done
 #PREPARE ASSEMBLY#
 ##################
 #clean chr ids#
-cat $FA | perl -ne 'if($_=~/^>(.*)/){$c=$1; $c=~s/ /_/g; print ">$c\n";}else{print uc($_);} ' > ${OUT}
+#zipped input fasta are also accepted#
+if file $FA | grep -q compressed  ; then
+    gunzip -c $FA | perl -ne 'if($_=~/^>(.*)/){$c=$1; $c=~s/ /_/g; print ">$c\n";}else{print uc($_);} ' > ${OUT}   
+else
+    cat $FA | perl -ne 'if($_=~/^>(.*)/){$c=$1; $c=~s/ /_/g; print ">$c\n";}else{print uc($_);} ' > ${OUT}
+fi
 
 #REPEATS
 N=`basename $OUT`
