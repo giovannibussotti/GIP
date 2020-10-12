@@ -18,13 +18,13 @@ The resulting file will contain the following accessions:
 | SRR11098647
 | SRR11098648
 
-The following code snippet requires the `SRA Toolkit <https://trace.ncbi.nlm.nih.gov/Traces/sra/sra.cgi?view=toolkit_doc>`_ and can be copy/pasted in a bash terminal to recursively download each of the 7 experiments:
+The following code snippet requires the `SRA Toolkit <https://trace.ncbi.nlm.nih.gov/Traces/sra/sra.cgi?view=toolkit_doc>`_ and can be copy/pasted in a bash terminal to recursively download each of the 7 WGS experiment:
 
 .. code-block:: bash
 
  accessions=(SRR11098642 SRR11098643 SRR11098644 SRR11098645 SRR11098646 SRR11098647 SRR11098648)
- mkdir data
- cd data
+ mkdir fastqs
+ cd fastqs
  for X in "${accessions[@]}" ; do
    #download from accession
    prefetch $X
@@ -35,24 +35,46 @@ The following code snippet requires the `SRA Toolkit <https://trace.ncbi.nlm.nih
    #remove .sra downloaded file
    rm ~/ncbi/public/sra/${X}.sra
  done
+ cd ..
  
 
-Genome sequence (FASTA format) and gene annotations (GTF format) for *Leishmania infantum* are avaialable from multiple providers.
-It is possible to downlod them from ENSEMBL protist with wget:
+Depending on your species of interest the user may need to refer to different specialized genomic data banks to retrieve the genome sequence and the gene coordinates, which are both required GIP inputs (respectively --genome and --annotation).
+Additionally, the user may want to specify gene function annotations (--geneFunction parameter). Depending on the species, gene function annotation may be not completely available, and manual curation or data integration from different repositories may be needed.
+In the code snipped below we use the ENSEMBL protists FTP server to download the latest *Leishmaina infantum* genome sequence and annotations in .gff3 format, then reformat the latter to obtain both the gene coordinates file (.gtf format) and the gene function files.
 
 .. code-block:: bash
 
- #download
- wget ftp://ftp.ensemblgenomes.org/pub/release-29/protists/gtf/protists_euglenozoa1_collection/leishmania_infantum_jpcm5/Leishmania_infantum_jpcm5.GCA_000002875.2.29.gtf.gz
- wget ftp://ftp.ensemblgenomes.org/pub/release-29/protists/fasta/protists_euglenozoa1_collection/leishmania_infantum_jpcm5/dna/Leishmania_infantum_jpcm5.GCA_000002875.2.29.dna.toplevel.fa.gz
- #decompress
- gunzip Leishmania_infantum_jpcm5.GCA_000002875.2.29.gtf.gz
- gunzip Leishmania_infantum_jpcm5.GCA_000002875.2.29.dna.toplevel.fa.gz
+ mkdir data
+ cd data
+ #download genome
+ wget ftp://ftp.ensemblgenomes.org/pub/release-48/protists/fasta/protists_euglenozoa1_collection/leishmania_infantum_gca_900500625/dna/Leishmania_infantum_gca_900500625.LINF.dna.toplevel.fa.gz  
+ #donwload gene annotations
+ wget ftp://ftp.ensemblgenomes.org/pub/release-48/protists/gff3/protists_euglenozoa1_collection/leishmania_infantum_gca_900500625/Leishmania_infantum_gca_900500625.LINF.48.gff3.gz
+ #convert
+ gff3=Leishmania_infantum_gca_900500625.LINF.48.gff3.gz
+ perl -e '
+ open (F,">geneFunction.tsv") or die "cannot open geneFunction.tsv: $!";
+ open (G,">annotation.gtf") or die "cannot open annotation.gtf: $!";
+ open(IN, "gunzip -c '$gff3' |") or die "gunzip '$gff3': $!";
+ while(<IN>){
+  if($_=~/^(.*)ID=gene:([^;]+).*description=([^;]+)/){
+   my $a   = $1;
+   my $id  = $2;
+   my $des = $3;
+   print G "${a}gene_id \"$id\"; transcript_id \"$id\";\n";
+   print F "$id\t$des\n";
+
+  }
+ }
+ close F;
+ close G;' 
+
+
 
 
 TO CONTINUE
-For the gene function, you can parse it from the gff file:
-ftp://ftp.ensemblgenomes.org/pub/protists/release-29/gff3/protists_euglenozoa1_collection/leishmania_infantum_jpcm5/Leishmania_infantum_jpcm5.GCA_000002875.2.29.gff3.gz 
+store a static copy of all the required input, so the user can click and see howw it looks
+
 
 
 GIP configuration
