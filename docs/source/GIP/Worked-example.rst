@@ -72,8 +72,13 @@ In the code snipped below we use the ENSEMBL protists FTP server to download the
 
 Next the user should prepare the index file indicating the sample names and the respective sequencing data files.
 The index is a tab separaated file with the following heading row: sampleId	read1	read2
+Data file should be reported relative to the countainer mounted directory. 
+So if the /fq giptools access point is used then the reads files should be reported like this: 
+
+``/fq/file.fastq.gz`` 
+
 In this example will use the sample names as reported in `PRJNA607007 <https://www.ncbi.nlm.nih.gov/sra/?term=PRJNA607007>`_.
-The index file should look like :download:`this <../_static/sampleIndexExample.pdf>`.
+At the end the index file should look like :download:`this <../_static/sampleIndexExample.pdf>`.
 
 
 
