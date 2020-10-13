@@ -68,7 +68,12 @@ In the code snipped below we use the ENSEMBL protists FTP server to download the
  }
  close F;
  close G;' 
+ cd ..
 
+Next the user should prepare the index file indicating the sample names and the respective sequencing data files.
+The index is a tab separaated file with the following heading row: sampleId	read1	read2
+In this example will use the sample names as reported in `PRJNA607007 <https://www.ncbi.nlm.nih.gov/sra/?term=PRJNA607007>`_.
+ 
 
 
 
