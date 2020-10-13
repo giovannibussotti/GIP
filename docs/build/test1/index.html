@@ -170,11 +170,11 @@ The results of GIP are summarized in a <em>report</em> page providing sequencing
 <p>Look how easy it is to use.
 Run GIP on a large set of input WGS experiments (e.g. 200 samples)</p>
 <blockquote>
-<div><p><code class="docutils literal notranslate"><span class="pre">nextflow</span> <span class="pre">gip.nf</span> <span class="pre">--genome</span> <span class="pre">sequenceFile</span> <span class="pre">--annotation</span> <span class="pre">annotationFile</span> <span class="pre">--index</span> <span class="pre">input.tsv</span> <span class="pre">-c</span> <span class="pre">config</span></code></p>
+<div><p><code class="docutils literal notranslate"><span class="pre">nextflow</span> <span class="pre">gip</span> <span class="pre">--genome</span> <span class="pre">data/fasta.file</span> <span class="pre">--annotation</span> <span class="pre">data/gtf.file</span> <span class="pre">--index</span> <span class="pre">input.tsv</span> <span class="pre">-c</span> <span class="pre">gip.config</span></code></p>
 </div></blockquote>
 <p>Compare gene CNVs in 3 specific isolates</p>
 <blockquote>
-<div><p><code class="docutils literal notranslate"><span class="pre">./giptools</span> <span class="pre">ternary</span> <span class="pre">--gipOut</span> <span class="pre">gipOutDir</span> <span class="pre">--samples</span> <span class="pre">Lmj_A445</span> <span class="pre">Lmj_1948</span> <span class="pre">Ltr_16</span></code></p>
+<div><p><code class="docutils literal notranslate"><span class="pre">giptools</span> <span class="pre">ternary</span> <span class="pre">--gipOut</span> <span class="pre">gipOutDir</span> <span class="pre">--samples</span> <span class="pre">Lmj_A445</span> <span class="pre">Lmj_1948</span> <span class="pre">Ltr_16</span></code></p>
 </div></blockquote>
 <div class="figure align-center">
 <a class="reference internal image-reference" href="_images/triangle1.png"><img alt="_images/triangle1.png" src="_images/triangle1.png" style="width: 500px;" /></a>
@@ -212,7 +212,7 @@ Run GIP on a large set of input WGS experiments (e.g. 200 samples)</p>
 <div><p><code class="docutils literal notranslate"><span class="pre">singularity</span> <span class="pre">pull</span> <span class="pre">command...</span></code></p>
 </div></blockquote>
 </li>
-<li><p>Edit the “container” parameter in the gip.config: <code class="docutils literal notranslate"><span class="pre">container='/Absolute/Path/To/giptools'</span></code></p></li>
+<li><p>Move <strong>giptools</strong> to /usr/local/bin/. If the user does not have permission on this folder can keep giptools in any other location, and just update the “container” parameter in the gip.config: <code class="docutils literal notranslate"><span class="pre">container='/Absolute/Path/To/giptools'</span></code></p></li>
 </ol>
 <p>Done!</p>
 </div>
