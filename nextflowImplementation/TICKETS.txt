@@ -23,13 +23,6 @@
 
 9) Test it on mac!
 
-8) The user must specify the chromosomes (especially to get rid of all the short contigs that may be in unfished assemblies). e.g. chromosomes="1 2 3 4 5 6 7 8 9 ..." However I would like to set a default of chromosomes="all". In this case, all the chromosomes vailable in the input genome should be used. How to do that?
-
--Solution1: nextflow scripting, reading the genome FASTA file with the ".withReader" method, parse the chromosome/contig names, and generate the string chromosome="1 2 3 4 5 6 7 8 9 ...."
-The difficulty here is how to master nextflow scripting, and how to return a space separate test string
-
--Solution2 (easiest): The process prepareGenome is executed first and generates a list of chromosome identifiers with their length. I can parse the chromosome IDs from there and put the results to a "chromosome" variable that I can channel in the output. My problem here is that I want chromosomes to be always accesssible from everywhere in the pipeline, like a "value channel", not a "queue channel"
-
 7) consider reducing the size of singularity image removing the source code pacage and libraries that are unneded after you built everything you need. See apt-get autoremove, clean and autoclean
 
 6) if you use .join then the sampleId (used as index to join together the right channel) is not accessible from the process. The only way to get the sample id is though the file input.1. However, if you do that you will have anyway problems using publishDir params.resultDir/samples/$sampleId 
