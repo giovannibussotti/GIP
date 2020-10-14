@@ -84,7 +84,7 @@ bedtools getfasta -name -s -fi $genome -bed ${outDir}/.tmpGeBed -fo ${outDir}/.l
 
 #clustering
 /opt/cdhit/cd-hit-est -T 1 -s $cdHitLenDiffCutoff -c $cdHitSeqIdCutoff -r 0 -d 0 -g 1 -i ${outDir}/.lowMapqSelected.fa -o ${outDir}/.lowMapqSelected #-uL 0.05 -uS 0.05
-/opt/cdhit/make_multi_seq.pl ${outDir}/.lowMapqSelected.fa ${outDir}/.lowMapqSelected.clstr ${outDir}/lowMapq.clstr 2
+/opt/cdhit/make_multi_seq.pl ${outDir}/.lowMapqSelected.fa ${outDir}/.lowMapqSelected.clstr ${outDir}/lowMapq.clstr 1
 for X in `grep ">" ${outDir}/lowMapq.clstr/* | cut -f2 -d ">"`; do grep -m1 "gene_id \"$X\"" $geGtf  ; done > ${outDir}/lowMapq.clstr.ge.gtf
 #rename clusters
 readarray oldClNames < <(ls ${outDir}/lowMapq.clstr | sort -n)
