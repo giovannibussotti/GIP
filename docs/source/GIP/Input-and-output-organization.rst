@@ -49,14 +49,16 @@ GIP requires the following mandatory input parameters:
  
 | The index file must comply with the following syntax rules:
 
-1. tsv format (i.e. <Tab> separated), 
-2. first header row with the labels: sampleId   read1    read2
-3. all the following rows must indicate the sample identifier, and the file names first and second pair-end sequencing data files in fastq.gz format
+1. Tsv format (i.e. <Tab> separated), 
+2. First header row with the labels: sampleId   read1    read2
+3. All the following rows must indicate the sample identifier, and the file names first and second pair-end sequencing data files in fastq.gz format
+4. To combine the reads originating from multiple technical replicates the fastq.gz files must be comma-separated and in the same order between read1 and read2 
 
 | Example:   
 | sampleId        read1    read2  
 | sample1 /fq/s1.r1.fastq.gz  /fq/s1.r2.fastq.gz  
-| sample2 /fq/s2.r1.fastq.gz  /fq/s2.r2.fastq.gz  
+| sample2 /fq/s2.RUN1.r1.fastq.gz,/fq/s2.RUN2.r1.fastq.gz  /fq/s2.RUN1.r2.fastq.gz,/fq/s2.RUN2.r2.fastq.gz  
+
 
 
 Output
