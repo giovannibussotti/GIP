@@ -441,10 +441,10 @@ Define and quantify gene clusters
 
 Depending on the sequencing technology and the experimental design, annotated genes presenting very high levels of sequence similarity may be difficoult to quantify.The length of the genomic reads and the fragment size influence the read MAPQ scores, thus the unicity of the read alignment.Instead of quantifying individual genes, GIP allows to quantify homologous genes as clusters. Given the set of gene coverage (.covPerGe.gz) files generated for each sample, GIP:
  
-1. selects genes that cannot be directly quantified, i.e. have a mean MAPQ lower than the ``--MAPQ`` value in all samples 
-2. runs `cd-hit-est <http://weizhongli-lab.org/cd-hit/>_` with option "-g 1" to cluster these genes by sequence similarity 
-3. evaluates the sequencing coverage of the genes belonging to clusters
-4. computes mean sequencing coverage for each gene cluster
+1. Selects genes that cannot be directly quantified, i.e. have a mean MAPQ lower than the ``--MAPQ`` value in all samples 
+2. Runs `cd-hit-est <http://weizhongli-lab.org/cd-hit/>_` with option "-g 1" to cluster these genes by sequence similarity 
+3. Evaluates the sequencing coverage of the genes belonging to clusters
+4. Computes mean sequencing coverage for each gene cluster
 
 The gene clusters analysis is run in the *covPerClstr* process, and the results are stored in the **gipOut/covPerClstr** folder.
 
@@ -458,7 +458,7 @@ The gene clusters analysis is run in the *covPerClstr* process, and the results 
 | lowMapq.clstr/          | folder storing the gene cluster sequences              |
 +-------------------------+--------------------------------------------------------+
 
-
+Genes with low mean MAPQ in all samples but not clustering by sequence similarity are kept and part of the output. Normally these genes get a low MAPQ score either because they present internal repetitive sequences, or because their gene or pseudogene homologue is not annotated.
 
 
 
