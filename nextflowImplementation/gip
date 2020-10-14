@@ -42,10 +42,10 @@ def helpMessage() {
     Bin Coverage Options:  
       --binSize                       bin size
       --binPlotYlim                   bin coverage y-axis limits 
-      --covPerBinSigPeaksOPT          identify statistically significant CNV wrt the reference  
+      --covPerBinSigOPT               identify statistically significant CNV wrt the reference  
     Gene Coverage Options:      
       --covPerGeRepeatRange           Visualize repeats within this distance from significant genes
-      --covPerGeSigPeaksOPT           identify statistically significant gene CNV wrt the reference
+      --covPerGeSigOPT                identify statistically significant gene CNV wrt the reference
     SNV Options:  
       --freebayesOPT                  Freebayes options
       --filterFreebayesOPT            Downstream SNV quality filters
@@ -55,7 +55,7 @@ def helpMessage() {
       --maxNormCovForDEL              max normalized sequencing coverage for Delly deletions
       --binSizeCircos                 bin size for circos plot
     BigWig Options:  
-      -bigWigOPT                     Options to generate the coverage bigWig file
+      -bigWigOPT                      Options to generate the coverage bigWig file
     """.stripIndent()
 }
 
@@ -108,9 +108,9 @@ binPlotYlim  = params.binPlotYlim
 binOverviewSize = params.binOverviewSize
 binSize      = params.binSize
 customCoverageLimits = params.customCoverageLimits
-covPerBinSigPeaksOPT = params.covPerBinSigPeaksOPT
+covPerBinSigOPT = params.covPerBinSigOPT
 covPerGeRepeatRange  = params.covPerGeRepeatRange
-covPerGeSigPeaksOPT  = params.covPerGeSigPeaksOPT
+covPerGeSigOPT  = params.covPerGeSigOPT
 freebayesOPT         = params.freebayesOPT
 filterFreebayesOPT   = params.filterFreebayesOPT
 filterDellyOPT   = params.filterDellyOPT
@@ -281,7 +281,7 @@ process covPerBin {
   Rscript /bin/covPerBin2loessGCnormalization_v2.R --ASSEMBLY $fa --DIR . --SAMPLE ${sampleId} --outName ${sampleId} 
   mv ${sampleId}.gcLnorm.covPerBin.gz ${sampleId}.covPerBin.gz
 
-  Rscript /bin/sigPeaks_CLT.R --input ${sampleId}.covPerBin.gz --outName ${sampleId}.covPerBin.significant --minMAPQ $MAPQ --coverageThresholds $customCoverageLimits  $covPerBinSigPeaksOPT
+  Rscript /bin/sigPeaks_CLT.R --input ${sampleId}.covPerBin.gz --outName ${sampleId}.covPerBin.significant --minMAPQ $MAPQ --coverageThresholds $customCoverageLimits  $covPerBinSigOPT
 
   Rscript /bin/plotCovPerBin.R --covPerBin ${sampleId}.covPerBin.gz --outName ${sampleId}.covPerBin.plot --chrs $chromosomes --significant ${sampleId}.covPerBin.significant.bins.tsv.gz --chrSizeFile genome.chrSize --minMAPQ $MAPQ --ylim $binPlotYlim --coverageColorLimits $customCoverageLimits --binOverviewSize $binOverviewSize
   """
@@ -310,7 +310,7 @@ process covPerGe {
   Rscript /bin/covPerGe2loessGCnormalization_v2.R --ASSEMBLY $fa --DIR . --SAMPLE ${sampleId} --outName ${sampleId}
   mv ${sampleId}.gcLnorm.covPerGe.gz ${sampleId}.covPerGe.gz
 
-  Rscript /bin/sigPeaks_mixture.R --input ${sampleId}.covPerGe.gz --outName ${sampleId}.covPerGe.significant --minMAPQ $MAPQ --coverageThresholds $customCoverageLimits $covPerGeSigPeaksOPT
+  Rscript /bin/sigPeaks_mixture.R --input ${sampleId}.covPerGe.gz --outName ${sampleId}.covPerGe.significant --minMAPQ $MAPQ --coverageThresholds $customCoverageLimits $covPerGeSigOPT
 
   Rscript /bin/karyoplotCovPerGe.R --covPerGe ${sampleId}.covPerGe.gz --covPerBin $covPerBin --chrSize $size --CHRS $chromosomes --REPS $repeats/genome.out.gff --significant ${sampleId}.covPerGe.significant.tsv --outDir ${sampleId}.covPerGeKaryoplot --repeatRange $covPerGeRepeatRange --minMAPQ $MAPQ --geneFunction $geFun
   """

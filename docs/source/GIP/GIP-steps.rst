@@ -93,7 +93,7 @@ Map reads and collect alignment statistics
 +---------------------------------+--------------------------------------------------------+
 
 | The genome sequencing coverage density is available in bigWig format and computed in the *bigWigGenomeCov* process.
-| The bigWig file format is compatible with genome browsers such as`IGV <http://software.broadinstitute.org/software/igv/>_`. A description of the bigWig format is available from `here <https://genome.ucsc.edu/goldenPath/help/bigWig.html>_`. GIP generates the bigWig output file **gipOut/samples/sampleId/sampleId.bw** by applying the bamCoverage module of `deepTools2 <https://academic.oup.com/nar/article/44/W1/W160/2499308>_`. The coverage values are generated ignoring duplicated reads and applying an RPKM normalization on separate chromosomes (bamCoverage options "--normalizeUsingRPKM --ignoreDuplicates"). GIP approach makes the coverage density estimates comparable between chromosomes that may have different copy numbers. The user can provide additional options to bamCoverage with the ``--bigWigOPT`` parameter. The default is ``bigWigOPT="--binSize 10 --smoothLength 30"``, where the two options control the sizes of the bigWig bins (bp) and the size of the window to average the number of reads. Please refer to the bamCoverage `documentation <http://gensoft.pasteur.fr/docs/deepTools/2.4.2/content/tools/bamCoverage.html>_` for more details.
+| The bigWig file format is compatible with genome browsers such as `IGV <http://software.broadinstitute.org/software/igv/>`_. A description of the bigWig format is available from `here <https://genome.ucsc.edu/goldenPath/help/bigWig.html>`_. GIP generates the bigWig output file **gipOut/samples/sampleId/sampleId.bw** by applying the bamCoverage module of `deepTools2 <https://academic.oup.com/nar/article/44/W1/W160/2499308>`_. The coverage values are generated ignoring duplicated reads and applying an RPKM normalization on separate chromosomes (bamCoverage options "--normalizeUsingRPKM --ignoreDuplicates"). GIP approach makes the coverage density estimates comparable between chromosomes that may have different copy numbers. The user can provide additional options to bamCoverage with the ``--bigWigOPT`` parameter. The default is ``bigWigOPT="--binSize 10 --smoothLength 30"``, where the two options control the sizes of the bigWig bins (bp) and the size of the window to average the number of reads. Please refer to the bamCoverage `documentation <http://gensoft.pasteur.fr/docs/deepTools/2.4.2/content/tools/bamCoverage.html>`_ for more details.
 
 
 
@@ -116,8 +116,8 @@ Evaluate chromosome coverage
 
 | While reads are mapped in the previous step against the entire genome, the user may want to instruct GIP to consider for this step and all the downstream analyses just a sub-set of chromosomes. 
 | This GIP feature is useful when dealing with unfinished genome assemblies, containing large amounts of unplaced contigs with very poor annotation available.
-| For this purpose, the user can set the parameter ``--chromosomes``, listing the identifiers of the chromosomes of interest.
-| By default this parameter reports the 36 *Leishmania* chromosome identifiers.
+| For this purpose, the user can set the parameter ``--chrs``, listing the identifiers of the chromosomes of interest. Please note that the chromosome identifiers must be separated by white spaces and provided as a text string enclosed in backslash escaped quotation marks. For instance if the user what to limit the analysis to chromosomes chr1, chr2 and chr3 then parameter should be ``chrs="\"1 2 3\""``.
+| Otherwise, by default this parameter is set to "all", indicating that all chromosomes present in the input fasta genome will be considered.
 
 
 Measure nucleotide coverage
@@ -186,13 +186,13 @@ Measure genomic bin sequencing coverage
 | For each bin the null-hypothesis is that it is possible to observe its sequencing coverage just by chance under a normal (i.e. non-CNV) condition due to coverage fluctuations intruduced by the sequencing technology. The competing hypothesis is that the oberved coverage is the readout of a genuine CNV region.
 | Based on the CLT, GIP computes the P-value of each bin by measuring how many se away each bin score is from the SNCDab mu.
 
-| The ``--covPerBinSigPeaksOPT`` parameter accepts a string of 3 parameters, and can be used to customize the detection of bin and segments of interest.
+| The ``--covPerBinSigOPT`` parameter accepts a string of 3 parameters, and can be used to customize the detection of bin and segments of interest.
 
 * *--minLen*  - minimum segment length (bp) [int]
 * *--pThresh* - adjusted p-value threshold [num]
 * *--padjust* - multiple-testing correction method [num]
 
-| The ``--covPerBinSigPeaksOPT`` default is ``"--minLen 0 --pThresh 0.001 --padjust BY"``. The available methods for multiple testing corrections are: "holm", "hochberg", "hommel", "bonferroni", "BH", "BY", "fdr", "none". Please refer to documentation of the `p.adjust <https://www.rdocumentation.org/packages/stats/versions/3.6.2/topics/p.adjust>`_ R function for more details.
+| The ``--covPerBinSigOPT`` default is ``"--minLen 0 --pThresh 0.001 --padjust BY"``. The available methods for multiple testing corrections are: "holm", "hochberg", "hommel", "bonferroni", "BH", "BY", "fdr", "none". Please refer to documentation of the `p.adjust <https://www.rdocumentation.org/packages/stats/versions/3.6.2/topics/p.adjust>`_ R function for more details.
 
 | The ``--customCoverageLimits`` parameter can be used to enforce an additional custom coverage cut-offs on the statistically significant bins and segments (and genes, see below). This parameter accepts two numbers: N1, N2 (default 1.5 0.5). Significant CNV bins and segments are selected to have a coverage > N1 (for amplifications) or < N2 (for depletions). 
 
@@ -225,13 +225,13 @@ Measure gene sequencing coverage
 --------------------------------
 
 | Mapped reads are used to measure the mean sequencing coverage of annotated genes in the *covPerGe* process.  
-| To estimate the mean coverage the N bases are not considered. GIP normalizes the coverage scores by the chromosome median coverage. correct for potential GC-content biases at gene level GIP utilizes the same approach described for genomic bins (see above).To detect statistically significant CNV genes GIP fits a gaussian mixture distribution with 2 components. One distribution accounting for the vast majority of observations fitting the coverage of non-CNV genes (central distribution), and another distribution fitting the CNV genes (outliers distribution). The cental distributions represents the-null hypothesis under which a given coverage value is merely caused by artefact fluctuations in sequencing depth, rather than a genuine, biologically meaningful gene amplification or depletion. To test CNV significance GIP uses the mean and the standard deviation of the central distribution and assigns a z-score and a p-value to all genes. Significant genes with a mean MAPQ score lower than ``--MAPQ`` are discarded. In the same way as for genomic bins, the parameter ``--customCoverageLimits``can be used to enforce custom coverage threshold on significant genes. The parameter ``--covPerGeSigPeaksOPT`` accepts  a string of 3 parameters and can be used to control the statical test.
+| To estimate the mean coverage the N bases are not considered. GIP normalizes the coverage scores by the chromosome median coverage. correct for potential GC-content biases at gene level GIP utilizes the same approach described for genomic bins (see above).To detect statistically significant CNV genes GIP fits a gaussian mixture distribution with 2 components. One distribution accounting for the vast majority of observations fitting the coverage of non-CNV genes (central distribution), and another distribution fitting the CNV genes (outliers distribution). The cental distributions represents the-null hypothesis under which a given coverage value is merely caused by artefact fluctuations in sequencing depth, rather than a genuine, biologically meaningful gene amplification or depletion. To test CNV significance GIP uses the mean and the standard deviation of the central distribution and assigns a z-score and a p-value to all genes. Significant genes with a mean MAPQ score lower than ``--MAPQ`` are discarded. In the same way as for genomic bins, the parameter ``--customCoverageLimits`` can be used to enforce custom coverage threshold on significant genes. The parameter ``--covPerGeSigOPT`` accepts  a string of 3 parameters and can be used to control the statical test.
 
 * *--pThresh* - adjusted p-value threshold [num] 
 * *--padjust* - method for multiple testing correction [num]
 * *--minLen*  - minimum gene size (bp) [int]
 
-| The default is ``covPerGeSigPeaksOPT="--pThresh 0.001 --padjust BH --minLen 0"``. As for genomic bins, the available methods for multiple testing corrections are: "holm", "hochberg", "hommel", "bonferroni", "BH", "BY", "fdr", "none". Please refer to documentation of the `p.adjust <https://www.rdocumentation.org/packages/stats/versions/3.6.2/topics/p.adjust>`_ R function for more details.
+| The default is ``covPerGeSigOPT="--pThresh 0.001 --padjust BH --minLen 0"``. As for genomic bins, the available methods for multiple testing corrections are: "holm", "hochberg", "hommel", "bonferroni", "BH", "BY", "fdr", "none". Please refer to documentation of the `p.adjust <https://www.rdocumentation.org/packages/stats/versions/3.6.2/topics/p.adjust>`_ R function for more details.
 
 | The *covPerGe* process returns the following files in the **gipOut/samples/sampleId** folder
 
