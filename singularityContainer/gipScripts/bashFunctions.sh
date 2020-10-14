@@ -343,7 +343,7 @@ function covPerGe {
             die ("covPerGe faidx did not work for command\n$cmd1\n$!") if ($?);
             my $realLength = ($en - $st) - $Ns;
 
-	        print O "$ge\t${chr}:${st}-${en}\t";
+	    print O "$ge\t${chr}:${st}-${en}\t";
             print TMP "${chr}\t${st}\t${en}\n";
             $cmd2="'samtools'" . " view -b -q " . "'$MAPQ'" . " -F " . "'$BITFLAG'" . " " . "'$BAM'" . " ${chr}:${st}-${en} | " . "'bedtools'" . " coverage -a " . "'$OUT'" . "_currentGene.bed -b stdin -d -split | awk  \x27{x+=\$5;next}END{print x/$realLength}\x27"  ;
             $meanGeneCov=`$cmd2`; if($?){die "error with $cmd2\n";}

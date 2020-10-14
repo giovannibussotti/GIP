@@ -94,89 +94,14 @@ for (( c=1; c<=${#oldClNames[@]}; c++ )); do
 done
 
 
-
-function covPerGe_allReads {
-########
-#OUTPUT#
-########
-#.covPerGe file. This format includes both the gene mean coverage and the gene mean coverage normalized by the chromosome median coverage. To estimate the mean coverage the N bases are not considered
-#This special version of covPerGe uses all mapping reads (i.e. no MAPQ filter) and does not estimate the average MAPQ to speed up
-#NOTE: genes not on the chromosomes of the chrCoverageMedians file are removed from the output
-#covPerGe fields:
-#gene_id: gene identifier
-#locus: gene chr:start-end
-#meanCoverage: Mean nucleotide sequencing coverage of the bases belonging to the gene (N bases aren't counted)
-#normalizedMeanCoverage: #meanCoverage (N bases aren't counted) / chromosome median coverage
-#MAPQ: a symbolic value of 99 for all genes
-
-##WARNING: You can have genes coverage, but still with a MAPQ >0 because you can have very few reads mapping in the gene (with a certain MAPQ). Similarly, you can have genes with 0 coverage and 0 MAPQ (so no mapping reads at all)
-
-#######
-#INPUT#
-#######
-#BAM: A genomic-sequencing BAM
-#OUT: covPerGe output name
-#GENES: A gene gtf annotation file
-#CHRM: chromosome median coverage file (chrCoverageMedians file, syntax: chrXX median .* )
-#BITFLAG: reads with this flag won't contribute to the sequencing depth nor to the gene average MAPQ
-#ASSEMBLY: genome assembly multifasta file
-
-local BAM=$1
-local OUT=$2
-local GENES=$3
-local CHRM=$4
-local BITFLAG=$5
-local ASSEMBLY=$6
-
-perl -e '
-open(C,"<'$CHRM'");
-while(<C>){
-if($_=~/^(\S+)\s+(\S+)/){$chr=$1;$m=$2; $mCovs{$chr} = $m;}
-}
-close C;
-
-open(F,"<'$GENES'");
-open(O,">'$OUT'");
-print O "gene_id\tlocus\tmeanCoverage\tnormalizedMeanCoverage\tMAPQ\n";
-while(<F>){
- open(TMP,">'$OUT'_currentGene.bed");
- if($_=~/gene_id \"([^\"]+)\"/){$ge=$1;}
- if($_=~/^(\S+)\s+\S+\s+\S+\s+(\S+)\s+(\S+)/){$chr=$1;$st=$2;$en=$3;}
- if(! defined $mCovs{$chr}){close(TMP); next;}
- print O "$ge\t${chr}:${st}-${en}\t";
- print TMP "${chr}\t${st}\t${en}\n";
-
- #subtract from the gene length the number of Ns
- $cmd1="samtools faidx '$ASSEMBLY' ${chr}:${st}-${en}  | tail -n +2  | awk \x27{print toupper(\$0)}\x27 | tr -cd  N | wc -c | tr -d \x27\\n\x27";
- $Ns=`$cmd1`; 
- die ("covPerGe faidx did not work for command\n$cmd1\n$!") if ($?);
- my $realLength = ($en - $st) - $Ns;
-
- #mean gene coverage
- $cmd2="samtools view -b -F " . "'$BITFLAG'" . " " . "'$BAM'" . " ${chr}:${st}-${en} | bedtools coverage -a " . "'$OUT'" . "_currentGene.bed -b stdin -d -split | awk  \x27{x+=\$5;next}END{print x/$realLength}\x27"  ;
- $meanGeneCov=`$cmd2`; if($?){die "error with $cmds2\n";}
- chomp $meanGeneCov;
-
- #normalize
- $normalizedMeanGeneCov = $meanGeneCov / $mCovs{$chr};
- print O "$meanGeneCov\t$normalizedMeanGeneCov\t99\n";
- close(TMP);
-}
-close O;
-close F; '
-rm -rf ${OUT}_currentGene.bed
-gzip $OUT
-}
-
-
+#compute mean clstrs coverage
 for i in "${!covPerGeNames[@]}"; do 
   N=${covPerGeNames[$i]}
   BAM=${bamFiles[$i]}
   CHRM=${chrCoverageMediansFiles[$i]}
-  OUT="${outDir}/${N}.covPerLowMapqClstrGe_allReads"
+  COVPERGE=${covPerGeFiles[$i]}
   echo $N
-  #covPerGe_allReads for all samples
-  covPerGe_allReads $BAM $OUT ${outDir}/lowMapq.clstr.ge.gtf $CHRM $BITFLAG $genome
+
   #average cluster coverage
   echo -e "gene_id\tlocus\tmeanCoverage\tnormalizedMeanCoverage\tMAPQ" > ${outDir}/${N}.covPerClstr
   for clstr in `ls ${outDir}/lowMapq.clstr`; do
@@ -184,7 +109,7 @@ for i in "${!covPerGeNames[@]}"; do
     #read clstr ids
     open(F,"<'${outDir}'/lowMapq.clstr/'$clstr'"); while(<F>){if($_=~/^>(.+)/){$clIds{$1}=1;}} close F; 
     #read covPerLowMapqClstrGe_allReads file
-    open(IN, "gunzip -c '$OUT'.gz |") or die "gunzip '$OUT': $!";
+    open(IN, "gunzip -c '$COVPERGE' |") or die "gunzip '$COVPERGE': $!";
     while(<IN>){
       if($_=~/^(\S+)\s+(\S+)\s+(\S+)\s+(\S+)/){ $id=$1; $pos=$2; $cov=$3; $nCov=$4;
         if($clIds{$id}){ $clPos=$pos; $clCov += $cov;$clNCov += $nCov; }
@@ -196,14 +121,9 @@ for i in "${!covPerGeNames[@]}"; do
     close IN;' >> ${outDir}/${N}.covPerClstr
   done
   gzip ${outDir}/${N}.covPerClstr
-  #clean
-  rm -rf ${OUT}.gz
 done
+
 
 #clean
 rm -rf ${outDir}/lowMapq.clstr.ge.gtf ${outDir}/.lowMapq  ${outDir}/.lowMapqCount  ${outDir}/.lowMapqSelected  ${outDir}/.lowMapqSelected.clstr  ${outDir}/.lowMapqSelected.fa  ${outDir}/.tmpGeBed
-
-
-
-
 

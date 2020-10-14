@@ -1,6 +1,5 @@
 17) in covPerClstr
 - you should be able to return the coverage not just of the genes belonging to clusters, but also the ones that have low MAPQfor a reason or another.
-- now GIP does not apply any MAPQ filter on the covPerGe files, so there is no need to run the covPerGe_allReads() function in the covPerClstr.sh script. Once you defined the gene clusters with cd-hit you can compute the mean coverage in the gene clusters directly from the standard covPerGe files.
 
 16) make a new module simply loading the samples chrMedianCoverage files and producing an heatmap with the depth of coverage of each chromosome in each sample. You can make it read also the medinGenomicCoverage files, so that you can normalize the chromosome coverage of each sample with that to generate also a normalized heatmap 
 
