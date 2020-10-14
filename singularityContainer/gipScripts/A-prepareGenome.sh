@@ -32,7 +32,8 @@ done
 ##################
 #clean chr ids#
 #zipped input fasta are also accepted#
-if file $FA | grep -q compressed  ; then
+referencedFA=`readlink -f $FA`
+if file $referencedFA | grep -q compressed  ; then
     gunzip -c $FA | perl -ne 'if($_=~/^>(.*)/){$c=$1; $c=~s/ /_/g; print ">$c\n";}else{print uc($_);} ' > ${OUT}   
 else
     cat $FA | perl -ne 'if($_=~/^>(.*)/){$c=$1; $c=~s/ /_/g; print ">$c\n";}else{print uc($_);} ' > ${OUT}

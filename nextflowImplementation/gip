@@ -31,7 +31,7 @@ def helpMessage() {
       -c                              nextflow configuration file
     General Options:
       --resultDir                     result directory 
-      --chromosomes                   List of chromosome identifiers to consider (included in quotes)
+      --chrs                          List of chromosome identifiers to consider (included in quotes)
       --geneFunction                  gene function annotation file
       --MAPQ                          read MAPQ cut-off  
       --BITFLAG                       SAM bitflag filter
@@ -102,7 +102,7 @@ resultDir  = file(params.resultDir + "/samples")
 resultDir.with{mkdirs()}
 MAPQ    = params.MAPQ
 BITFLAG = params.BITFLAG
-chromosomes  = params.chromosomes
+chrs  = params.chrs
 chrPlotYlim  = params.chrPlotYlim
 binPlotYlim  = params.binPlotYlim
 binOverviewSize = params.binOverviewSize
@@ -151,16 +151,27 @@ process prepareGenome {
   file("genome.gaps.gz") into (gaps_ch1 , gaps_ch2)
   file("repeats") into (repeats_ch1 , repeats_ch2 , repeats_ch3, repeats_ch4)
   file("snpEff")  into snpEffDb_ch1
-  
+  env chroms into chromosomes
+
   script:
   if( params.repeatLibrary == 'default' )
   """
   A-prepareGenome.sh -f $genome -x $annotation -c $task.cpus -l default
+  if [ $chrs == 'all' ]; then
+    chroms=`cut -f1 genome.chrSize | tr "\\n" " " | sed -e 's/ \$//'`
+  else 
+    chroms=$chrs
+  fi
   """
 
   else
   """
   A-prepareGenome.sh -f $genome -x $annotation -c $task.cpus -l $repeatLibrary
+  if [ $chrs == 'all' ]; then
+    chroms=`cut -f1 genome.chrSize | tr "\\n" " " | sed -e 's/ \$//'`
+  else 
+    chroms=$chrs
+  fi
   """
 
 
@@ -216,6 +227,7 @@ process covPerChr {
   set val(sampleId), file(bam) , file(bai) from map1
   set file(fa) , file(fai) , file(dict) , file(size) from genome_ch2
   file gaps from gaps_ch1
+  val(chromosomes) from chromosomes
 
   output:
   set val(sampleId), file(bam) , file(bai), file("chrCoverageMedians_$sampleId") into (covPerChr1 , covPerChr2 , covPerChr3, covPerChr4 )
@@ -233,7 +245,8 @@ process covPerNt {
   input:
   set val(sampleId), file(bam) , file(bai) , file(covPerChr) from covPerChr1
   set file(fa) , file(fai) , file(dict) , file(size) from genome_ch3
-  
+  val(chromosomes) from chromosomes  
+
   output:
   set val(sampleId), file ("${sampleId}.covPerNt.gz") , file ("${sampleId}.pcMapqPerNt.gz") , file ("${sampleId}.covPerNt.boxplot.png") , file ("${sampleId}.covPerNt.ridges.png") , file ("${sampleId}.covPerNt.allMedians.tsv") , file ("${sampleId}.covPerNt.medianGenomeCoverage") into (covPerNt)
   set val(sampleId), file(bam) , file(bai) , file(covPerChr) , file ("${sampleId}.covPerNt.gz") into (covPerNt4delly)
@@ -254,6 +267,7 @@ process covPerBin {
   input:
   set val(sampleId), file(bam) , file(bai) , file(covPerChr) from covPerChr2
   set file(fa) , file(fai) , file(dict) , file(size) from genome_ch4  
+  val(chromosomes) from chromosomes
 
   output:
   set val(sampleId), file ("${sampleId}.covPerBin.gz"), file ("${sampleId}.covPerBin.plot.all.png") , file ("${sampleId}.covPerBin.plot.byChr.pdf") , file ("${sampleId}.covPerBin.plot.tsv.gz") , file ("${sampleId}.covPerBin.plot.faceting.png") , file("${sampleId}.covPerBin.significant.bins.tsv.gz") , file("${sampleId}.covPerBin.significant.segments.tsv.gz") , file("${sampleId}.covPerBin.significant.stats") into (covPerBin)
@@ -283,6 +297,7 @@ process covPerGe {
   file repeats from repeats_ch1
   file (annotation)
   file geFun from geFun_ch1
+  val(chromosomes) from chromosomes
 
   output:
   set val(sampleId), file(bam) , file(bai) , file(covPerChr) , file("${sampleId}.covPerGe.gz") into covPerGe1 
@@ -309,6 +324,7 @@ process freebayes {
   set val(sampleId), file(bam) , file(bai) , file(covPerChr) from covPerChr3
   set file(fa) , file(fai) , file(dict) , file(size) from genome_ch7
   file repeats from repeats_ch2
+  val(chromosomes) from chromosomes
 
   output:
   set val(sampleId) , file("${sampleId}.vcf.gz") , file("${sampleId}.vcf.gz.tbi") , file("${sampleId}_freebayesFiltered") into (freebayes1)
@@ -386,6 +402,7 @@ process delly {
   file repeats from repeats_ch3
   file gaps from gaps_ch2
   file (annotation)
+  val(chromosomes) from chromosomes
 
   output:
   set val(sampleId), file("${sampleId}.delly.vcf.gz") , file("${sampleId}.delly.vcf.gz.tbi") , file("${sampleId}_dellyFiltered")  into delly
@@ -400,14 +417,14 @@ process delly {
   TYPES=(DEL DUP INV TRA)
   for T in "\${TYPES[@]}"; do
     delly -q $MAPQ -t \$T -g $fa -o ${sampleId}_\${T}.vcf _tmpHQbam/${sampleId}.bam
-    bgzip ${sampleId}_\${T}.vcf
-    tabix -p vcf -f ${sampleId}_\${T}.vcf.gz
   done
 
   #concatenate SVs if they exist
   CONC=""
   for T in "\${TYPES[@]}"; do
-    if [ -e ${sampleId}_\${T}.vcf.gz ]; then
+    if [ -e ${sampleId}_\${T}.vcf ]; then
+      bgzip ${sampleId}_\${T}.vcf
+      tabix -p vcf -f ${sampleId}_\${T}.vcf.gz
       CONC="\$CONC ${sampleId}_\${T}.vcf.gz"
     fi
   done
