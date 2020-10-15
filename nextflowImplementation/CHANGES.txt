@@ -8,7 +8,10 @@ gtfToGenePred
 exonGTF_2_fasta.sh 
 prepareAssembly.sh 
 gtf2bed12.sh 
-
+-the user must have the caution to specify all the input parameters not relative to the host system, but relative to where the data will be visible in the container. 
+So all he/she needs to do is:
+1) bind the directory ('-B  /ebi/fq/:/fq')
+2) provide the input files relative to the mounted directory (--reads /fq/sample.fastq.gz )
 
 
 ###################
