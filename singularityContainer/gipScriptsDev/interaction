@@ -1,0 +1,680 @@
+#given a folder with multiple covPerBin.gz or covPerGe.gz or chrStartEndScore.gz this script:
+#1) selects the bins showing high delta coverage (> --minDelta) (and MAPQ > --minMAPQ) (for covPerBin and covPerGe)
+#2) when possible it merges together adjacent bins (with cov > --minDelta) averaging the coverage scores, generating a "CNV" dataset (for covPerBin or chrStartEndScore). CNVs can be filtered by --minCNVLength
+#3) generates several heatmaps: 
+  #1 Scaled
+  #2 log10 
+  #3 for each CNV, the values are subtracted by the minimum coverage and then saturated. The latter is useful to focus on coverage variation. This is valuable because it shows you the coverage folds variation much better in situations where a peak (or gene) is highly amplified in all samples (say normalized coverage of 10) and it is hard to appreciate the variation of just one unit (e.g. 10, 11, 9, 10) because the color is saturated 
+  #4 saturated scores and using just a four colors palette
+  #5 sort columns (samples) by in a specific order defined in sampleSelection. exclude the other samples. (Optional)
+  #6 correlation scores (all CNVs vs all CNVs) 
+#4) a lollipop plot sorted like the all CNVs vs all CNVs correlation heatmap 
+#5) PCA analysis on the CNVs 
+#6) hist of entropy and SD of both the selected CNVs and the entire unfiltered set (coverage saturated) 
+#7) hierachical clustering on the samples eucledian distance estimated on the peaks   
+
+#The second part of the script is about NETWORKS
+ #-given the all vs all CNV correlation matrix (cmr)
+ #-take the absolute value of the correlation to consider equally negative and positive correlations
+ #-compute mclust clusters 
+ #-remove small clusters and the element from the cluster that are far away from the centroid. To do that, for each cluster it measures the centroid (multi dimentional vector) and measure the mean euclidian distance and the standard deviation. Members with distance > clMaxSDdist standard deviations from the mean are removed
+ #-write in a folder the filtered clusters
+ #-make a network plot (see https://rstudio-pubs-static.s3.amazonaws.com/337696_c6b008e0766e46bebf1401bea67f7b10.html)
+
+#The third part of the script regard tries to turn the igraph network into an interactive network with D3
+#example: http://kateto.net/network-visualization
+ #The inputs are the standard edges and a nodes data frames, but with a few little twists. 
+ #The node IDs in the edges data frame must be integers, and they also have to start from 0. An easy was to get there is to sort the IDs, then transform the character IDs to a factor variable, then transform that to integers (and make sure it starts from zero by subtracting 1).
+ #WARNING!!! http://kateto.net/network-visualization is wrong because it converts the source and the target node IDs to integer separatelly. The correct way to do this is implemented in this script. Briefly, 1) sort the edge data frame by IDs in "source"  2) append "source" and "target" together, and assign integer IDs 3) sort the nodes in the nodes dataframe following the same order defined by the node IDS integers
+
+#Rscript  binCoverage2cnvs.R --DIR ../../pipeOut/brazilDeletion/lsdOut/ --minMAPQ 50 --minDelta 1 --outName bin2peakDelta --inFormat covPerBin --filePattern .covPerBin.gz --geBedFile /Volumes/BioIT/Giovanni/datasets/projects/p2p5/Linf.ge.bed 
+
+#samplesList="samplesList2"
+#gipOut="gipOut"
+#outName=NA
+#chrs=NA
+#debug=FALSE
+#mode="gene"
+#minMAPQ=50
+#minDelta=1
+#minMaxCov=NA
+#minCNVLength=0
+#binExpansion=0
+
+suppressPackageStartupMessages(library("argparse"))
+parser <- ArgumentParser(description="Detects CNV bin or genes in many samples and looks correlating positions")
+parser$add_argument("--samplesList" , nargs="+", required=TRUE, help="file listing in one column the samples to use" )
+parser$add_argument("--gipOut"  , required=TRUE , help="GIP output directory" , default="NA")
+parser$add_argument("--outName" , help="Output name [default %(default)s]" , default="NA")
+parser$add_argument("--chrs"    , nargs="+" , help="chromosomes to use. If not defined, it considers the chromosomes in --gipOut genome.chrSize [default %(default)s]" , default="NA")
+parser$add_argument("--mode" , required=TRUE , type="character" , help="use genomic bins or genes (specifying bin or gene) default %(default)s]")
+parser$add_argument("--minMAPQ"  , type="integer" , help="FILTER: min bin/gene MAPQ [default %(default)s]" , default=-1)
+parser$add_argument("--minDelta" , type="integer" , help="FILTER: min bin/gene coverage delta between files [default %(default)s]" , default=1)
+parser$add_argument("--minMaxCov" , type="character" , nargs="+" , help="FILTER: keep bins/genes with coverage >Value1 or <Value2 in at least one sample" , default="NA" )
+parser$add_argument("--minCNVLength" , type="integer" , help="FILTER: min CNV length (dependency --mode bin) [default %(default)s]" , default=0)
+parser$add_argument("--binExpansion"  , type="integer" , help="Collapse adjacent bins into larger segments, extending bin ranges in both directions by --binExpansion nucleotides (dependency --mode bin)  [default %(default)s]" , default=0)
+
+parser$add_argument("--debug"  , action="store_true" , help="dump session and quit [default %(default)s]" , default=FALSE)
+
+
+parser$add_argument("--filePattern"   , required=TRUE , type="character" , help="file name pattern. e.g. .covPerBin.gz, .covPerGe.gz, .chrStartEndScore [default %(default)s]")
+parser$add_argument("--kGroups"       , type="integer" , help="split the sample dendrogram in kGroups branches [default %(default)s]" , default=2)
+parser$add_argument("--doNotReduce"   , action="store_true" , help="flag. do not merge adjacent or expanded bins [default %(default)s]" , default=FALSE)
+parser$add_argument("--cnvCorrTresh"  , type="double" , help="CNV correlation correlation threshold [default %(default)s]" , default=0.9)
+parser$add_argument("--clusteringMethod"  , type="character" , help="hclust clustering method for heatmaps. recommended ward.D2, others ward, single, complete, average, mcquitty, median or centroid [default %(default)s]" , default="complete")
+parser$add_argument("--geBedFile"     , required=TRUE , type="character" , help="gene bed file to label genic VS intergenic CNVs (e.g. /pasteur/projets/policy01/BioIT/Giovanni/datasets/projects/p2p5/LdBPKv2.ge.bed) [default %(default)s]" , default="NA")
+parser$add_argument("--extendGenes"   , type="integer" , help="dependency --geBedFile. extend gene annotations to include the UTR space. This is relevant for inFormat covPerBin or chrStartEndScore when mapping CNV intervals to gene intervals. This is not relevant for covPerGe  [default %(default)s]" , default=100)
+parser$add_argument("--sampleSelection"  , nargs="+" , help="produce an heatmap with these samples in this specific order [default %(default)s]" , default="NA" )
+parser$add_argument("--sampInfoTsv"  , type="character" , help="tsv file with the additional sample info to be mapped as a ribbons on the heatmap columns. The first column must be called sample. WARNING. If your samples have weird names (e.g. starting with a numbers or containing dashes), sampInfoTsv must list the names already corrected by make.names() [default %(default)s]" , default="NA")
+parser$add_argument("--sampInfoTsvPalette"  , nargs="+" , help="dependency --sampInfoTsv. RColorBrewer palettes for the sampInfo [default %(default)s]" , default="NA" )
+parser$add_argument("--heatmapQuantileSaturation" , type="double" , nargs="+" , help="just for the plotting heatmaps 1 and 2. Saturate the matrix values < and > these quantiles (recommended 0.02 0.98) [default %(default)s]" , default=-1 )
+parser$add_argument("--clMaxSDdist" , type="double"  , help="NETWORK FILTER: CNV with distance from the cluster centroid > clMaxSDdist standard deviations from the mean distance are removed from the cluster. Set a hight number like 999999 to remove this filter. Set 2 for a reasonable filter    [default %(default)s]" , default=999999999)
+parser$add_argument("--clMinSize"   , type="integer" , help="NETWORK FILTER: CNV clusters with less than clMinSize members are removed  [default %(default)s]" , default=2)
+parser$add_argument("--kmeansCenters" , type="integer" , help="NETWORK: use k-means instead of mclust to define clusters. Define the number of centers [default %(default)s]" , default=-1)
+parser$add_argument("--MCLinflation" , type="integer" , help="NETWORK: use MCL instead of mclust to define clusters. Define the inflation parameter. Increasing the value will increase cluster granularity [default %(default)s]" , default=-1)
+parser$add_argument("--MCLexpansion" , type="integer" , help="NETWORK: use MCL instead of mclust to define clusters. Define the expansion parameter [default %(default)s]" , default=2)
+parser$add_argument("--edgesMeanCorFilter" , action="store_true" , help="NETWORK: flag. edges below the mean CNV correlation are removed. [default %(default)s]" , default=FALSE)
+parser$add_argument("--edgesPvalueFilter"  , type="double" , help="NETWORK: edges below this adjusted pvalue threshold (e.g. 0.01) will be filtered.  [default %(default)s]" , default="2")
+
+args <- parser$parse_args()
+#patch NA
+for (n in names(args)){if(args[[n]][1] == "NA"){args[[n]] <- NA}  }
+for (n in names(args)){assign(n,args[[n]]) }
+
+if ((MCLinflation > 0) && (kmeansCenters > 0)){
+  stop("ERROR. you must chose either kmeans or MCL for network clustering")
+  quit(save = "no", status = 1, runLast = FALSE)  
+}
+suppressPackageStartupMessages(library ("gplots"))
+suppressPackageStartupMessages(library("GenomicRanges"))
+suppressPackageStartupMessages(library("FactoMineR"))
+suppressPackageStartupMessages(library("RColorBrewer"))
+suppressPackageStartupMessages(library("data.table"))
+suppressPackageStartupMessages(library("heatmap3"))
+suppressPackageStartupMessages(library("fastcluster"))
+suppressPackageStartupMessages(library("ape"))
+suppressPackageStartupMessages(library("ggplot2"))
+suppressPackageStartupMessages(library("entropy"))
+suppressPackageStartupMessages(library("reshape2"))
+if(debug){library(session);save.session("session_DEBUG_interaction");quit()}
+
+#setup
+outDir <- paste0(gipOut,"/sampleComparison/")
+system(paste0("mkdir -p ", outDir))
+if (is.na(outName)){
+  outName <- paste0(outDir,"interaction")
+}
+chrSize     <- read.table(paste0(gipOut,"/genome/genome.chrSize"),sep="\t", stringsAsFactors = F, header=F , col.names=c("chr","size"))
+chrSize$chr <- as.character(chrSize$chr)
+if (is.na (chrs[1])){
+  chrs <- chrSize$chr
+}
+chrSize <- chrSize[chrSize$chr %in% chrs,]
+fileExt <- NULL
+if (mode == "bin"){
+  fileExt = ".covPerBin.gz"
+} else if (mode == "gene"){
+  fileExt = ".covPerGe.gz"
+} else {
+  stop("mode must be either bin or gene")
+  quit(save = "no", status = 1, runLast = FALSE)  
+}
+
+##############################
+#read input and measure delta#
+##############################
+samples <- read.table(samplesList,stringsAsFactors=F)$V1
+#fileName check
+RsyntaxConvertedNames <- make.names(samples)
+namesDiff <- setdiff(samples,RsyntaxConvertedNames)
+if(length(namesDiff)>0 ){print ("Warn. The following input files use inappropriate syntax. This script will use corrected names for those"); print(namesDiff)}
+allFiles <- list()
+
+for (i in 1:length(samples)){
+  N <- RsyntaxConvertedNames[i]
+  print(N)
+  allFiles[[N]] <- as.data.frame(fread(cmd=paste0("gunzip -c ", gipOut , "/samples/" , N , "/" , N , fileExt) , colClasses=list(character=1)))
+  if (mode == "bin"){
+    allFiles[[N]]     <- allFiles[[N]][ allFiles[[N]]$median <= 0.01 | (allFiles[[N]]$median > 0.01 & allFiles[[N]]$MAPQ > minMAPQ) ,]  #filter lowMAPQ just if it is not a deletion (we keep deletions)
+    allFiles[[N]]     <- subset(allFiles[[N]] , select=-c(median,MAPQ))
+    allFiles[[N]]$tag <- paste0(allFiles[[N]]$chromosome ,"_",allFiles[[N]]$start) 
+  } else if (mode == "gene") {
+    allFiles[[N]]     <- allFiles[[N]][ allFiles[[N]]$normalizedMeanCoverage <= 0.01 | (allFiles[[N]]$normalizedMeanCoverage > 0.01 & allFiles[[N]]$MAPQ > minMAPQ) ,]  #filter just if it is not a deletion (we keep deletions)
+    allFiles[[N]]$chr    <- gsub(x=allFiles[[N]]$locus,pattern="(.+):(.+)-(.+)$",replacement="\\1")
+    allFiles[[N]]$start  <- as.numeric(gsub(x=allFiles[[N]]$locus,pattern="(.+):(.+)-(.+)$",replacement="\\2"))
+    allFiles[[N]]$end    <- as.numeric(gsub(x=allFiles[[N]]$locus,pattern="(.+):(.+)-(.+)$",replacement="\\3"))
+    allFiles[[N]]        <- allFiles[[N]][,c("chr" , "start" , "end" , "normalizedMeanCoverage","gene_id")]
+  } else {
+        stop("inFormat not legit")
+        quit(save = "no", status = 1, runLast = FALSE)  
+    }
+  names(allFiles[[N]]) <- c(paste0("chr_",N) , paste0("start_",N) , paste0("end_",N) , paste0("score_",N) , "tag"  )  
+}
+df = Reduce(function(...) merge(..., by="tag" ,all=T , sort=F), allFiles) #a bin can be present in a sample but filtered in another. These will we in df as NA scores
+row.names(df) <- df$tag
+df <- df[,c(names(allFiles[[1]][1:3]) ,  names(df)[grepl(x=names(df),pattern="score_")])]
+names(df)[1:3] <- c("chr","start","end")
+
+#generate correlating genes
+#df$score_m1 <- runif(nrow(df))
+#df$score_m3 <- runif(nrow(df)) * 1.5
+#df$score_m6 <- runif(nrow(df)) * 2  
+#df$score_m8 <- runif(nrow(df)) * 4
+#makeCorrelatingGenes <- function(n,mu1,mu2,r,row1 , row2) {
+# library(MASS)
+# data = mvrnorm(n=n, mu=c(mu1, mu2), Sigma=matrix(c(1, r, r, 1), nrow=2), empirical=TRUE)
+# data[data < 0]=0.1
+# df[c(row1,row2),scoreCols] = t(data)
+#}
+#scoreCols <- names(df)[grepl(x=names(df),pattern="score_")]
+#makeCorrelatingGenes(n=length(scoreCols) , mu1=3 , mu2=3 , r=0.95 , row1=1, row2=2)
+#makeCorrelatingGenes(n=length(scoreCols) , mu1=3 , mu2=3 , r=0.99 , row1=2, row2=3)
+#makeCorrelatingGenes(n=length(scoreCols) , mu1=3 , mu2=3 , r=0.9 , row1=3, row2=4)
+#makeCorrelatingGenes(n=length(scoreCols) , mu1=3 , mu2=3 , r=0.99 , row1=4, row2=5)
+#makeCorrelatingGenes(n=length(scoreCols) , mu1=3 , mu2=3 , r=0.99 , row1=5, row2=10)
+#makeCorrelatingGenes(n=length(scoreCols) , mu1=3 , mu2=3 , r=-0.95 , row1=10, row2=100)
+#makeCorrelatingGenes(n=length(scoreCols) , mu1=3 , mu2=3 , r=-0.99 , row1=1, row2=101)
+#makeCorrelatingGenes(n=length(scoreCols) , mu1=3 , mu2=3 , r=-0.9 , row1=2, row2=102)
+#makeCorrelatingGenes(n=length(scoreCols) , mu1=3 , mu2=3 , r=-0.99 , row1=30, row2=50)
+#makeCorrelatingGenes(n=length(scoreCols) , mu1=3 , mu2=3 , r=-0.99 , row1=140, row2=142)
+
+########
+#filter#
+########
+#remove the bins filtered in some samples but present in others
+df <- df[complete.cases(df),]
+names(df) <- gsub(x=names(df),pattern="score_(.*)",replacement="\\1")
+#delta filter
+df$delta <- apply( subset(df,select=-c(1,2,3)) , 1 , function(x){d=max(x)-min(x)} )
+d <- df[df$delta > minDelta,]
+#min max cov filter
+if (! is.na (minMaxCov)) {
+  minMaxCov <- as.numeric(minMaxCov)
+  dMax <- apply( subset(d,select=-c(1,2,3)) , 1 , max )
+  dMin <- apply( subset(d,select=-c(1,2,3)) , 1 , min )
+  d <- d[dMax > minMaxCov[1] | dMin < minMaxCov[2],]
+}
+#chr filter
+d <- d[d$chr %in% chrs,]
+d <- d[with(d, order(chr, start)), ]
+
+#TILL HERE
+
+
+
+
+
+###############################################
+#collapse adjacent bins averaging the coverage#
+###############################################
+collapseAdjacentBinsAveragingTheCoverage <- function (d, minCNVLength , binExpansion) {
+#given a data frame with fields chr start end and others with numerical values
+#this function merge adjacent bins together, and average the scores
+  m  = as.matrix(subset(d,select=-c(chr,start,end)))
+  gr = GRanges(d$chr, IRanges(c(d$start),c(d$end)),strand="*")
+  mcols(gr) <- m
+  gr = gr + binExpansion
+  grRed = reduce(gr)
+  mcols(gr)$peak <- subjectHits(findOverlaps(gr, grRed))
+  d <- as.data.frame(gr)
+  d <- subset( d, select = -c(strand, width) )
+  names(d) <- gsub(x=names(d),pattern="seqnames",replacement="chr")
+  s <- split(d,d$peak)
+  redDs <- lapply(split(d,d$peak),function(x){
+    tmp<- data.frame(chr=x$chr[1],start=min(x$start), end=max(x$end))
+    mergedValuesDf <- cbind( tmp , t(as.data.frame(apply( subset( x, select = -c(chr, start,end,peak) ) , 2,mean ))) )
+    row.names(mergedValuesDf)=""
+    return(mergedValuesDf)
+  })
+  redD <- do.call(rbind,redDs)
+  #filter
+  redD <- redD[(redD$end - redD$start)+1 >= minCNVLength,]
+  #round-off
+  is.num     <- sapply(redD, is.numeric)
+  redD[is.num] <- lapply(redD[is.num], round, 3)
+  #remove expansion from CNVs
+  redD$start <- redD$start + binExpansion
+  redD$end   <- redD$end   - binExpansion
+  return(redD)
+}
+redD <- NULL
+redD <- d
+redD <- subset(redD , select=-c(delta))
+if (!(doNotReduce) && (mode == "bin")) {
+  redD <- collapseAdjacentBinsAveragingTheCoverage(redD ,minCNVLength , binExpansion )
+} 
+if (mode == "bin") { 
+  row.names(redD) <- paste("cnv",redD$chr,redD$start,redD$end,sep="_")
+}
+write.table(x=redD,sep="\t",col.names=T,row.names=T,append=F,quote=F,file=paste0(outName,".tsv"))
+system(paste0("gzip ",outName,".tsv"))
+mr <- as.matrix(subset(redD , select=-c(chr,start,end) ))
+
+###############################
+#map CNVs to chromosome colors#
+###############################
+chrCol <- data.frame( chrs=unique(redD$chr) , colors=colorRampPalette(brewer.pal(12,"Set3"))(n = length(unique(redD$chr))),stringsAsFactors=F)
+cnvChrColors <- as.matrix(chrCol[match(redD$chr,chrCol$chrs),"colors"])
+colnames(cnvChrColors)<-"chr"
+row.names(cnvChrColors) <- row.names(redD)
+
+###################
+#map CNVs to genes#
+###################
+genes <- read.table(geBedFile,header=F,stringsAsFactors=F)[,c(1:4,6)]
+names(genes)<- c("chr","start","end","gene_id","strand")
+grRedD  <- makeGRangesFromDataFrame(redD,keep.extra.columns=T)
+grGenes <- makeGRangesFromDataFrame(genes,keep.extra.columns=T)
+grGenes <- grGenes + extendGenes
+ov      <- findOverlaps(query=grRedD, subject=grGenes)
+ovDf    <- as.data.frame(ov)
+ovAggregate  <- aggregate(subjectHits ~., ovDf, toString)
+grRedD_genic <- grRedD[ovAggregate$queryHits,]
+geneIds <- c()
+for ( geNumberIds in  ovAggregate$subjectHits){
+  geNumberIds <- as.numeric(gsub(unlist(strsplit(geNumberIds, split=",")) , pattern=" ", replacement=""))
+  tmpGeneIds <- paste(mcols (grGenes[ geNumberIds , ] )$gene_id , collapse=",")
+  geneIds <- c(geneIds, tmpGeneIds)
+}
+grRedD_genic$geneIds <-geneIds
+grRedD_intergenic <- grRedD[! grRedD %over% grRedD_genic,]
+redD_genic      <- as.data.frame(grRedD_genic)
+redD_intergenic <- as.data.frame(grRedD_intergenic)
+
+##############
+#SUMMARY INFO#
+##############
+#SAMPLES
+samplInfoColList <- list()
+if(!is.na(sampInfoTsv)){
+  sampInfo <- read.table(sampInfoTsv,header=T,stringsAsFactors=F,sep="\t")
+    #map colors to sampInfo features
+    for (i in  2:length(names(sampInfo))){
+        n=names(sampInfo)[i]
+        samplInfoColList[[n]] <- data.frame( feature=unique(sampInfo[,n]) ,  colors=colorRampPalette(brewer.pal(8,sampInfoTsvPalette[i-1]))(n = length(unique(sampInfo[,n]))), stringsAsFactors=F)
+        sampInfo[[paste0(n,"_col")]] <- samplInfoColList[[n]][ match(sampInfo[,n] , samplInfoColList[[n]][,"feature"]) , "colors"]
+    }
+  } else {
+      sampInfo <- data.frame( sample=names(subset(redD , select=-c(chr,start,end) )) , group="ungrupped", group_col="black" , stringsAsFactors=F)
+    }
+row.names(sampInfo) <- sampInfo$sample
+sampInfo <- sampInfo[colnames(mr),]
+#object for heatmap ColSideColors
+sampInfoColFields <- names(sampInfo)[grepl(x=names(sampInfo),pattern="_col$")]
+sampInfoColObj    <- NULL;
+sampInfoColObj    <- as.matrix(sampInfo[,sampInfoColFields])
+if (length(sampInfoColFields) == 1) {
+  colnames(sampInfoColObj) <- sampInfoColFields
+}
+colnames(sampInfoColObj) <- gsub(x=colnames(sampInfoColObj),pattern="_col$",replacement="")
+
+#CNVS
+cnvInfo <- data.frame(annotation=rep("intergenic",length(redD[,1])) , color="blue" , stringsAsFactors=F)
+row.names(cnvInfo) <- row.names(redD)
+cnvInfo[row.names(redD_genic),"annotation"] = "gene"
+cnvInfo[row.names(redD_genic),"color"]      = "orange"
+cnvInfo$geneIds <- "none"
+cnvInfo[match(row.names(redD_genic) , row.names(cnvInfo)), "geneIds" ] = redD_genic$geneIds
+cnvInfo <- cbind(cnvInfo, redD[row.names(cnvInfo),"chr"], cnvChrColors[row.names(cnvInfo),])
+names(cnvInfo) <- c("annotationType","annotation","geneIds","chrId","chr")
+
+################################
+#add CNV correlation to cnvInfo#
+################################
+melting <- function (df,value.name){
+  melted <- reshape2::melt(as.matrix(df),varnames=c("cnv1","cnv2"),value.name=value.name)
+  melted$cnv1<- as.character(melted$cnv1)
+  melted$cnv2<- as.character(melted$cnv2)
+  row.names(melted) <- paste0(melted$cnv1 ,"_",melted$cnv2)
+  return(melted)
+}
+cmr     <- round(cor(t(mr)),digits=2)
+cmrMelt <- melting(cmr,"correlation")
+
+#https://stackoverflow.com/questions/13112238/a-matrix-version-of-cor-test
+#http://r.789695.n4.nabble.com/Adjusting-p-values-of-a-matrix-td3425883.html
+cmr_pVal <- as.data.frame(corr.test(t(mr),ci=FALSE,adjust="none")$p)
+ltri <- lower.tri(cmr_pVal)
+utri <- upper.tri(cmr_pVal)
+cmr_pVal[ltri] <- p.adjust(cmr_pVal[ltri], method = "BH")
+cmr_pVal[utri] <- t(cmr_pVal)[utri]
+cmr_pValMelt <- melting(cmr_pVal,"pvalue")
+
+diag(cmr) <- 0
+cnvInfo$mostNegCorrCNVname  <- apply(cmr,1,function(x){mostNegCorr <- names(sort(x)[1])    })
+cnvInfo$mostNegCorrCNVvalue <- apply(cmr,1,function(x){mostNegCorr <- sort(x)[1]    })
+cnvInfo$mostNegCorrCNVadjPval <- cmr_pValMelt[paste0(row.names(cnvInfo),"_",cnvInfo$mostNegCorrCNVname),"pvalue"]
+cnvInfo$mostNegCorrCNVgeneId <-cnvInfo[match(cnvInfo$mostNegCorrCNVname,row.names(cnvInfo)),"geneIds"]
+cnvInfo$mostPosCorrCNVname <- apply(cmr,1,function(x){mostPosCorr <- names(tail(sort(x),n=1))    })
+cnvInfo$mostPosCorrCNVvalue <- apply(cmr,1,function(x){mostPosCorr <- tail(sort(x),n=1)    })
+cnvInfo$mostPosCorrCNVadjPval <- cmr_pValMelt[paste0(row.names(cnvInfo),"_",cnvInfo$mostPosCorrCNVname),"pvalue"]
+cnvInfo$mostPosCorrCNVgeneId <-cnvInfo[match(cnvInfo$mostPosCorrCNVname,row.names(cnvInfo)),"geneIds"]
+cnvInfo$medianCorrCNV <- apply(cmr,1,function(x){round(median(x),3)    })
+
+goodCorr <- apply(cmr,1,function(x){maxX=max(x); minX=min(x); if(maxX > cnvCorrTresh | minX < -cnvCorrTresh){TRUE}else{FALSE}    })
+gcmr     <- cmr[goodCorr,goodCorr]
+diag(cmr)  <- 1
+diag(gcmr) <- 1
+
+#######################
+#add CNV SD to cnvInfo#
+#######################
+cnvInfo$SD <- apply(mr,1,sd)
+
+#############################
+#add ENSEMBL name to cnvInfo#
+#############################
+#if(! is.na(ENSEMBLgeneIdIndex)){
+# LdBPKv2.geneDBtoENSEMBL.index = read.table(ENSEMBLgeneIdIndex,header=T,stringsAsFactors=F)
+# cnvInfo$ENSEMBLgeneIds <- LdBPKv2.geneDBtoENSEMBL.index[match(cnvInfo$geneIds , LdBPKv2.geneDBtoENSEMBL.index$LdBPKv2) , "ENSEMBL"]
+# cnvInfo$mostNegCorrCNVensemblGeneId <- LdBPKv2.geneDBtoENSEMBL.index[match(cnvInfo$mostNegCorrCNVgeneId , LdBPKv2.geneDBtoENSEMBL.index$LdBPKv2) , "ENSEMBL"]
+# cnvInfo$mostPosCorrCNVensemblGeneId <- LdBPKv2.geneDBtoENSEMBL.index[match(cnvInfo$mostPosCorrCNVgeneId , LdBPKv2.geneDBtoENSEMBL.index$LdBPKv2) , "ENSEMBL"]
+# cnvInfo$ENSEMBLgeneIds[is.na(cnvInfo$ENSEMBLgeneIds)]="none"
+# cnvInfo$mostNegCorrCNVensemblGeneId[is.na(cnvInfo$mostNegCorrCNVensemblGeneId)]="none"
+# cnvInfo$mostPosCorrCNVensemblGeneId[is.na(cnvInfo$mostPosCorrCNVensemblGeneId)]="none"
+#}
+
+####################
+#heatmap on the cov#
+####################
+addLegend <- function(){
+    par(xpd=TRUE)
+    y_pos=0.3
+    legend(x=0 , y=0 , box.col=FALSE, legend=c("gene","intergenic") , col=c("orange","blue") , lty= 1, lwd = 5 ,cex=0.5,title="annotation")
+    for (n in names(samplInfoColList)){
+        y_pos = y_pos + 0.2
+        legend(x=0.89 , y=y_pos , box.col=FALSE, legend=samplInfoColList[[n]]$feature , col=samplInfoColList[[n]]$colors , lty= 1, lwd = 5 ,cex=0.5,title=n)
+    }
+}
+pdf(paste0(outName,".pdf"), height=8 , width=12)
+palette1 <- colorRampPalette(c("red","green"))(n = 299)
+palette2 <- colorRampPalette(c("black", "white","blue","red"))(n = 299)
+palette3 <- colorRampPalette(brewer.pal(name="PiYG",n=8))(100)
+palette4 <- colorRampPalette(c("black", "ghostwhite","red","green"))(n = 4)
+#mintcream
+#seashell
+
+#HEATMAP 1) and 2) saturation function
+if (heatmapQuantileSaturation[1] == -1){ heatmapQuantileSaturation = c(0 , 1) }
+zlim = function (mx,quantLims){
+  quants <- quantile(mx,probs=c(quantLims))
+  mx[mx < quants[1]] =  quants[1]
+  mx[mx > quants[2]] =  quants[2]
+  return(mx)
+}
+
+#HEATMAP 1) scaled
+heatmap3(zlim(t(scale(t(mr),center=T,scale=T)),heatmapQuantileSaturation), col=palette1,margins=c(10,10) , main="heatmap1\nscaled", RowSideColors=as.matrix(cnvInfo[,c("chr","annotation")]) , ColSideColors=sampInfoColObj , dist=dist,scale="none" , method = clusteringMethod , labRow=F )
+addLegend()
+
+#HEATMAP 2) on the log10 cov
+heatmap3(zlim(log10(mr+0.1),heatmapQuantileSaturation), col=palette1,margins=c(10,10) , main="heatmap2\nlog10" , RowSideColors=as.matrix(cnvInfo[,c("chr","annotation")]) , dist=dist,scale="none" , ColSideColors=sampInfoColObj , method = clusteringMethod , labRow=F )
+addLegend()
+
+#HEATMAP 3) min coverage removed then saturated
+mrs          = mr
+mrsMinSub <- mrs - apply(mrs,1,min)
+mrsMinSub[mrsMinSub > 3] = 3
+heatmap3(mrsMinSub,col=palette2, margins=c(10,10) , main="heatmap3\nmin subtracted\nthen cov >3 saturated", RowSideColors=as.matrix(cnvInfo[,c("chr","annotation")]) , ColSideColors=sampInfoColObj , dist=dist,scale="none",method=clusteringMethod , labRow=F)
+addLegend()
+
+#HEATMAP 4) coverage saturated
+mrSat            = mr
+mrSat[mrSat > 3] = 3
+heatmap3(mrSat,col=palette4, margins=c(10,10) , main="heatmap4\ncov >3 saturated", RowSideColors=as.matrix(cnvInfo[,c("chr","annotation")]) , ColSideColors=sampInfoColObj , dist=dist,scale="none",method=clusteringMethod , labRow=F)
+addLegend()
+
+#HEATMAP 5) sort columns (samples) by in a specific order defined in sampleSelection. exclude the other samples
+if (! is.na(sampleSelection)){
+  heatmap3(mrsMinSub[,sampleSelection] ,col=palette2, main="heatmap5\ncov saturated\nand min subtracted selection", margins=c(10,10) , RowSideColors=as.matrix(cnvInfo[,c("chr","annotation")]) , dist=dist,scale="none",method=clusteringMethod , labRow=F , Colv=NA  , ColSideColors=sampInfoColObj[sampleSelection,] )
+  addLegend()
+}
+
+#HEATMAP 6-7) CNV correlation
+cmrh <- heatmap3(cmr,col=palette3, margins=c(10,10) , main="heatmap6\ncoverage correlation" , ColSideColors=as.matrix(cnvInfo[,c("chr","annotation")]) , RowSideColors=as.matrix(cnvInfo[,c("chr","annotation")]) , dist=dist,scale="none",method=clusteringMethod , labRow=F , labCol=F, xlab="CNV"  , ylab="CNV")
+gcmrh<- heatmap.2(gcmr,trace="none",density.info="none",col=palette3,main="coverage correlation\njust good correlation CNVs",xlab="CNV",key.title=FALSE , key.xlab="Correlation" , ylab="CNV" , dist=dist,scale="none" , hclustfun=function(x) hclust(dist(x), method = clusteringMethod ) , labRow=F , labCol=F  )
+#separating correlating and anticorrelating CNVs
+goodPosCorr <- apply(cmr,1,function(x){maxX=max(x); minX=min(x); if(maxX > cnvCorrTresh ){TRUE}else{FALSE}    })
+goodNegCorr <- apply(cmr,1,function(x){maxX=max(x); minX=min(x); if(minX < -cnvCorrTresh){TRUE}else{FALSE}    })
+if (nrow(mrsMinSub[goodNegCorr,]) > 1){
+  heatmap3(mrsMinSub[goodNegCorr,],col=palette2, margins=c(10,10) , RowSideColors=as.matrix(cnvInfo[goodNegCorr,c("chr","annotation")]) , dist=dist,scale="none",method=clusteringMethod , labRow=F)
+}
+if (nrow(mrsMinSub[goodPosCorr,]) > 1){
+  heatmap3(mrsMinSub[goodPosCorr,],col=palette2, margins=c(10,10) , RowSideColors=as.matrix(cnvInfo[goodPosCorr,c("chr","annotation")]) , dist=dist,scale="none",method=clusteringMethod , labRow=F)
+}
+
+#LOLLIPOP (sorted like the CNV correlation heatmap)
+lollipopIdSelection <- row.names(cmr[cmrh$rowInd,cmrh$colInd])
+lollipopData <- cnvInfo[lollipopIdSelection,c("mostNegCorrCNVvalue","mostNegCorrCNVadjPval","mostPosCorrCNVvalue","mostPosCorrCNVadjPval","medianCorrCNV","SD")]
+lollipopData$id <- row.names(cnvInfo[lollipopIdSelection,])
+lollipopData$id <- factor(lollipopData$id,levels=row.names(cnvInfo[lollipopIdSelection,]))
+p <- ggplot(lollipopData) + geom_segment( aes(x=id, xend=id, y=mostNegCorrCNVvalue, yend=mostPosCorrCNVvalue), color="grey") + geom_point( aes(x=id, y=medianCorrCNV),size=0.1,color="black" ) + geom_point( aes(x=id, y=mostNegCorrCNVvalue, size=mostNegCorrCNVadjPval,color=mostNegCorrCNVvalue ) ) + geom_point( aes(x=id, y=mostPosCorrCNVvalue,size=mostPosCorrCNVadjPval ,color=mostPosCorrCNVvalue) ) + coord_flip() + xlab("CNVs") +ylab("CNV correlation") + ylim(-1,1) + theme_light() + theme(plot.margin = unit(c(1,15,1,1), "cm")) + labs(size="Adjusted P-value",color="CNV correlation") + scale_color_gradient2(low=palette3[1], high=palette3[100] , mid=palette3[50] ) + scale_size_continuous(breaks = c(0.01 , 0.5 , 1))
+print(p)
+
+#PCA
+resPca <- PCA(t(mr),graph=FALSE)
+plot(resPca)
+#colour by sampInfo
+pcaCoord=as.data.frame(resPca$ind$coord)
+for (n in colnames(sampInfoColObj)) {
+    plot(pcaCoord$Dim.1 , pcaCoord$Dim.2 , xlab="Dim1" , ylab="Dim2" , pch=19 , col=sampInfo[rownames(pcaCoord),paste0(n,"_col")] )
+    if(length(samplInfoColList[[n]]) > 0){
+      legend("topright" , box.col=FALSE, legend=samplInfoColList[[n]]$feature , col=samplInfoColList[[n]]$colors , lty= 1, lwd = 5 ,cex=0.5,title=n)
+    }
+}
+sampleDists <- dist(scale(t(mr)))
+plot(hclust(sampleDists))
+
+
+#ENTROPY/SD of CNVs and entire unfiltered set
+allSat <- df[,c(-1,-2,-3,-ncol(df))]
+allSat[allSat > 3] = 3
+par(mfrow=c(2,2))
+hist(apply(allSat,1,sd),breaks=100,col="blue",xlab="SD",main="all saturated")
+hist(apply(mrSat,1,sd),breaks=100,col="red",xlab="SD",main="CNVs saturated")
+hist(log10(apply(allSat,1,sd)),breaks=100,col="purple",xlab="log10 SD",main="all saturated")
+hist(log10(apply(mrSat,1,sd)),breaks=100,col="pink",xlab="log10 SD",main="CNVs saturated")
+hist(apply(allSat,1,function(x){counts = discretize(as.numeric(x),numBins=4,r=c(0,max(allSat))); entropy(counts) }),breaks=100,col="blue",xlab="entropy",main="all saturated")
+hist(apply(mrSat,1,function(x){counts = discretize(as.numeric(x),numBins=4,r=c(0,max(mrSat))); entropy(counts) }),breaks=100,col="red",xlab="entropy",main="CNVs saturated")
+hist(log10(apply(allSat,1,function(x){counts = discretize(as.numeric(x),numBins=4,r=c(0,max(allSat))); entropy(counts) })),breaks=100,col="purple",xlab="log10 entropy",main="all saturated")
+hist(log10(apply(mrSat,1, function(x){counts = discretize(as.numeric(x),numBins=4,r=c(0,max(mrSat))); entropy(counts) })),breaks=100,col="pink",xlab="log10 entropy",main="CNVs saturated")
+
+dev.off()
+
+#DIVIDE HEATMAP SAMPLES TREE INTO GROUPS
+#hm <- heatmap.2(mrsMinSub, scale="none", hclust=function(x){hclust(x,method=clusteringMethod)} )
+#groups <- cutree(as.hclust(hm$colDendrogram)  , k=kGroups)
+hm <- hclust(dist(mrsMinSub),method=clusteringMethod)
+groups <- cutree(as.hclust(hm)  , k=kGroups)
+treeDF <- data.frame(fileNames=names(groups),treeGroup=groups,stringsAsFactors=F)
+myCols <- brewer.pal(n=kGroups,name="Set3")
+#treeDF$treeCol <- popCol[match(treeDF$treeGroup,row.names(popCol)),"colors"]
+#treeDF$geoNames <- namesIndex[match(treeDF$fileNames , namesIndex$fileNames), "geoNames"]
+
+
+library("session")
+save.session(paste0("session",outName))
+
+
+###############################
+###############################
+####PART 2: NETWORK ANALYSIS###
+###############################
+###############################
+library(mclust)
+library(reshape2)
+library(igraph)
+library(MCL)
+
+system(paste0("mkdir -p ", outName,"_filteredCNVcls"))
+
+filterDistantCNVs <- function(mat,classification) {
+  df <- as.data.frame(mat)
+  df <- df[ , ! names(df) %in% c("chr","start","end")]
+  df$cl   <- classification[match(names(classification) , row.names(df)    )]
+  splitDf <- split(df,df$cl)
+  #remove clusters of just 1 element
+  for (cl in names(splitDf)){ if(length(splitDf[[cl]][,1]) == 1){splitDf[cl] <- NULL}}
+  clCentroids <- sapply( splitDf , function(x){ v <- as.vector(apply(x[,row.names(x)] , 2  , mean)) ; names(v) <- row.names(x) ; return(v)    })
+  for (cl in names(clCentroids)){
+    centroid <- clCentroids[[cl]]
+    cluster  <- df[names(centroid),names(centroid)]
+    memberDistFromCentroid <- apply(cluster,1,function(x){dist(rbind(x , centroid)) }  )
+    meanMemberDistFromCentroid <- mean(memberDistFromCentroid)
+    sdMemberDistFromCentroid <- sd(memberDistFromCentroid)
+    outliers <- names(memberDistFromCentroid[ abs(memberDistFromCentroid - meanMemberDistFromCentroid)/sdMemberDistFromCentroid > clMaxSDdist])
+    splitDf[[cl]] <- splitDf[[cl]][ ! row.names(splitDf[[cl]]) %in% outliers , ]
+    #remove small clusters
+    if(length(splitDf[[cl]][,1]) < clMinSize){splitDf[cl] <- NULL}
+  }
+  #regenerate/rename clusters
+  i=0; 
+  dfCl <- NULL
+  for(n in names(splitDf)){
+     i=i+1; 
+     splitDf[[n]]$cl <- factor(i)
+     clusterCor <- cmr[row.names(splitDf[[n]]),row.names(splitDf[[n]])]
+     write.table(x=clusterCor,quote=F,row.names=T,col.names=NA,append=F,sep="\t",file=paste0(outName,"_filteredCNVcls/cl",i,".tsv"))  
+     dfCl <- rbind(dfCl,splitDf[[n]])
+  }
+  write.table(x=row.names(df) [! row.names(df) %in% row.names(dfCl) ],quote=F,row.names=F,col.names=F,append=F,file=paste0(outName,"_filteredCNVcls/allFilteredCNVs"))
+  return(dfCl)
+}
+
+#1) cluster of absolute CNV correlations
+absCmr       <- abs(cmr)
+classification <- NULL
+if ((kmeansCenters < 0) && (MCLinflation < 0)) {
+  mc_absCmr      <- Mclust(absCmr)
+  classification <- mc_absCmr$classification
+} else if (kmeansCenters > 0) {
+  classification <- kmeans(as.matrix(absCmr),centers=kmeansCenters)$cluster
+} else {
+  classification <- mcl(absCmr,addLoops=F,inflation=MCLinflation,expansion=MCLexpansion)$Cluster
+  names(classification) <- row.names(absCmr)
+}
+
+absCmrFilter <- filterDistantCNVs(absCmr,classification)
+cnvCl <- as.character(absCmrFilter$cl)
+names(cnvCl)<- row.names(absCmrFilter)
+#square df
+absCmrFilter <- absCmrFilter[,row.names(absCmrFilter)]
+
+#Prepare edges and vertices
+edges <- reshape2::melt(as.matrix(absCmrFilter), varnames=c("n1","n2"),value.name="weight")
+#remove duplicated edges (better doing that manually as you do. the package fuction "simplify" alters the weights)
+edges <- edges[ ! edges$n1 == edges$n2 , ]
+edges$tag <- apply(edges,1,function(x){  s<- sort(c(x[["n1"]] , x[["n2"]])); paste(s, collapse = '_')  })
+edges <- edges[! duplicated(edges$tag),c("n1","n2","weight")]
+edges$corr <- "positive"
+selector <- cmrMelt[paste0(edges$n1 , "_" , edges$n2) , "correlation"] < 0
+edges$corr[selector] <- "negative"
+edges$pvalue<- cmr_pValMelt[paste0(edges$n1 , "_" , edges$n2),"pvalue"]
+vertices <- data.frame(n=row.names(absCmrFilter) , type=cnvInfo[row.names(absCmrFilter),"annotationType"] , cl=cnvCl[row.names(absCmrFilter)],stringsAsFactors=F)
+row.names(vertices) <- vertices$n
+
+#maps
+clColMap   <- data.frame(cl=unique(cnvCl),col=brewer.pal(length(unique(cnvCl)),"Set3"),stringsAsFactors=F)
+corrColMap <- data.frame(corrType=c("positive","negative") ,col=c( "tomato", "blue"),stringsAsFactors=F)
+typeColMap <- data.frame(cnvType=c("gene","intergenic") ,shape=c( "circle", "square"),stringsAsFactors=F)
+
+#NET
+net <- graph_from_data_frame(edges, directed=FALSE, vertices=vertices)
+#delete weak edges
+if (edgesMeanCorFilter) {
+  cut.off <- mean(edges$weight) 
+  net <- delete_edges(net, E(net)[weight<cut.off])
+} 
+net <- delete_edges(net, E(net)[pvalue>edgesPvalueFilter])
+#map vertices shape CNV type
+V(net)$shape <- typeColMap[match( V(net)$type , typeColMap$cnvType ) , "shape"]
+#map vertices to clusters
+V(net)$color <- clColMap [ match( vertices[V(net),"cl"] , clColMap$cl ) , "col" ]
+# Compute node degrees (#links) and use that to set node size (saturating at 3 to avoid enormous nodes)
+deg <- degree(net, mode="all")
+deg[deg > 3]=3
+V(net)$size <- deg
+# Setting them to NA will render no labels:
+V(net)$label <- NA
+#remove arrow
+E(net)$arrow.size <- 0 
+# Set edge width based on weight:
+E(net)$width <- E(net)$weight/2
+#E(net)$width <- 1+E(net)$weight/12
+#map edge color to pos/neg corr
+edge.color <- corrColMap[ match(E(net)$corr,corrColMap$corrType) , "col"]
+l <- layout_with_fr(net)
+pdf(paste0(outName,"_network.pdf"))
+plot(net, layout=l , edge.color=edge.color, edge.curved=.1)
+legend(x=-1.5, y=-1, legend=clColMap$cl , pch=21, col=clColMap$col , pt.bg=clColMap$col, pt.cex=1, cex=.5, bty="n", ncol=1 ,title="cluster")
+legend(x=-1.3  , y=-1, legend=c("genic","intergenic") , pch=c(1,0), , pt.cex=1, cex=.5, bty="n", ncol=1,title="CNV type")
+legend(x=-1  , y=-1, legend=corrColMap$corrType , pch=NA,  lty = c(1, 1) , col=corrColMap$col , pt.cex=1, cex=.5, bty="n", ncol=1 ,title="correlation")
+dev.off()
+#write net edges tsv
+printEdgesDf <- as.data.frame(cbind( get.edgelist(net) , E(net)$weight , E(net)$corr , E(net)$pvalue ))
+names(printEdgesDf) <- c("gene1","gene2","absolute_correlation","direction","adjusted_pvalue")
+write.table(printEdgesDf,quote=F,sep="\t",append=F,row.names=F,col.names=T,file=paste0(outName,"_filteredCNVcls/network_edges.tsv") )
+
+######################
+#useful for debugging#
+#netDf = as_data_frame(net, what="edges")
+#netDf[netDf$to == "LdBPK_260017300",]
+##highlight vertex function
+#highlightVertex <- function (net,vertex){
+#  vertexSel <- V(net)[name==vertex]
+#  vcol <- rep("grey40", vcount(net))
+#  vcol[vertexSel] <- "#ff9d00"
+#  plot(net, vertex.color=vcol)
+#}
+##highlight vertex function version 2 (creates a test.pdf file and highlights in pink, keeps the same layout, can highlight multiple vertices in one go)
+#highlightVertex2 <- function (net,vertex){
+#  vertexPosition <- which(row.names(as_data_frame(net,what="vertices")) %in% vertex)
+#  #V(net)$label[vertexPosition] <- vertex
+#  V(net)$color[vertexPosition] <- "pink"
+#  pdf("test.pdf")
+#  plot(net, layout=l , edge.color=edge.color) #, edge.curved=.1)
+#  dev.off()
+#}
+##highlight vertex LdBPK_260017000 neighbours
+#neigh.nodes = neighbors(net, V(net)[name=="LdBPK_260017000"], mode="all")
+#vcol <- rep("grey40", vcount(net))
+#vcol[neigh.nodes] <- "#ff9d00"
+#plot(net, vertex.color=vcol)
+
+###############################
+###############################
+####PART 3: NETWORK D3#########
+###############################
+###############################
+library("networkD3")
+#net.d3 <- igraph_to_networkD3(net,group=V(net)$cl) works but I am not 100% sure since the net nodes are not sorted as people say online. better convert net to d3 manually like you do
+
+#extract all edges pairs (from "V1" to "V2")
+edgesNet <- as.data.frame(as_edgelist(net, names = TRUE),stringsAsFactors=F)
+edgesNet <- edgesNet[with(edgesNet, order(V1)), ]
+#each node must be associated a unique integer identifier (starting with 0)
+allEdgesNames <- c(edgesNet$V1,edgesNet$V2)
+nodeAsIntegers <- as.integer(factor(allEdgesNames))-1
+names(nodeAsIntegers) <- allEdgesNames
+nodeAsIntegers <- sort(nodeAsIntegers[!duplicated(nodeAsIntegers)])
+edgesNet.d3    <- data.frame(source=nodeAsIntegers[edgesNet$V1], target=nodeAsIntegers[edgesNet$V2] , weight=apply(edgesNet,1,function(x){absCmr[x[1],x[2]]}))
+#sorting the nodes dataframe in the same order as defined by the node IDs integers
+verticesNet.d3    <- vertices[names(nodeAsIntegers),]
+verticesNet.d3$n <- factor(verticesNet.d3$n)
+
+#edge colors
+corr.d3       <- rep("positive",length(edgesNet[,1]))
+selector.d3   <- apply(edgesNet,1,function(x){cmr[x[["V1"]] , x[["V2"]] ] < 0  } )
+corr.d3[selector.d3] <- "negative"
+edge.color.d3     <- corrColMap[ match(corr.d3 , corrColMap$corrType) , "col"]
+#nodes color
+verticesColourScale <- paste0("d3.scaleOrdinal() .domain([\""  ,   paste(clColMap$cl,collapse="\",\"")  ,   "\"]) . range([\"",   paste(clColMap$col,collapse="\",\"")      ,"\"])"  )
+verticesNet.d3$size <- deg[match(verticesNet.d3$n,names(deg))]
+#action when clicking node
+MyClickScript <- 'alert("You clicked " + d.name + " which is in row " +  (d.index + 1) +  " of your original R data frame");'
+
+fn <- forceNetwork(Links = edgesNet.d3, Nodes = verticesNet.d3, Source="source", Target="target" , NodeID = "n", Group = "cl",linkWidth = .5 , fontSize=12, zoom=F, legend=T, opacity = 0.8, charge=-10, width = 1000, height = 1000 , Value="weight" , linkColour = edge.color.d3 , colourScale=verticesColourScale , Nodesize="size" , radiusCalculation=JS("d.nodesize + 2") , clickAction = MyClickScript)
+saveNetwork(fn, paste0(outName,"_network.d3.html") , selfcontained = F)
+ 
+
+

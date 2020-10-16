@@ -1,0 +1,41 @@
+##############################################################################
+#                     snpEff, sample configuration file.                     #
+#                          edit to suit your needs                           #
+##############################################################################
+
+# Interval data is stored here: Edit to suit your needs
+data_dir =  ./data
+
+# Store cache files here: Edit to suit your needs
+cache_dir = ./cache
+
+#---
+# Comma separated list of genomes
+#
+# Each genome version XX can have separate config file located in data_dir/XX/snpEff.config
+# For each genome 'XX' a set of attributes are defined
+#   - XX.genome : <Genome_name>                     # The name of this genome
+#   - chromoName.codonTable : <codon_table_name>    # Codon table for a chromosome in this genome (e.g. mithoncondrial codon table).
+#---
+
+genomes : \
+	GENOME
+
+
+#---
+# Codon tables
+#
+# Format:	It's a comma separated "codon/aminoAcid[+*]" list 
+# 			Where 'codon' is in uppper case, aminoAcid is a one letter coce, '+' denotes start codon and '*' denotes stop codon
+#
+# References:	http://www.ncbi.nlm.nih.gov/Taxonomy/Utils/wprintgc.cgi
+#		ftp://ftp.ncbi.nih.gov/entrez/misc/data/gc.prt
+#---
+codon.Standard:  TTT/F, TTC/F, TTA/L, TTG/L+, TCT/S, TCC/S, TCA/S, TCG/S, TAT/Y, TAC/Y, TAA/*, TAG/*, TGT/C, TGC/C, TGA/*, TGG/W, CTT/L, CTC/L, CTA/L, CTG/L+, CCT/P, CCC/P, CCA/P, CCG/P, CAT/H, CAC/H, CAA/Q, CAG/Q, CGT/R, CGC/R, CGA/R, CGG/R, ATT/I, ATC/I, ATA/I, ATG/M+, ACT/T, ACC/T, ACA/T, ACG/T, AAT/N, AAC/N, AAA/K, AAG/K, AGT/S, AGC/S, AGA/R, AGG/R, GTT/V, GTC/V, GTA/V, GTG/V, GCT/A, GCC/A, GCA/A, GCG/A, GAT/D, GAC/D, GAA/E, GAG/E, GGT/G, GGC/G, GGA/G, GGG/G
+
+#---
+# Genome details
+#---
+
+#GENOME
+GENOME.genome : GENOME

@@ -1,0 +1,128 @@
+#following http://stats.stackexchange.com/questions/52860/loess-and-ma-normalization-in-r
+#which is the same as the withing lane (i.e. sample specific) regression normalization described in this paper: GC content normalization for RNA-seq data (PMID 22177264).
+
+#given a covPerGe file this script plot the GC% of each gene vs the meanCoverge (and the normalizedMeanCoverage). 
+#Then if fits a loess regression
+#Then is correct the original gene meanCoverge (or normalizedMeanCoverage) by subtracting the values on the loess model. If there is a GC bias the loess has a bump. So genes with GC values corresponnding to a loess bump will be more penalized than other genes were the loess is straight
+#Finally the script plots again the corrected genes, fitting a new loess, that now should be more or less straight  and generates a loess corrected covPerGe (meanCoverge and normalizedMeanCoverage GC corrected)
+
+#The script repeats the same operation for both meanCoverge and normalizedMeanCoverage, correcting both for %GC bias
+#see also covPerBin2loessGCnormalization.R
+
+#NOTE: This _v2 of the script is an improvement of the previous version because the "span" parameter of the loess function is chose using a 5 folds cross validation
+#e.g. Rscript covPerGe2loessGCnormalization.R --ASSEMBLY /pasteur/projets/policy01/BioIT/Giovanni/datasets/assemblies/leishmanias/ENSEMBL_ProtistsRelease29/Leishmania_donovani_bpk282a1.GCA_000227135.2.29.dna_sm.toplevel.fa --DIR /pasteur/projets/policy01/BioIT/Giovanni/leish/p2p5/bwa --SAMPLE sp-ama_Ht0_5749 --ylim 10 --outName sp-ama_Ht0_5749
+
+suppressPackageStartupMessages(library("argparse"))
+# create parser object
+parser <- ArgumentParser()
+# specify our desired options # by default ArgumentParser will add an help option
+parser$add_argument("--ASSEMBLY" , help="genome reference [default %(default)s]" )
+parser$add_argument("--DIR" , help="dir with the covPerGe.gz file [default %(default)s]" )
+parser$add_argument("--SAMPLE" , help="sample name [default %(default)s]")
+parser$add_argument("--outName" , help="out name [default %(default)s]")
+args <- parser$parse_args()
+#patch NA
+for (n in names(args)){if(args[[n]][1] == "NA"){args[[n]] <- NA}  }
+for (n in names(args)){assign(n,args[[n]]) }
+
+library(Biostrings)
+library(bisoreg)
+##############################################
+#extract sequence of each bin and measure %GC#
+##############################################
+refAssembly    <- readDNAStringSet(ASSEMBLY)
+df <- read.table(paste0(DIR,"/",SAMPLE,".covPerGe.gz"),header=T,stringsAsFactors=F,sep="\t")
+df$chromosome <- gsub(x=df$locus,pattern="(.+):(.+)-(.+)$",replacement="\\1")
+df$start <- as.numeric(gsub(x=df$locus,pattern="(.+):(.+)-(.+)$",replacement="\\2"))
+df$end <- as.numeric(gsub(x=df$locus,pattern="(.+):(.+)-(.+)$",replacement="\\3"))
+seqs <- NULL
+CorGfreq <- NULL
+for (i in 1:length(df[,1])){
+	chr=df[i,"chromosome"]
+	start=df[i,"start"]
+	end=df[i,"end"]
+	seq <- subseq(refAssembly[[chr]],start, end)
+	af <- alphabetFrequency(seq)
+	freq <- (af[["C"]] + af[["G"]]) / (sum(af) - af[["N"]])
+	seq <- toString(seq)
+	rbind(seqs,seq) -> seqs
+	rbind(CorGfreq,freq) -> CorGfreq
+}
+#df$seqs    <- seqs
+df$CorGfreq <- CorGfreq
+
+#library(session)
+#save.session("session")
+#quit()
+
+###############################################################
+#loess fitting then normalizedMeanCoverage coverage correction#
+###############################################################
+set.seed(1)
+#fit a loess
+lnmc = loess.wrapper(df$CorGfreq , df$normalizedMeanCoverage , span.vals = seq(0.2,1,by=0.1) , folds=5)
+#for each bin extract the loess y value 
+df$lnmcPredict <- predict(lnmc, df$CorGfreq)
+#subract the y of each bin by the y of the loess model (this is the normalization step, in fact is a subtraction)
+df$nmcLoessNorm <- df$normalizedMeanCoverage - df$lnmcPredict
+#fit another loess on the corrected bins
+lnmcAfterCorrection = loess.wrapper(df$CorGfreq , df$nmcLoessNorm , span.vals = seq(0.2,1,by=0.1) , folds=5)
+#for each bin extract the loess (second model, the one done with corrected bins) y value
+df$lnmcPredictAfterCorrection <- predict(lnmcAfterCorrection, df$CorGfreq)
+#############################################
+#loess fitting then mean coverage correction#
+#############################################
+lmean = loess.wrapper(df$CorGfreq , df$meanCoverage , span.vals = seq(0.2,1,by=0.1) , folds=5)
+df$lmeanPredict <- predict(lmean, df$CorGfreq)
+df$meanLoessNorm <- df$meanCoverage - df$lmeanPredict
+lmeanAfterCorrection = loess.wrapper(df$CorGfreq , df$meanLoessNorm , span.vals = seq(0.2,1,by=0.1) , folds=5)
+df$lmeanPredictAfterCorrection <- predict(lmeanAfterCorrection, df$CorGfreq)
+
+#library(session)
+#save.session("session")
+#quit()
+
+###################################################
+#plot cov VS %GC before and after loess correction#
+###################################################
+pdf(paste0(outName,".gcLnorm.covPerGe.pdf"))
+plot(df$CorGfreq , df$meanCoverage , main="before loess correction",ylab="mean coverage",xlab="%GC")
+lines(df$CorGfreq[order(df$CorGfreq)], df$lmeanPredict[order(df$CorGfreq)],col="red") 
+plot(df$CorGfreq , df$meanLoessNorm , main="after loess correction",ylab="mean coverage",xlab="%GC")
+lines(df$CorGfreq[order(df$CorGfreq)], df$lmeanPredictAfterCorrection[order(df$CorGfreq)],col="blue")
+
+plot(df$CorGfreq , df$normalizedMeanCoverage , main="before loess correction",ylab="normalizedMeanCoverage",xlab="%GC")
+lines(df$CorGfreq[order(df$CorGfreq)], df$lnmcPredict[order(df$CorGfreq)],col="red") 
+plot(df$CorGfreq , df$nmcLoessNorm , main="after loess correction",ylab="normalizedMeanCoverage",xlab="%GC")
+lines(df$CorGfreq[order(df$CorGfreq)], df$lnmcPredictAfterCorrection[order(df$CorGfreq)],col="blue")
+dev.off()
+
+##################################################
+#generate a covPerGe file with corrected coverage#
+##################################################
+covPerGe <- df[,c("gene_id" ,  "locus" , "meanCoverage" , "normalizedMeanCoverage" , "MAPQ")]
+covPerGe$meanCoverage           <- df$meanLoessNorm
+covPerGe$normalizedMeanCoverage <- df$nmcLoessNorm
+
+#add back the difference between the original median and the loess subtracted median (so to center it again on 1)
+covPerGe$meanCoverage           <- covPerGe$meanCoverage           + (median(df$meanCoverage , na.rm=T) - median(covPerGe$meanCoverage , na.rm=T))
+covPerGe$normalizedMeanCoverage <- covPerGe$normalizedMeanCoverage + (median(df$normalizedMeanCoverage , na.rm=T) - median(covPerGe$normalizedMeanCoverage , na.rm=T))
+
+#add to all genes the coverage of the lowest gene if negative, to make sure that coverage after correction is not negative
+#if (min(covPerGe$meanCoverage,na.rm=T) < 0 )  { covPerGe$meanCoverage <- covPerGe$meanCoverage + abs(min(covPerGe$meanCoverage   , na.rm=T))}
+#if (min(covPerGe$normalizedMeanCoverage,na.rm=T) < 0 ){ covPerGe$normalizedMeanCoverage <- covPerGe$normalizedMeanCoverage + abs(min(covPerGe$normalizedMeanCoverage   , na.rm=T))}
+
+#after correction some genes might have negative coverage. send these bins to 0
+covPerGe$meanCoverage[covPerGe$meanCoverage < 0]=0
+covPerGe$normalizedMeanCoverage[covPerGe$normalizedMeanCoverage < 0]=0
+
+#genes full of N have CorGfreq NaN, resulting in corrected mean and median of NA
+#anyway these genes all have median 0 and almost always mean 0 or very low. So I send these bins to 0
+covPerGe$meanCoverage[is.na(covPerGe$meanCoverage)] = 0
+covPerGe$normalizedMeanCoverage[is.na(covPerGe$normalizedMeanCoverage)] = 0
+#rounding-off
+is.num     <- sapply(covPerGe, is.numeric)
+covPerGe[is.num] <- lapply(covPerGe[is.num], round, 3)
+write.table(x=covPerGe,append=F,col.names=T,row.names=F,sep="\t",quote=F,file=paste0(outName,".gcLnorm.covPerGe"))
+system(paste0("gzip " ,outName,".gcLnorm.covPerGe"))
+
