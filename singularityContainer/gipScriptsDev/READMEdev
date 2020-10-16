@@ -1,0 +1,50 @@
+#the idea is to speed up covPerBin and covPerGe steps
+
+###########
+#covPerBin#
+###########
+#done new covPerBin2
+#usage example
+BAM=Dog3.bam
+BINSIZE=500
+CHRSIZE=../../genome/genome.chrSize
+chrCoverageMedians=chrCoverageMedians_Dog3
+TMP=_tmpDog3
+covPerBin2 $BAM  $BINSIZE $CHRSIZE $chrCoverageMedians $TMP
+
+
+#the covPerBin generated with covPerBin2 does not have the "mean" and "median "fields but rather the "meanCoverage" and the "normalizedMeanCoverage" fields  so you need to update downstream script to accept a different input, that is:
+  #1) the script that does GC correction  --> covPerBin2loessGCnormalization_v2.R now correcting just the normaizedMeanCoverage, need to update the docs
+  #2) the sigPeaks_CLT.R -> done
+  #3) the script that plots covPerBin coverage -> plotCovPerBin.R done
+  #4) the script that does kayoplote that also uses covPerBin as input -> karyoplotCovPerGe.R done
+
+#######
+#to do#
+#######
+#0) you need to honor the BITFLAG filtering somewhere. The current covPerBin2 does not do it. You can replace:
+  #bedtools coverage -d -a $TMP/windows -b $BED > $TMP/winCov
+#with:
+  #samtools view -b $BAM | bedtools coverage -d -b stdin -a $TMP/windows > $TMP/winCov
+#but it is considerably slower ... or you can remove the duplicate read with picard MarkDuplicates, but that is not great for RNAseq occasional data and maybe statistics
+
+#1) make a test definition file importing the dev gip scripts
+#2) build a test giptools container
+#3) make a test gip pipeline where:
+#  -the sample.bed file generated at this step should be passed to the covPerGe process and reused there to generate covPerGe file
+#  -you replace covPerBin with covPerBin2
+#i.e. replace
+  covPerBin $bam $size /bin/gencov2intervals.pl $binSize 0 $BITFLAG . $covPerChr
+#with
+  covPerBin2 $bam $binSize $size $covPerChr _tmp
+
+#4) run the pipeline with that and compare the results with the old pipeline
+#5) if results are good 
+#  -make a backup of the old pipeline (i.e. script, definition file, gip) 
+#  -turn the dev test into the stable version
+#  -update the docs regarding the covPerBin format, and the new GC correction
+
+
+
+
+

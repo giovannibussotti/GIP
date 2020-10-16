@@ -115,7 +115,7 @@ plotKP <- function(chr,ymax,repeatRange){
  tmpBinDf <- covPerBinDf[covPerBinDf$chromosome == chr , ]
  #saturate
  tmpGeDf[tmpGeDf$normalizedMeanCoverage > ymax,"normalizedMeanCoverage"]=ymax
- tmpBinDf[tmpBinDf$median > ymax ,"median"]=ymax
+ tmpBinDf[tmpBinDf$normalizedMeanCoverage > ymax ,"normalizedMeanCoverage"]=ymax
  #subsets
  geToMarkDf     <- tmpGeDf[ tmpGeDf$status %in% c("amplified","depleted") , ]
  backgroundGeDf <- tmpGeDf[ tmpGeDf$status == "background" , ]
@@ -130,8 +130,8 @@ plotKP <- function(chr,ymax,repeatRange){
  points.top <- 0.8
  kpAxis(kp, data.panel=1 , cex=2 , lwd=2 , numticks = 4, tick.pos = c(0, 0.25, 0.5, 0.75 , 1), labels = c(0, ymax/4, ymax/2, ymax/2 + ymax/4, ymax) , r1=points.top)
  kpAddLabels(kp, cex=2 ,labels="normalized coverage", srt=90, pos=3 , label.margin = 0.04 , data.panel = 1 , r1=points.top)
- #kpLines(kp, chr=chr, x=tmpBinDf$mid, y=tmpBinDf$median,col="gray",ymax=ymax , r1=points.top)
- kpArea(kp, chr=chr, x=tmpBinDf$mid, y=tmpBinDf$median,col="gray",ymax=ymax , r1=points.top )
+ #kpLines(kp, chr=chr, x=tmpBinDf$mid, y=tmpBinDf$normalizedMeanCoverage,col="gray",ymax=ymax , r1=points.top)
+ kpArea(kp, chr=chr, x=tmpBinDf$mid, y=tmpBinDf$normalizedMeanCoverage,col="gray",ymax=ymax , r1=points.top )
  kpPoints(kp, chr=chr, x=backgroundGeDf$mid, y=backgroundGeDf$normalizedMeanCoverage,pch=19,col=backgroundGeDf$color,lwd=3,ymax=ymax , r1=points.top)
  kpPoints(kp, chr=chr, x=geToMarkDf$mid, y=geToMarkDf$normalizedMeanCoverage,pch=19,col=geToMarkDf$color, lwd=8 , ymax=ymax , r1=points.top)
  kpPoints(kp, chr=chr, x=lowmapqGeDf$mid, y=lowmapqGeDf$normalizedMeanCoverage,pch=19,col=lowmapqGeDf$color, lwd=3 , ymax=ymax , r1=points.top)

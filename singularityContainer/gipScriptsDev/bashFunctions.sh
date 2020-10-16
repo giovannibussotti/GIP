@@ -818,6 +818,103 @@ function bedForCircos {
     '
 }
 
+function covPerBin_normalizedByChrMedianCov2 {
+########
+#OUTPUT#
+########
+#.covPerBin file normalized by chromosome median coverage    
+#######
+#INPUT#
+#######
+#A chromosome median coverage file (chrCoverageMedians file, syntax: chrXX median .* ) and a covPerBin file (syntax: chr start end meanCoverage)
+#NOTE1: the input covPerBin file need to be not normalized before this function
+#NOTE2: covPerBin input windows that are not on the chromosomes in the chrCoverageMedians file are removed from the output
+    local CHRM=$1
+    local GCOVBIN=$2
+    local OUT=$3
+perl -e '
+        open(C,"<'$CHRM'");
+        while(<C>){
+                if($_=~/^(\S+)\s+(\S+)/){$chr=$1;$m=$2; $mCovs{$chr} = $m;}
+        }
+        close C;
+
+        open(O,">'$OUT'");
+        open(F,"<'$GCOVBIN'");
+        $header = <F>;
+        chomp $header;
+        print O "$header\t"."normalizedMeanCoverage\n";
+        while(<F>){
+                if ($_=~/^(\S+)\s+(\S+)\s+(\S+)\s+(\S+)/){
+                        $chr=$1;
+                        $start=$2;
+                        $end=$3;
+                        $mean=$4;
+                        
+                        next if(! defined $mCovs{$chr});
+                        $normMean   = $mean / $mCovs{$chr};
+                        print O "$chr\t$start\t$end\t$mean\t$normMean\n";      
+                }
+        }
+        close F;
+        close O;
+'
+}
+
+
+function covPerBin2 {
+  local BAM=$1
+  local BINSIZE=$2
+  local CHRSIZE=$3
+  local chrCoverageMedians=$4
+  local TMP=$5
+
+  mkdir -p $TMP
+  OUT=${BAM/%.bam/.covPerBin}
+  BED=${BAM/%.bam/.bed} 
+  bedtools bamtobed -split -i $BAM | sort -k1,1 -k2,2n > $BED
+  bedtools makewindows -g $CHRSIZE -w $BINSIZE | sort -k1,1 -k2,2n > $TMP/windows
+  bedtools map -a $TMP/windows -b $BED -c 5 -o mean -null 0 > $TMP/meanMapq
+  bedtools coverage -d -a $TMP/windows -b $BED > $TMP/winCov
+  echo -e "chromosome\tstart\tend\tmeanCoverage" > $TMP/covPerBinNotNorm
+  awk '{i=$1"\t"1+$2"\t"$3; count[i]++; sum[i]+=$5;} END{ for(i in count) {m = sum[i]/count[i]; print i, m}}  ' $TMP/winCov  | sort -k1,1 -k2,2n >> $TMP/covPerBinNotNorm
+  
+  covPerBin_normalizedByChrMedianCov2 $chrCoverageMedians $TMP/covPerBinNotNorm $TMP/covPerBin
+  perl -e '
+  #read mapq
+  open(F,"<'$TMP/meanMapq'") or die "covPerBin2 cannot open meanMapq";
+  my %h;
+  while(<F>){ 
+    if ($_=~/^(\S+)\s+(\S+)\s+\S+\s+(\S+)/){
+        $h{"${1}_$2"} = $3;
+    }
+  } 
+  close F;
+  
+  open(O,">'$OUT'") or die "covPerBin2 cannot open out";
+  open(F,"<'$TMP/covPerBin'") or die "covPerBin2 cannot open covPerBin";
+  $header = <F>;
+  chomp $header;
+  print O $header . "\tMAPQ\n";
+  while(<F>){ 
+    if ($_=~/^(\S+)\t(\S+)\t(\S+\t\S+\t\S+)/){
+        $chr   = $1;
+        $start = $2;
+        $a     = $3;
+        $s     = $start -1;
+        $mapq  = $h{"${chr}_$s"};
+        print O "$chr\t$start\t$a\t$mapq\n";
+
+    }
+  } 
+  close F;
+  close O;
+  '
+  gzip $OUT
+  rm -rf $TMP 
+}
+
+
 typeset -fx bwaMapSample 
 typeset -fx pcMapqPerNt 
 typeset -fx mapqPerNt 
@@ -838,3 +935,6 @@ typeset -fx join_by
 typeset -fx filterByCov 
 typeset -fx ovWithGenes 
 typeset -fx bedForCircos 
+typeset -fx covPerBin2
+typeset -fx covPerBin_normalizedByChrMedianCov2
+
