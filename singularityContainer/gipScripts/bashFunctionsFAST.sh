@@ -1,5 +1,5 @@
 #the idea is to speed up covPerBin and covPerGe steps
-#the covPerBin generated with covPerBin2 does not have the median field so you need to update downstream script to accept a different input, that is:
+#the covPerBin generated with covPerBin2 does not have the "mean" and "median "fields but rather the "meanCoverage" and the "normalizedMeanCoverage" fields  so you need to update downstream script to accept a different input, that is:
 #1) the script that does GC correction
 #2) the script that plots covPerBin coverage
 #3) the script that does kayoplote that also uses covPerBin as input
@@ -14,8 +14,8 @@ function covPerBin_normalizedByChrMedianCov2 {
 #######
 #INPUT#
 #######
-#A chromosome median coverage file (chrCoverageMedians file, syntax: chrXX median .* ) and a covPerBin file (syntax: chr start end meanCoverage medianCoverage .*)
-#NOTE1: the input covPerBin file need to be not normalized before this function, so you need to generate it with covPerNt NOTNORMALIZED (followed by gencov2intervals.pl for the binning)
+#A chromosome median coverage file (chrCoverageMedians file, syntax: chrXX median .* ) and a covPerBin file (syntax: chr start end meanCoverage)
+#NOTE1: the input covPerBin file need to be not normalized before this function
 #NOTE2: covPerBin input windows that are not on the chromosomes in the chrCoverageMedians file are removed from the output
     local CHRM=$1
     local GCOVBIN=$2
@@ -30,17 +30,18 @@ perl -e '
         open(O,">'$OUT'");
         open(F,"<'$GCOVBIN'");
         $header = <F>;
-        print O "$header";
+        chomp $header;
+        print O "$header\t"."normalizedMeanCoverage\n";
         while(<F>){
-                if ($_=~/^(\S+)\s+(\S+)\s+(\S+)\s+(\S+)(.*)$/){
+                if ($_=~/^(\S+)\s+(\S+)\s+(\S+)\s+(\S+)/){
                         $chr=$1;
                         $start=$2;
                         $end=$3;
                         $mean=$4;
-                        $rest=$5;
+                        
                         next if(! defined $mCovs{$chr});
                         $normMean   = $mean / $mCovs{$chr};
-                        print O "$chr\t$start\t$end\t${normMean}${rest}\n";      
+                        print O "$chr\t$start\t$end\t$mean\t$normMean\n";      
                 }
         }
         close F;
@@ -64,7 +65,7 @@ function covPerBin2 {
   bedtools makewindows -g $CHRSIZE -w $BINSIZE | sort -k1,1 -k2,2n > $TMP/windows
   bedtools map -a $TMP/windows -b $BED -c 5 -o mean -null 0 > $TMP/meanMapq
   bedtools coverage -d -a $TMP/windows -b $BED > $TMP/winCov
-  echo -e "chromosome\tstart\tend\tmean" > $TMP/covPerBinNotNorm
+  echo -e "chromosome\tstart\tend\tmeanCoverage" > $TMP/covPerBinNotNorm
   awk '{i=$1"\t"1+$2"\t"$3; count[i]++; sum[i]+=$5;} END{ for(i in count) {m = sum[i]/count[i]; print i, m}}  ' $TMP/winCov  | sort -k1,1 -k2,2n >> $TMP/covPerBinNotNorm
   
   covPerBin_normalizedByChrMedianCov2 $chrCoverageMedians $TMP/covPerBinNotNorm $TMP/covPerBin
@@ -85,14 +86,13 @@ function covPerBin2 {
   chomp $header;
   print O $header . "\tMAPQ\n";
   while(<F>){ 
-    if ($_=~/^(\S+)\s+(\S+)\s+(\S+)\s+(\S+)/){
+    if ($_=~/^(\S+)\t(\S+)\t(\S+\t\S+\t\S+)/){
         $chr   = $1;
         $start = $2;
-        $end   = $3;
-        $mean  = $4;
+        $a     = $3;
         $s     = $start -1;
-        $mapq = $h{"${chr}_$s"};
-        print O "$chr\t$start\t$end\t$mean\t$mapq\n";
+        $mapq  = $h{"${chr}_$s"};
+        print O "$chr\t$start\t$a\t$mapq\n";
 
     }
   } 
