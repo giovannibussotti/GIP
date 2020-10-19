@@ -70,9 +70,17 @@ In the code snipped below we use the ENSEMBL protists FTP server to download the
  close G;' 
  cd ..
 
-Next the user should prepare the index file indicating the sample names and the respective sequencing data files.
+
+All the required data is now available. 
+ 
+
+
+GIP configuration
+-----------------
+
+The user should prepare the index file indicating the sample names and the respective sequencing data files.
 The index is a tab separaated file with the following heading row: sampleId	read1	read2
-Data file should be reported relative to the countainer mounted directory. 
+Data file should be reported relative to the container mounted directory. 
 So if the /fq giptools access point is used then the reads files should be reported like this: 
 
 ``/fq/file.fastq.gz`` 
@@ -81,18 +89,30 @@ In this example will use the sample names as reported in `PRJNA607007 <https://w
 At the end the index file should look like :download:`this <../_static/sampleIndexExample.pdf>`.
 
 
+Next, should edit the GIP configuration file (i.e. **gip.config**) according to the available computing resources. 
+Assuming that the user copied giptools locally as ``/users/p2p5/gip/giptools``, that the he/she wants to bind the "fastqs" and "data" folders respectively to the /fq and /mnt container folders, that he/she wants to execute GIP on a slurm cluster with special partition and quality of service options ``-p aTeam --qos fast`` while keeping the default for all the rest, the prameters that need to be updated are:
 
-TO CONTINUE
-store a static copy of all the required input, so the user can click and see howw it looks
+* ``executor='slurm'``
+* ``container='/users/p2p5/gip/giptools'`` 
+* ``clusterOptions='-p aTeam --qos fast'``
+* ``runOptions = '--bind absolute/path/to/fastqs:/fq --bind absolute/path/to/data:/mnt'``
+
+If instead the user cannot take advantage of a computing cluster, then he/she can run GIP locally by simply specifying ``executor='local'``.
 
 
+GIP execution
+-------------
 
-GIP configuration
------------------
+To run GIP:
+
+.. code-block:: bash
+
+ nextflow gip --genome /mnt/Leishmania_infantum_gca_900500625.LINF.dna.toplevel.fa.gz \
+              --annotation /mnt/annotation.gtf \
+              --geneFunctions /mnt/geneFunction.tsv \
+              --index index.tsv \
+              -c gip.config
 
 
-  - prepare the configuration file
-  - run 
-  - modify parameter and re-run
 
 

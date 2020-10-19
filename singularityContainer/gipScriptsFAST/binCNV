@@ -7,7 +7,7 @@ parser$add_argument("--chrs"    , nargs="+" , help="chromosomes to use. If not d
 parser$add_argument("--MAPQ"  , type="integer" , help="points with MAPQ < --MAPQ will be labeled [default %(default)s]" , default="-1")
 parser$add_argument("--ylim" , type="double" , help="graphical parameter.values > ylim will be replaced with ylim in the plot (while they will be unaltered in the output dataframe) [default %(default)s]" , default="3")
 parser$add_argument("--highLowRatio" , nargs="+" , type="character" , help="Provide two numbers. Bins > num1 or < num2 will be colored differently (e.g. 1.5 0.5) [default %(default)s]" , default= "NA" )
-parser$add_argument("--pseudocount" , type="double" , help="value to add to the normalized median coverage. Avoid infinite (1/0) and NaN (0/0) ratio values [default %(default)s]" , default=0.1)
+parser$add_argument("--pseudocount" , type="double" , help="value to add to the normalized mean coverage. Avoid infinite (1/0) and NaN (0/0) ratio values [default %(default)s]" , default=0.1)
 parser$add_argument("--debug"  , action="store_true" , help="dump session and quit [default %(default)s]" , default=FALSE)
 args <- parser$parse_args()
 #patch NA
@@ -56,7 +56,7 @@ chrMids =c(chrMids ,  ( chrSizeCumSum[length(chrSizeCumSum)] + sum(chrSize$size)
 readSample <- function(id) {
 #read covPerBins
 df  <- fread(cmd=paste0("gunzip -c ", gipOut , "/samples/",id,"/",id,".covPerBin.gz"), stringsAsFactors=FALSE , header=T)
-names(df) <- c("chromosome","start","end","meanCoverage","medianCoverage","MAPQ")
+names(df) <- c("chromosome","start","end","meanCoverage","normalizedMeanCoverage","MAPQ")
 df      <- as.data.frame(df , stringsAsFactors = FALSE)
 row.names(df) <- paste(df$chromosome, df$start, df$end , sep="_")
 df$chromosome <- as.character(df$chromosome)
@@ -72,7 +72,7 @@ df$binMidPoint <- (df$start) + (((df$end - df$start)+1) /2)
 df$meanCoverage <- NULL
 
 #pseudocount
-df$medianCoverage <- df$medianCoverage + pseudocount
+df$normalizedMeanCoverage <- df$normalizedMeanCoverage + pseudocount
 return(df)
 }
 sampDf <- list()
@@ -84,7 +84,7 @@ sampDf[[ s2 ]] <- readSample(s2)
 #RATIO DF (rdf)#
 ################
 rdf       <- sampDf[[ s1 ]] [, c( "chromosome" , "start" , "end" , "binMidPoint")]
-rdf$ratio <- sampDf[[s1]]$medianCoverage / sampDf[[s2]][ row.names(sampDf[[s1]]), "medianCoverage" ]
+rdf$ratio <- sampDf[[s1]]$normalizedMeanCoverage / sampDf[[s2]][ row.names(sampDf[[s1]]), "normalizedMeanCoverage" ]
 rdf$MAPQ  <- pmin( sampDf[[s1]]$MAPQ , sampDf[[s2]][ row.names(sampDf[[s1]]), "MAPQ" ] ) 
 #color extreme bins
 rdf$color  <- "black"

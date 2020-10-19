@@ -33,17 +33,15 @@ GIP can be used to explore the genome instability of biological systems exploiti
 GIP analyses overview
 ---------------------
 
-* prepare the genome (repeats, gaps...)
+* prepare the genome 
 
-* map the reads (mark duplicates, homogenizing indels)
+* map the reads
 
-* Evaluate chromosome copy number (median genome coverage normalization)
+* Evaluate chromosome copy number
 
-* Evaluate gene and bin copy number (chromosome coverage normalization)
+* Evaluate gene and bin copy number
 
-* Identify and visualize copy number variation wrt the reference (add some gallery image, e.g. the mbio paper for ge CNV and the covPerBin overview)
-
-* provide bigWig file with a normalization accounting for chromosome copy number to be readily used to visualize and compare ina meaningful way regions of interest (e.g. genes) generating snapshots with genome browsers like IGV (add a gallery link to the MBIO paper IGV snapshots of CNV regions)
+* Identify and visualize copy number variation wrt the reference genome
 
 * Identify and measure gene clusters
 

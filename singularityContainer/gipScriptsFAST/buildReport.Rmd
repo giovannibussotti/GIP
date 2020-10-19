@@ -178,7 +178,7 @@ displaySigDepSegTab <- length(sigDepSegments[,1]) > 0
 The genome was divided in contiguous bins spanning `r binSize` nucleotides, and their coverage was evaluated by  
 
 * measuring the sequencing coverage of each nucleotide  
-* computing the median bin coverage  
+* computing the mean bin coverage  
 * normalizing by the median chromosome coverage   
 
 The mean MAPQ score of the reads aligning to each bin was also computed.  

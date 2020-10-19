@@ -497,10 +497,10 @@ function covPerBin {
   echo -e "chromosome\tstart\tend\tmeanCoverage" > $TMP/covPerBinNotNorm
   awk '{i=$1"\t"1+$2"\t"$3; count[i]++; sum[i]+=$5;} END{ for(i in count) {m = sum[i]/count[i]; print i, m}}  ' $TMP/winCov  | sort -k1,1 -k2,2n >> $TMP/covPerBinNotNorm
   
-  covPerBin_normalizedByChrMedianCov2 $chrCoverageMedians $TMP/covPerBinNotNorm $TMP/covPerBin
+  covPerBin_normalizedByChrMedianCov $chrCoverageMedians $TMP/covPerBinNotNorm $TMP/covPerBin
   perl -e '
   #read mapq
-  open(F,"<'$TMP/meanMapq'") or die "covPerBin2 cannot open meanMapq";
+  open(F,"<'$TMP/meanMapq'") or die "covPerBin cannot open meanMapq";
   my %h;
   while(<F>){ 
     if ($_=~/^(\S+)\s+(\S+)\s+\S+\s+(\S+)/){
@@ -509,8 +509,8 @@ function covPerBin {
   } 
   close F;
   
-  open(O,">'$OUT'") or die "covPerBin2 cannot open out";
-  open(F,"<'$TMP/covPerBin'") or die "covPerBin2 cannot open covPerBin";
+  open(O,">'$OUT'") or die "covPerBin cannot open out";
+  open(F,"<'$TMP/covPerBin'") or die "covPerBin cannot open covPerBin";
   $header = <F>;
   chomp $header;
   print O $header . "\tMAPQ\n";
@@ -536,14 +536,9 @@ function covPerBin {
 typeset -fx bwaMapSample 
 typeset -fx pcMapqPerNt 
 typeset -fx mapqPerNt 
-typeset -fx covPerNt  
-typeset -fx addMapqToGcovbin 
+typeset -fx covPerNt   
 typeset -fx addMapqToCovPerGe 
-typeset -fx normalizedMedianGeneCov 
-typeset -fx covPerGe  
-typeset -fx blastClust2familyDepth 
-typeset -fx getFromTbl 
-typeset -fx chrMedianCoverages_v0 
+typeset -fx covPerGe   
 typeset -fx chrMedianCoverages 
 typeset -fx getSequence 
 typeset -fx join_by  

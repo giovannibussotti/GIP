@@ -40,7 +40,8 @@ Compare gene CNVs in 3 specific isolates
     :width: 500px
 
 
-`Gallery karyotype figure <https://www.ncbi.nlm.nih.gov/core/lw/2.0/html/tileshop_pmc/tileshop_pmc_inline.html?title=Click on image to zoom&p=PMC3&id=6222132_mbo0051841230003.jpg>`_
+
+.. `Gallery karyotype figure <https://www.ncbi.nlm.nih.gov/core/lw/2.0/html/tileshop_pmc/tileshop_pmc_inline.html?title=Click on image to zoom&p=PMC3&id=6222132_mbo0051841230003.jpg>`_
 
 
 
@@ -97,7 +98,7 @@ We have a mailing list located at: GIP@google-groups.com
 License
 -------
 
-The project is licensed under the XXX license.
+The project is licensed under the GPLv3 license.
 
 
 .. toctree::

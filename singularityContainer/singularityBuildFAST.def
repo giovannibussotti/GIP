@@ -1,0 +1,146 @@
+Bootstrap: docker
+From: ubuntu:xenial
+
+%labels
+  maintainer Giovanni Bussotti <gbussott@pasteur.fr>
+  package.name  GIP
+  package.version 1.0.0
+  package.homepage  https://github.com/giovannibussotti/GIP
+  package.license  GPLv3
+
+%files
+  files/packages.tar.gz /opt
+  gipScriptsFAST/  /opt 
+
+%environment
+  export LC_ALL=C
+  export R_LIBS=/usr/local/lib/R/library/
+  export R_LIBS_USER=/usr/local/lib/R/library/
+
+%post
+  ln -nsf /bin/bash /bin/sh
+
+  #unpaking
+  cd /opt
+  tar -xzf packages.tar.gz
+  cd packages
+  mv bedtools2/ bwa/ htslib/ samtools/ freebayes/ Python3/ R vcftools/ rmblast/ RepeatMasker snpEff circos/ MUMmer/ cdhit/ miniCRAN/ installRpkgs.R Rpkgs.tsv  /opt/
+  mv /opt/gipScriptsFAST/snpEff.configTemplate /opt/
+  mv picard.jar GenomeAnalysisTK.jar delly bedGraphToBigWig trf409.linux64 Red /bin/
+  cd ..
+  rm -rf packages
+
+  #dirs to mount with singularity -B to for data access in the container 
+  mkdir /pasteur
+  mkdir /fq
+  mkdir /genome
+  mkdir /annotation
+  mkdir /repLib
+  mkdir /geneFunction
+  mkdir /gipOut
+  
+  #apt-get
+  export DEBIAN_FRONTEND=noninteractive
+  apt-get -y update
+  apt-get install -y build-essential openssh-client wget zlib1g-dev bzip2 zlib1g libncurses5-dev libbz2-dev liblzma-dev unzip openjdk-8-jdk checkinstall libreadline-gplv2-dev libncursesw5-dev libssl-dev libsqlite3-dev tk-dev libgdbm-dev libc6-dev libbz2-dev python-dev python-setuptools python-pip python-smbus openssl libffi-dev python2.7 fort77 xorg-dev libblas-dev gfortran gcc-multilib gobjc++ aptitude libpcre3-dev libcurl4-openssl-dev texlive texlive-fonts-extra texinfo libnlopt-dev libxml2-dev git autoconf autogen vim csh libcairo2-dev libgd2-xpm-dev pandoc cmake bc parallel libv8-dev
+  aptitude install -y libreadline-dev
+
+  #samtools
+  cd /opt/samtools
+  ./configure && make && make install
+  
+  #freebayes
+  cd /opt/freebayes
+  make 
+  make install
+
+  #bwa
+  cd /opt/bwa
+  make
+  mv bwa /bin/
+  
+  #htslib (tabix)
+  cd /opt/htslib
+  ./configure && make && make install
+ 
+  #bedtools
+  cd /opt/bedtools2
+  make install
+
+  #gipScripts/
+  mv /opt/gipScriptsFAST/* /bin/
+  # put the containt of your script in a file /.singularity.d/env/91-environment.sh
+  # which is automatically source by singularity befor run/shell/exec command
+  cat /bin/bashFunctions.sh >> $SINGULARITY_ENVIRONMENT
+  
+  #give permissions
+  chmod a+x /bin/*
+  chmod a+r /bin/*
+
+  #Python3
+  cd /opt/Python3
+  ./configure && make && make install
+
+  #vcftools
+  cd /opt/vcftools
+  ./autogen.sh
+  ./configure && make && make install
+
+  #deeptools
+  pip3 install cython
+  pip3 install deeptools==2.4.2
+
+  #RepeatMasker
+  cd /opt/RepeatMasker
+  export PERL_MM_USE_DEFAULT=1
+  cpan Text::Soundex
+  perl ./configure --trf_prgm /bin/ --rmblast_dir /opt/rmblast/bin/
+
+  #other cpan modules needed for perl scripts
+  cpan Pod::Usage
+  cpan Getopt::Long
+  cpan List::Util
+  cpan Clone
+  cpan Config::General
+  cpan Font::TTF::Font
+  cpan GD
+  cpan Math::Bezier
+  cpan Math::Round
+  cpan Math::VecStat
+  cpan Params::Validate
+  cpan Readonly
+  cpan Regexp::Common
+  cpan SVG
+  cpan Set::IntSpan
+  cpan Statistics::Basic
+  cpan Text::Format  
+
+  #MUMmer
+  cd /opt/MUMmer
+  make check
+  make install
+
+  #snpEff does not need installation, just do: java -jar snpEff.jar
+
+  #cdhit
+  cd /opt/cdhit
+  make
+
+  #R
+  cd /opt/R 
+  ./configure --enable-memory-profiling --with-cairo 
+  make
+  make install
+  Rscript /opt/installRpkgs.R # >>/opt/installRpkgs.log 2>&1
+
+  #clean
+  apt-get clean
+  apt-get autoremove
+ 
+%runscript
+ #INPUT=$1
+ #echo $INPUT > result0
+ #echo "Arguments received: $*"
+ #if needed consider using "$@" instead of $* 
+ exec /bin/sampleComparison.sh $* 
+

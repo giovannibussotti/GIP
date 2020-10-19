@@ -47,20 +47,9 @@ covPerBin2 $BAM  $BINSIZE $CHRSIZE $chrCoverageMedians $TMP
 
 #check following script if they are able to read/use the new covPerBin, and use the new function 
 binCNV
-binCoverage2cnvs.R
 binDensity
-buildReport.Rmd
-covPerBin2regression.R
-covPerBin2smoothScatter.R
 geInteraction
 interaction
-karyoplotCovPerGe.R
-plotCovPerBin.R
-prepare4Circos.sh
-READMEdev
-sigPeaks_CLT.R
-sigPeaks_mixture.R
-templateCircos.conf
 ternaryBin
 
 

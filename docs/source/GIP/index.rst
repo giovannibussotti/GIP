@@ -9,8 +9,4 @@
    Input-and-output-organization
    GIP-steps
    Worked-example
-   Quick-start
-   Configuration
-   Executor
-   Output
 
