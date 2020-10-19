@@ -271,7 +271,7 @@ process covPerBin {
 
   output:
   set val(sampleId), file ("${sampleId}.covPerBin.gz"), file ("${sampleId}.covPerBin.plot.all.png") , file ("${sampleId}.covPerBin.plot.byChr.pdf") , file ("${sampleId}.covPerBin.plot.tsv.gz") , file ("${sampleId}.covPerBin.plot.faceting.png") , file("${sampleId}.covPerBin.significant.bins.tsv.gz") , file("${sampleId}.covPerBin.significant.segments.tsv.gz") , file("${sampleId}.covPerBin.significant.stats") into (covPerBin)
-  set val(sampleId), file(bam) , file(bai) , file(covPerChr) , file ("${sampleId}.covPerBin.gz") into (covPerBin4covPerGe) 
+  set val(sampleId), file(bam) , file(bai) , file(covPerChr) , file ("${sampleId}.covPerBin.gz") , file ("${sampleId}.bed") into (covPerBin4covPerGe) 
   
   //file ("${SAMPLE.ID}.gcLnorm.covPerBin.pdf") 
 
@@ -292,7 +292,7 @@ process covPerGe {
   tag { "${sampleId}" }
 
   input:
-  set val(sampleId), file(bam) , file(bai) , file(covPerChr) , file(covPerBin) from covPerBin4covPerGe
+  set val(sampleId), file(bam) , file(bai) , file(covPerChr) , file(covPerBin) , file(bed) from covPerBin4covPerGe
   set file(fa) , file(fai) , file(dict) , file(size) from genome_ch6
   file repeats from repeats_ch1
   file (annotation)
@@ -305,7 +305,7 @@ process covPerGe {
   //, file("${sampleId}.gcLnorm.covPerGe.pdf") ,  file("${sampleId}.covPerGe.significant.pdf") , file("${sampleId}.covPerGe.stats.pdf")
 
   """ 
-  covPerGe $bam ${sampleId}.covPerGe $annotation $covPerChr 0 MEAN $fa
+  covPerGe $bam $annotation $covPerChr $bed _tmp
 
   Rscript /bin/covPerGe2loessGCnormalization_v2.R --ASSEMBLY $fa --DIR . --SAMPLE ${sampleId} --outName ${sampleId}
   mv ${sampleId}.gcLnorm.covPerGe.gz ${sampleId}.covPerGe.gz
