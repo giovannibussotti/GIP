@@ -1,0 +1,91 @@
+params{
+
+    MAPQ   = 50
+
+    delDup = true
+
+    chrs   ="all" 
+
+    chrPlotYlim="0 8"
+    
+    binPlotYlim="0 3"
+
+    binOverviewSize="400 1000"
+
+    customCoverageLimits="1.5 0.5"
+
+    binSize=300
+    
+    covPerBinSigOPT="--minLen 0 --pThresh 0.001 --padjust BY"
+
+    covPerGeSigOPT="--pThresh 0.001 --padjust BH --minLen 0"
+
+    covPerGeRepeatRange = 1000
+
+    freebayesOPT="--read-indel-limit 1 --read-mismatch-limit 3 --read-snp-limit 3 --hwe-priors-off --binomial-obs-priors-off --allele-balance-priors-off  --min-alternate-fraction 0.05 --min-base-quality 5 --min-alternate-count 2 --pooled-continuous"
+
+    filterFreebayesOPT="--minFreq 0.1 --maxFreq 1 --minAO 2 --minAOhomopolymer 20 --contextSpan 5 --homopolymerFreq 0.4 --minMQMR 20 --minMQM 20 --MADrange 4"
+
+    filterDellyOPT="--minDV 2 --minPercentDVDR 5 --PRECISE no --maxBanSeq 90 --chrEndFilter 100"
+
+    minNormCovForDUP = 0 
+
+    maxNormCovForDEL = 100
+
+    binSizeCircos = 25000
+
+    bigWigOPT="--binSize 10 --smoothLength 30" 
+}
+process{
+    executor='local'
+    //container='/usr/local/bin/giptools'
+    container='/home/gbussott/Desktop/GIP_githubRepo/singularityContainer/gipContainerDev.simg'
+    errorStrategy='terminate'
+    scratch=false
+    cache=true
+    echo=false
+    stageInMode='symlink'
+    time='20h'
+    cpus=1
+    memory='30000' 
+    withName: prepareGenome {
+                cpus=2
+	      } 
+    withName: map {
+                cpus=3
+                }
+    withName: covPerChr {
+                memory='30000'
+              }
+    withName: covPerNt {
+                memory='30000'
+              }
+    withName: covPerBin {
+                memory='30000'
+              }
+    withName: mappingStats{
+                memory='10000'
+              }
+    withName: covPerGe {
+                memory='30000'
+              }
+    withName: freebayes {
+                memory='40000'
+              }
+    withName: snpEff {
+                memory='30000'
+              }
+    withName: delly {
+                memory='30000'
+              }
+    withName: bigWigGenomeCov {
+                memory='10000'
+              }
+    withName: report {
+                memory='10000'
+              }
+}
+singularity{
+	enabled = true
+        autoMounts = true
+}
