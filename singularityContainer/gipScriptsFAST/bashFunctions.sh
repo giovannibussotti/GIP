@@ -518,7 +518,7 @@ function covPerGe {
   open(F,"<'$TMP/meanMapq'") or die "covPerGe cannot open meanMapq";
   my %h;
   while(<F>){ 
-    if ($_=~/(\S+)\t(\d+)$/){
+    if ($_=~/(\S+)\t(\S+)$/){
         $h{"$1"} = $2;
     }
   } 
