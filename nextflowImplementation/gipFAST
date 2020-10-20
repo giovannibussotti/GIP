@@ -3,7 +3,7 @@
 vim: syntax=groovy
 -*- mode: groovy;-*-
 ========================================================================================
-                   GIP : GENOME INSTABILITY PIPELINE
+                G I P : G E N O M E  I N S T A B I L I T Y  P I P E L I N E
 ========================================================================================
  Quantify compare and visualize Leishmania genomic variants . Started March 2019.
  #### Homepage / Documentation
@@ -249,7 +249,6 @@ process covPerNt {
 
   output:
   set val(sampleId), file ("${sampleId}.covPerNt.gz") , file ("${sampleId}.pcMapqPerNt.gz") , file ("${sampleId}.covPerNt.boxplot.png") , file ("${sampleId}.covPerNt.ridges.png") , file ("${sampleId}.covPerNt.allMedians.tsv") , file ("${sampleId}.covPerNt.medianGenomeCoverage") into (covPerNt)
-  set val(sampleId), file(bam) , file(bai) , file(covPerChr) , file ("${sampleId}.covPerNt.gz") into (covPerNt4delly)
 
   script:
   """
@@ -271,8 +270,8 @@ process covPerBin {
 
   output:
   set val(sampleId), file ("${sampleId}.covPerBin.gz"), file ("${sampleId}.covPerBin.plot.all.png") , file ("${sampleId}.covPerBin.plot.byChr.pdf") , file ("${sampleId}.covPerBin.plot.tsv.gz") , file ("${sampleId}.covPerBin.plot.faceting.png") , file("${sampleId}.covPerBin.significant.bins.tsv.gz") , file("${sampleId}.covPerBin.significant.segments.tsv.gz") , file("${sampleId}.covPerBin.significant.stats") into (covPerBin)
-  set val(sampleId), file(bam) , file(bai) , file(covPerChr) , file ("${sampleId}.covPerBin.gz") , file ("${sampleId}.bed") into (covPerBin4covPerGe) 
-  
+  set val(sampleId), file(bam) , file(bai) , file(covPerChr) , file ("${sampleId}.covPerBin.gz") , file ("${sampleId}.bed") into (covPerBin4covPerGe , covPerBin4delly) 
+
   //file ("${SAMPLE.ID}.gcLnorm.covPerBin.pdf") 
 
   """  
@@ -397,7 +396,7 @@ process delly {
   tag { "${sampleId}" }
 
   input:
-  set val(sampleId), file(bam) , file(bai) , file(covPerChr) , file (covPerNt) from covPerNt4delly
+  set val(sampleId), file(bam) , file(bai) , file(covPerChr) , file(covPerBin) , file (bed) from covPerBin4delly
   set file(fa) , file(fai) , file(dict) , file(size) from genome_ch8
   file repeats from repeats_ch3
   file gaps from gaps_ch2
@@ -458,23 +457,26 @@ process delly {
   rm ${sampleId}.tabu.bed
   #convert bed to gtf
   mkdir -p \${DF}/coverages
-  for X in `ls \$DF | grep ".bed\$" | sed -e 's/.bed\$//'`; do
-    cat \$DF/\${X}.bed | perl -ne 'if(\$_=~/^(\\S+)\\s+(\\S+)\\s+(\\S+)/){\$chr=\$1;\$start=\$2;\$end=\$3;\$ge="\${chr}_\${start}_\${end}"; print \"\${chr}\\tdelly\\tSV\\t\${start}\\t\${end}\\t.\\t.\\t.\\tgene_id \\"\$ge\\"; transcript_id \\"\$ge\\";\\n\"} ' > \$DF/_tmp.gtf
+  cd \$DF
+  for X in `ls | grep ".bed\$" | sed -e 's/.bed\$//'`; do
+    cat \${X}.bed | perl -ne 'if(\$_=~/^(\\S+)\\s+(\\S+)\\s+(\\S+)/){\$chr=\$1;\$start=\$2;\$end=\$3;\$ge="\${chr}_\${start}_\${end}"; print \"\${chr}\\tdelly\\tSV\\t\${start}\\t\${end}\\t.\\t.\\t.\\tgene_id \\"\$ge\\"; transcript_id \\"\$ge\\";\\n\"} ' > _tmp.gtf
     #evaluate coverage
-    covPerGe $bam \$DF/coverages/\${X}.cov \$DF/_tmp.gtf $covPerChr $MAPQ MEAN $fa
-    rm \$DF/_tmp.gtf
+    covPerGe ../$bam _tmp.gtf ../$covPerChr ../$bed _tmp
+    mv ${sampleId}.covPerGe.gz coverages/\${X}.cov.gz
+    rm _tmp.gtf
     #filter by coverage
-    filterByCov \$X \$DF/coverages/\${X}.fbc $minNormCovForDUP $maxNormCovForDEL $sampleId \$DF
+    filterByCov \$X coverages/\${X}.fbc $minNormCovForDUP $maxNormCovForDEL $sampleId .
     #ov with genes
-    ovWithGenes \$X \$DF
-    mv \$DF/coverages/\${X}.ov \${X}.filter
-    bedForCircos \${X}.filter \${X}.filter.circosBed
+    ovWithGenes \$X .
+    mv coverages/\${X}.ov ../\${X}.filter
+    bedForCircos ../\${X}.filter ../\${X}.filter.circosBed
   done
+  cd ..
   rm -rf \$DF
   
   #circos
   cp /bin/ideogram.conf /bin/ticks.conf .
-  prepare4Circos.sh -i $sampleId -m $bam -s $size -g $annotation -c "$chromosomes" -n $covPerNt -b $binSizeCircos -t /bin/templateCircos.conf -z ${sampleId}.delly.TRA.filter.circosBed -j ${sampleId}.delly.INV.filter.circosBed -k ${sampleId}.delly.DUP.filter.circosBed -w ${sampleId}.delly.DEL.filter.circosBed -x $covPerChr
+  prepare4Circos.sh -i $sampleId -m $bam -s $size -g $annotation -c "$chromosomes" -b $binSizeCircos -t /bin/templateCircos.conf -z ${sampleId}.delly.TRA.filter.circosBed -j ${sampleId}.delly.INV.filter.circosBed -k ${sampleId}.delly.DUP.filter.circosBed -w ${sampleId}.delly.DEL.filter.circosBed -x $covPerChr
 
   #reorganize output
   mkdir -p ${sampleId}_dellyFiltered/

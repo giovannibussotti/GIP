@@ -327,8 +327,7 @@ function bedForCircos {
             print O "chr$chr1\t$start1\t$end1\tchr$chr2\t$start2\t$end2\n";
         }
     }
-    close O;
-    '
+    close O;'
 }
 
 function covPerBin_normalizedByChrMedianCov {

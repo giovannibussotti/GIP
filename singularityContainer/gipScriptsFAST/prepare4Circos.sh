@@ -1,7 +1,7 @@
 #!/bin/bash
 BINSIZE=25000
 
-while getopts ':i:m:s:g:c:n:b:x:t:z:j:k:w:h' OPTION ; do
+while getopts ':i:m:s:g:c:b:x:t:z:j:k:w:h' OPTION ; do
 case $OPTION in
   i)  SAMPLEID=$OPTARG;;
   m)  BAM=$OPTARG;;
@@ -75,6 +75,9 @@ perl -e '
 #######################################################
 #bin the genome coverage for circos to be able to read#
 #######################################################
+#clean
+rm -rf ${SAMPLEID}.covPerBin.gz
+#covPerBin
 covPerBin $BAM $BINSIZE $CHRSIZE $covPerChr _tmp
 #select chrs to use
 perl -e '
