@@ -113,6 +113,10 @@ To run GIP:
               --index index.tsv \
               -c gip.config
 
+Assuming that the user now wants to test a stricter parametrization for the SNV filtering he/che can edit the filterFreebayesOPT parameter and increase the --minFreq value to 0.3. Then, when re-exeute GIP, it is possible to add the ``-resume`` option to the command line to compute just the processes affected by the parameter change. GIP will re-use the cached results of all the other processes.
+
+
+
 
 
 

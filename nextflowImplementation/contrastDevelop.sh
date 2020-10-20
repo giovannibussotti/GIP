@@ -7,7 +7,7 @@ find . -type l -exec bash -c "echo 'Replacing {} ...';  cp -LR '{}' '{}'.derefer
 #then copy gipOut in the inputData folder, that will be mounted by singularity
 cd ..
 sudo rm -rf ../inputData/gipOut/
-sudo cp -r gipOut/ ../inputData/gipOut/
+cp -r gipOut/ ../inputData/gipOut/
 
 #then run singularity
 Dir=/home/gbussott/Desktop/GIP_githubRepo/
