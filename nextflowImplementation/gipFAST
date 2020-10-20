@@ -304,7 +304,7 @@ process covPerGe {
   //, file("${sampleId}.gcLnorm.covPerGe.pdf") ,  file("${sampleId}.covPerGe.significant.pdf") , file("${sampleId}.covPerGe.stats.pdf")
 
   """ 
-  covPerGe $bam $annotation $covPerChr $bed _tmp
+  covPerGe $bam $annotation $covPerChr $bed _tmp ${sampleId}.covPerGe
 
   Rscript /bin/covPerGe2loessGCnormalization_v2.R --ASSEMBLY $fa --DIR . --SAMPLE ${sampleId} --outName ${sampleId}
   mv ${sampleId}.gcLnorm.covPerGe.gz ${sampleId}.covPerGe.gz
@@ -461,8 +461,7 @@ process delly {
   for X in `ls | grep ".bed\$" | sed -e 's/.bed\$//'`; do
     cat \${X}.bed | perl -ne 'if(\$_=~/^(\\S+)\\s+(\\S+)\\s+(\\S+)/){\$chr=\$1;\$start=\$2;\$end=\$3;\$ge="\${chr}_\${start}_\${end}"; print \"\${chr}\\tdelly\\tSV\\t\${start}\\t\${end}\\t.\\t.\\t.\\tgene_id \\"\$ge\\"; transcript_id \\"\$ge\\";\\n\"} ' > _tmp.gtf
     #evaluate coverage
-    covPerGe ../$bam _tmp.gtf ../$covPerChr ../$bed _tmp
-    mv ${sampleId}.covPerGe.gz coverages/\${X}.cov.gz
+    covPerGe ../$bam _tmp.gtf ../$covPerChr ../$bed _tmp coverages/\${X}.cov
     rm _tmp.gtf
     #filter by coverage
     filterByCov \$X coverages/\${X}.fbc $minNormCovForDUP $maxNormCovForDEL $sampleId .
