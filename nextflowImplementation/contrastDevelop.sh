@@ -9,6 +9,10 @@ cd ..
 sudo rm -rf ../inputData/gipOut/
 cp -r gipOut/ ../inputData/gipOut/
 
+#Then create some fake extra samples running cmdsDogX.sh
+cd ../inputData
+bash cmdsDogX.sh
+
 #then run singularity
 Dir=/home/gbussott/Desktop/GIP_githubRepo/
 sudo singularity shell --writable --no-home -B $Dir/inputData:/mnt $Dir/singularityContainer/gipContainerDev.simg/
