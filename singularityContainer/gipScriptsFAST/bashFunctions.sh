@@ -477,28 +477,28 @@ function covPerGe {
   #covPerGe fields:
     #gene_id: gene identifier
     #locus: gene chr:start-end      
-    #meanCoverage: Mean nucleotide sequencing coverage of the bases belonging to the gene (N bases aren't counted)   
-    #normalizedMeanCoverage: #meanCoverage (N bases aren't counted) / chromosome median coverage     
-    #MAPQ: average MAPQ of the reads mapping to the gene
-    
+    #meanCoverage: Mean nucleotide sequencing coverage of the bases belonging to the gene   
+    #normalizedMeanCoverage: #meanCoverage / chromosome median coverage     
+    #MAPQ: mean MAPQ of the reads mapping to the gene
     ##WARNING: You can have genes coverage, but still with a MAPQ >0 becaue you can have very few reads mapping in the gene (with a certain MAPQ). Similarly, you can have genes with 0 coverage and 0 MAPQ (so no mapping reads at all)
 
   #######
   #INPUT#
   #######
   #BAM: A genomic-sequencing BAM
-  #OUT: covPerGe output name
   #GENES: A gene gtf annotation file
-  #CHRM: chromosome median coverage file (chrCoverageMedians file, syntax: chrXX median .* )
-  #MAPQ: reads below thi threshold won't contribute to the sequencing depth, but they will still be counted for the gene average MAPQ
+  #chrCoverageMedians: chromosome median coverage file (chrCoverageMedians file, syntax: chrXX median .* )
+  #BED: bed reads file computed by covPerBin
+  #TMP: tmp folder name
+  #OUT: covPerGe output name
   local BAM=$1
   local GENES=$2
   local chrCoverageMedians=$3 
   local BED=$4
   local TMP=$5
+  local OUT=$6
 
   mkdir -p $TMP
-  OUT=${BAM/%.bam/.covPerGe}
   cat $GENES | perl -ne '
   if($_=~/gene_id \"([^\"]+)\"/){
   	$ge=$1;
