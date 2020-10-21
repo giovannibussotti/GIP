@@ -215,8 +215,10 @@ Measure genomic bin sequencing coverage
 +------------------------------------------------+------------------------------------------------+
 | sampleId.covPerBin.significant.stats           | statistical test info                          |
 +------------------------------------------------+------------------------------------------------+
+| sampleId.bed                                   | mapped reads in bed format                     |
++------------------------------------------------+------------------------------------------------+
 
-| In all three plots, the bins with mean MAPQ lower than ``--MAPQ`` are shown in gray. The statistically significant bins corresponding to amplifications and depletions are shown respectivelly in orange and blu. The y-axis minimum and maximum limits can be set with the parameter ``--binPlotYlim`` (default ``"0 3"``). Depending on the genome size the overview plots may result too small and unreadable. The parameter ``--binOverviewSize`` accepts two integers controlling respectivelly the plots heights and the widths (default ``"400 1000"``). The values specified with the ``--customCoverageLimits`` parameter will be highligthed with red dashed lines.
+| In all three plots, the bins with mean MAPQ lower than ``--MAPQ`` are shown in gray. The statistically significant bins corresponding to amplifications and depletions are shown respectivelly in orange and blu. The y-axis minimum and maximum limits can be set with the parameter ``--binPlotYlim`` (default ``"0 3"``). Depending on the genome size the overview plots may result too small and unreadable. The parameter ``--binOverviewSize`` accepts two integers controlling respectivelly the plots heights and the widths (default ``"400 1000"``). The values specified with the ``--customCoverageLimits`` parameter will be highligthed with red dashed lines. The **sampleId.bed** file is an intermediate file used by GIP from the quantification of genomic intervals. It is not automatically removed by GIP because it allows the user to re-execute the pipeline with the ``-resume`` option. However, if the user is not planning on re-executing GIP he/she can simply delete this file from the **work/** directory to save disk space.     
 
 
 
