@@ -61,10 +61,9 @@ Map reads and collect alignment statistics
 | Tools used at this step include:
 
 * Samotools modules including fixmate, sort and index to reformat the aliment files
-* GATK RealignerTargetCreator and IndelRealigner to homogenize the indels
-* Picad MarkDuplicates with option VALIDATION_STRINGENCY=LENIENT to label potential optical or PCR read duplicates
+* Picad MarkDuplicates with option VALIDATION_STRINGENCY=LENIENT to detect and remove optical or PCR read duplicates
 
-| The files generated at this step are placed in the **gipOut/samples/sampleId** folder, and include:
+| The ``delDup`` parameter can be set to false to just label instead of removing reads duplicates. The files generated at this step are placed in the **gipOut/samples/sampleId** folder, and include:
 
 +-----------------------------+-----------------------------------------------+
 | sampleId.bam                | alignment file                                |
@@ -125,8 +124,6 @@ Measure nucleotide coverage
 
 | Mapped reads are used to measure the sequencing coverage of each nucleotide in the *covPerNt* process.
 | Tools used at this step include Samtools view and Bedtools genomecov (options "-d -split").
-| The reads mapping with the bitflag (see `SAM format specifications <https://samtools.github.io/hts-specs/SAMv1.pdf>`_) value given by the ``--BITFLAG`` parameter (default 1028) are excluded.
-| This parameter applies with the same function also to downstream processes, namely: *covPerBin*, *covPerGe* and *delly*.
 | To account for differences in sequencing library size and enable comparisons between samples, the nucleotide sequencing coverage is normalized by the median genomic coverage.
 | The files generated at this step are placed in the **gipOut/samples/sampleId** folder, and include:
 
@@ -167,12 +164,14 @@ Measure genomic bin sequencing coverage
 
 1. Computes the sequencing depth of each nucleotide without normalizing 
 2. Divides the genome in contiguous genomic bins whose size is determined by the ``--binSize`` parameter (default 300bp)
-3. Computes mean and median sequencing coveage scores for each bin, and normalize them by median chromosome sequencing coverage
-4. Estimates the mean MAPQ score for each bin  
+3. Computes mean sequencing coveage scores for each bin
+4. Normalizes the mean bin coverage by median chromosome sequencing coverage
+5. Applieas a GC content correction on the normalized mean bin coverage 
+6. Estimates the mean MAPQ score for each bin  
 
-| Please note that it is possible to obtain genomic bins with 0 mean or median coverage, but MAPQ greather than 0. This is the case in genomic depletions where very few reads map to the bin with a certain MAPQ score greather than 0. 
-| Bin coverage scores are then corrected for GC content to limit potential sequencing biases during DNA amplification. Given the distribution of bin mean coverage scores and GC-content, GIP fits a loess regression using using a 5 folds cross validation to explore the loess *span* parameter (which relates with the fraction of points used to fit the local regressions, and influence the model smoothness).
-| Then GIP corrects the original bin coverage by subtracting the values on the loess model, and adding back the difference between the median coverage of all bin before and after subtraction (i.e. recentering the median bin coverage to 1). Genomic bins that after correction have negative coverage are reported with a 0 value.
+| Please note that it is possible to obtain genomic bins with 0 mean coverage, but MAPQ greather than 0. This is the case in genomic depletions where very few reads map to the bin with a certain MAPQ score greather than 0. 
+| The GC content correction is meant to limit potential sequencing biases during DNA amplification. Given the distribution of bin mean coverage scores and GC-content, GIP fits a loess regression using using a 5 folds cross validation to explore the loess *span* parameter (which relates with the fraction of points used to fit the local regressions, and influence the model smoothness).
+| Then GIP corrects the original bin coverage by subtracting the values on the loess model, and adding back the difference between the median coverage of all bin before and after subtraction (i.e. recentering the median of the bin coverage scores to 1). Genomic bins that after correction have negative coverage are reported with a 0 value.
 
 
 | The resulting bin are evaluated for significant copy number variation (CNV) with respect to the reference genome. Often, the CNV span regions larger than the bin size. In order to match the size of the CNV region (at a bin size resolution), GIP collapses adjacent significant CNV bins of the same type (i.e. adjacent bins composing a depletion, or adjacent bins composing an amplification), then averages their coverage score. We refer to these sets of collapsed bins as **segments**.
@@ -258,7 +257,6 @@ Detect, annotate and filter single nucleotide variants
 .. code-block:: bash
 
  --freebayesOPT="--read-indel-limit 1 --read-mismatch-limit 3 --read-snp-limit 3 \
- --hwe-priors-off --binomial-obs-priors-off --allele-balance-priors-off \
  --min-alternate-fraction 0.05 --min-base-quality 5 --min-alternate-count 2 --pooled-continuous"
 
 
@@ -378,7 +376,7 @@ Please refer to the `freebayes manual <https://github.com/ekg/freebayes>`_ for m
 Detect structural variants
 --------------------------
  
-| The genomic structural variants (SVs) are detected in the *delly* process using the `delly <https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3436805/>_` program. The SVs are predicted based on pair-end mapping orientation and split-read information, and include unbalanced reaffangements (i.e. CNV deletions or amplifications), as well as balanced rearrangements (inversions and translocations). delly is used to predict the four SV types using just the reads passing both the ``--MAPQ`` and ``--BITFLAG`` filters. The output is the .vcf gzip compressed file  **gipOut/samples/sampleId/sampleId.delly.vcf.gz** and its tabix intex with .tbi extension.
+| The genomic structural variants (SVs) are detected in the *delly* process using the `delly <https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3436805/>_` program. The SVs are predicted based on pair-end mapping orientation and split-read information, and include unbalanced reaffangements (i.e. CNV deletions or amplifications), as well as balanced rearrangements (inversions and translocations). delly is used to predict the four SV types using just the reads passing the ``--MAPQ`` filter. The output is the .vcf gzip compressed file  **gipOut/samples/sampleId/sampleId.delly.vcf.gz** and its tabix intex with .tbi extension.
 | GIP allows to apply custom quality filters and select a short-list of SV predictions using the ``--filterDellyOPT`` parameter, and setting the following variables:
 
 * *--minDV*          - min. num. of read pairs supporting the variant [int] 
