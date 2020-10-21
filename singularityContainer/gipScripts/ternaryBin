@@ -18,7 +18,7 @@ parser$add_argument("--outName" , help="Output name [default %(default)s]" , def
 parser$add_argument("--chrs"    , nargs="+" , help="chromosomes to use. If not defined, it considers the chromosomes selected at gip runtime [default %(default)s]" , default="NA")
 parser$add_argument("--MAPQ"  , type="integer" , help="Points with MAPQ < --MAPQ will be removed [default %(default)s]" , default=-1)
 parser$add_argument("--highLowDensityColor" , nargs="+", help="Colors for high and low density [default %(default)s]", default=c("black" , "gray"))
-parser$add_argument("--pseudocount" , type="double" , help="value to add to the normalized median coverage (for the ternary plot only)[default %(default)s]" , default=0.1)
+parser$add_argument("--pseudocount" , type="double" , help="value to add to the normalized mean coverage (for the ternary plot only)[default %(default)s]" , default=0.1)
 parser$add_argument("--densityN"   , type="integer" , help="number of grid points in each direction [default %(default)s]" , default=200)
 parser$add_argument("--densityBin" , type="integer" , help="number bins over which to calculate intervals [default %(default)s]" , default=10)
 parser$add_argument("--showSubset" , type="integer" , help="show a random subset of genomic bins. Does not affect the density estimation [default %(default)s]", default=5000)
@@ -54,7 +54,7 @@ if (is.na (chrs[1])){
 readSample <- function(id) {
 #read covPerBins
 df  <- fread(cmd=paste0("gunzip -c ", gipOut , "/samples/",id,"/",id,".covPerBin.gz"), stringsAsFactors=FALSE , header=T)
-names(df) <- c("chromosome","start","end","meanCoverage","medianCoverage","MAPQ")
+names(df) <- c("chromosome","start","end","meanCoverage","normalizedMeanCoverage","MAPQ")
 df      <- as.data.frame(df , stringsAsFactors = FALSE)
 row.names(df) <- paste(df$chromosome, df$start, df$end , sep="_")
 df$chromosome <- as.character(df$chromosome)
@@ -69,7 +69,7 @@ df <- newDf
 df$meanCoverage <- NULL
 
 #pseudocount
-df$medianCoverage <- df$medianCoverage + pseudocount
+df$normalizedMeanCoverage <- df$normalizedMeanCoverage + pseudocount
 return(df)
 }
 sampDf <- list()
@@ -82,9 +82,9 @@ df <- data.frame(
   chromosome= sampDf[[s1]]$chromosome , 
   start     = sampDf[[s1]]$start , 
   end       = sampDf[[s1]]$end , 
-  covS1     = sampDf[[s1]]$medianCoverage , 
-  covS2     = sampDf[[s2]][row.names(sampDf[[s1]]),"medianCoverage"] , 
-  covS3     = sampDf[[s3]][row.names(sampDf[[s1]]),"medianCoverage"] , 
+  covS1     = sampDf[[s1]]$normalizedMeanCoverage , 
+  covS2     = sampDf[[s2]][row.names(sampDf[[s1]]),"normalizedMeanCoverage"] , 
+  covS3     = sampDf[[s3]][row.names(sampDf[[s1]]),"normalizedMeanCoverage"] , 
   min_MAPQ  = pmin(sampDf[[s1]]$MAPQ , sampDf[[s2]][row.names(sampDf[[s1]]),"MAPQ"] , sampDf[[s3]][row.names(sampDf[[s1]]),"MAPQ"]),
   stringsAsFactors=FALSE)
 
@@ -130,7 +130,7 @@ df$covS3 <- round(df$covS3,3)
 df$delta       <- apply(df[,c("covS1","covS2","covS3")],1,function(x){max(x)-min(x)})
 df$foldChange  <- apply(df[,c("covS1","covS2","covS3")],1,function(x){max(x)/min(x)})
 #rename
-names(df) <- c("chromosome" , "start" , "end" , paste0("normalizedMedianBinCoverage_",s1) , paste0("normalizedMedianBinCoverage_",s2) ,  paste0("normalizedMedianBinCoverage_",s3) ,  "min_MAPQ" , "delta_coverage" , "fold_change")
+names(df) <- c("chromosome" , "start" , "end" , paste0("normalizedMeanBinCoverage_",s1) , paste0("normalizedMeanBinCoverage_",s2) ,  paste0("normalizedMeanBinCoverage_",s3) ,  "min_MAPQ" , "delta_coverage" , "fold_change")
 write.xlsx(file=paste0(outName,".xlsx") , x=df , asTable=TRUE)
 
 

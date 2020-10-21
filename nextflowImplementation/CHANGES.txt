@@ -1,4 +1,17 @@
 ###################
+#v1.0.3- 21102020#
+###################
+-changed covPerBin and covPerGe functions. Now are much faster.
+-The covPerBin format. The "mean" and "median" columns have been replaced by "meanCoverage" and "normalizedMeanCoverage" to be consistent with the covPerGe format (and because computing the bin median is CPU intensive for big genomes)
+-Changed all the gip parts in which covPerGe or covPerBin are called with the new command execution.
+-Changed the downstream scripts using the covPerBin function or accepting covPerBin files (adapting the syntax to read them).
+-removed BITFLAG option
+-introduced delDup option
+-chromosomes now accept the "all" option to consider all the chromosomes by default
+- 
+
+
+###################
 #v1.0.2- 23092020#
 ###################
 -introduced Red as a default tool to mask repeat

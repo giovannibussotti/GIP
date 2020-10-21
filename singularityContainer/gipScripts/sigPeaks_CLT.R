@@ -85,9 +85,9 @@ if(inFormat == "chrStartEndScore"){
 } else if (inFormat == "covPerBin"){
 	df <- read.table(input,header=T, stringsAsFactors=F)
 	df <- df[df$MAPQ >= minMAPQ ,] #filter
-	df <- df[,c("chromosome" , "start" , "end" , "median")]
+	df <- df[,c("chromosome" , "start" , "end" , "normalizedMeanCoverage")]
 	names(df) <- c("chr","start","end","score")
-        df$chr <- as.character(df$chr)
+    df$chr <- as.character(df$chr)
 } else {
 	stop("input inFormat not recognized")
 	quit(save = "no", status = 1, runLast = FALSE)

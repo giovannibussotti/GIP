@@ -178,7 +178,7 @@ displaySigDepSegTab <- length(sigDepSegments[,1]) > 0
 The genome was divided in contiguous bins spanning `r binSize` nucleotides, and their coverage was evaluated by  
 
 * measuring the sequencing coverage of each nucleotide  
-* computing the median bin coverage  
+* computing the mean bin coverage  
 * normalizing by the median chromosome coverage   
 
 The mean MAPQ score of the reads aligning to each bin was also computed.  
@@ -322,16 +322,20 @@ tableX <- tableX +1
   
 The table including the dNdS analysis of the filtered set is available from [here](`r paste0("../samples/",sample,"/",sample,"_freebayesFiltered/dNdStable.tsv.gz")`).  
   
-   
-```{r SNVplots1  , out.width = "100%" , fig.cap=paste0("Figure ",figureX -1,": SNV density")}
+
+```{r SNVplots0  , out.width = "100%" , fig.cap=paste0("Figure ",figureX -1,": SNV density per chromosome")}
+knitr::include_graphics(paste0(sample,"_freebayesFiltered/single_totVarPerChr.png"))
+figureX <- figureX +1
+```
+```{r SNVplots1  , out.width = "100%" , fig.cap=paste0("Figure ",figureX -1,": VRF distribution")}
 knitr::include_graphics(paste0(sample,"_freebayesFiltered/single_allDensities.png"))
 figureX <- figureX +1
 ```
-```{r SNVplots2  , out.width = "100%" , fig.cap=paste0("Figure ",figureX -1,": SNV scatterplot")}
+```{r SNVplots2  , out.width = "100%" , fig.cap=paste0("Figure ",figureX -1,": SNV position vs VRF")}
 knitr::include_graphics(paste0(sample,"_freebayesFiltered/single_VRFvsPosFaceting.png"))
 figureX <- figureX +1
 ```
-```{r SNVplots3  , out.width = "100%" , fig.cap=paste0("Figure ",figureX -1,": SNV depth vs SNV frequency")}
+```{r SNVplots3  , out.width = "100%" , fig.cap=paste0("Figure ",figureX -1,": SNV depth vs VRF")}
 knitr::include_graphics(paste0(sample,"_freebayesFiltered/single_depthVsVRFletters.png"))
 figureX <- figureX +1
 ```
@@ -408,8 +412,8 @@ tableX <- tableX +1
 **[5]** "A program for annotating and predicting the effects of single nucleotide polymorphisms, SnpEff: SNPs in the genome of Drosophila melanogaster strain w1118; iso-2; iso-3.", Cingolani P, Platts A, Wang le L, Coon M, Nguyen T, Wang L, Land SJ, Lu X, Ruden DM. Fly (Austin). 2012 Apr-Jun;6(2):80-92. PMID: 22728672  
 **[6]** Rausch T, Zichner T, Schlattl A, Stütz AM, Benes V, Korbel JO. DELLY:structural variant discovery by integrated paired-end and split-read analysis. Bioinformatics. 2012 Sep 15;28(18):i333-i339. doi:10.1093/bioinformatics/bts378. PMID: 22962449; PMCID: PMC3436805.  
 
-L-GERT github page: 
-https://github.com/giovannibussotti/L-GERT
+GIP github page: 
+https://github.com/giovannibussotti/GIP
 
 <div class="fold o">
 ```{r}

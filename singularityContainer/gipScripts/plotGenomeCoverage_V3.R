@@ -58,6 +58,7 @@ parser$add_argument("--disomicChr"  , help="normalize by this chromosome [defaul
 parser$add_argument("--customColors", help="provide a file with header \"SAMPLE HEX\" as first two columns, specifying the color for each sample [default %(default)s]", default="NA" )
 parser$add_argument("--geom" , help="select boxplot or violin [default %(default)s]" , default="boxplot")
 parser$add_argument("--pooled" , action="store_true" , help="flag. pool together all the samples (i.e. one box per chromosome representing the coverage values of all samples) [default %(default)s]" , default=FALSE)
+parser$add_argument("--debug"  , action="store_true" , help="dump session and quit [default %(default)s]" , default=FALSE)
 
 args <- parser$parse_args()
 #patch NA
@@ -238,16 +239,14 @@ library(gtools)
 library(ggridges)
 options(datatable.fread.input.cmd.message=FALSE)
 
-#library(session)
-#save.session("session")
-#quit()
+if(debug){library(session);save.session("session_sigPeaksCLT");quit()}
 
 #read .gcov files in a list
 allSamples <- list()
 for (i in 1:length(files)){
     f = files[i]
     n = NAMES[i]
-    fName = paste(DIR,"/",f,sep="");
+    fName = paste0(DIR,"/",f);
     allSamples[[n]]    <- fread(paste("gunzip -c", fName),colClasses=list(character=1))
     names(allSamples[[n]]) <- c("chromosome","position","score") 
     allSamples[[n]] <- allSamples[[n]][allSamples[[n]]$chromosome %in% chrs,] 

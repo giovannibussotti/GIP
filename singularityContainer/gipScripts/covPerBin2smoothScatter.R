@@ -39,7 +39,7 @@ covPerBinList <- list()
 for (covPerBin in covPerBinFilesV){
   print(covPerBin)
   s <-  gsub(x=basename(covPerBin),pattern=".covPerBin.gz$",replacement="")
-  covPerBinList[[s]] <- fread(cmd=paste("gunzip -c", covPerBin ), select=c("chromosome","start","median","MAPQ"))
+  covPerBinList[[s]] <- fread(cmd=paste("gunzip -c", covPerBin ), select=c("chromosome","start","normalizedMeanCoverage","MAPQ"))
   positionCorrection <- chrSizeCumSum[match(covPerBinList[[s]]$chromosome, names(chrSizeCumSum))]
   covPerBinList[[s]]$startFixed <- covPerBinList[[s]]$start + positionCorrection
   covPerBinList[[s]]$sample <- s
@@ -48,14 +48,14 @@ covPerBinDf <- do.call(rbind,covPerBinList)
 df <- covPerBinDf[with(covPerBinDf, order(startFixed)), ]
 
 #filter
-df <- df[ df$median <= 0.01 | (df$median > 0.01 & df$MAPQ > minMAPQ) ,]
+df <- df[ df$normalizedMeanCoverage <= 0.01 | (df$normalizedMeanCoverage > 0.01 & df$MAPQ > minMAPQ) ,]
 df <- as.data.frame(df)
 
 #add pseudocount just to deletions
-df$median[df$median <= 0.1 ] = 0.1
+df$normalizedMeanCoverage[df$normalizedMeanCoverage <= 0.1 ] = 0.1
 
 #materializedPoints
-materializedPoints <- df[df$median <= 0.5 | df$median >= 1.5,]
+materializedPoints <- df[df$normalizedMeanCoverage <= 0.5 | df$normalizedMeanCoverage >= 1.5,]
 materializedPoints<- unique(materializedPoints)
 maxPointsNum <- min(length(materializedPoints[,1]) , 50000)
 set.seed(321)
@@ -73,8 +73,8 @@ fudgeit <- function(){
 #plot smooth
 png(paste0(outName,".smooth.png"),type='cairo' , width = 2000, height = 800,)
 par(font.axis = 2 , mar = c(5,4,4,5) + .1)
-smoothScatter(x=df$startFixed , y=log(df$median) , bandwidth=c(0.1,0.05) , nbin=400 , nrpoints=0 , xlab="chromosomes" , ylab="genomic bin coverage",xaxt = 'n' , postPlotHook = fudgeit , xaxs="i" , yaxs="i" , font=2)
-points(materializedPoints$startFixed, log(materializedPoints$median), pch=19, col="black", cex=0.2)
+smoothScatter(x=df$startFixed , y=log(df$normalizedMeanCoverage) , bandwidth=c(0.1,0.05) , nbin=400 , nrpoints=0 , xlab="chromosomes" , ylab="genomic bin coverage",xaxt = 'n' , postPlotHook = fudgeit , xaxs="i" , yaxs="i" , font=2)
+points(materializedPoints$startFixed, log(materializedPoints$normalizedMeanCoverage), pch=19, col="black", cex=0.2)
 segments(x0=0 , y0=log(1.5) , x1=sum(chrSize$size) , y1=log(1.5) , lty=3, col='red', lwd=1)
 segments(x0=0 , y0=0 , x1=sum(chrSize$size) , y1=0 , lty=2, col='black', lwd=1)
 segments(x0=0 , y0=log(0.5) , x1=sum(chrSize$size) , y1=log(0.5) , lty=3, col='red', lwd=1)

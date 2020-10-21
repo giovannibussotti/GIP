@@ -18,7 +18,7 @@ parser$add_argument("--outName" , help="Output name [default %(default)s]" , def
 parser$add_argument("--chrs"    , nargs="+" , help="chromosomes to use. If not defined, it considers the chromosomes selected at gip runtime [default %(default)s]" , default="NA")
 parser$add_argument("--highLowCovThresh" , nargs="+" , type="character" , help="Provide two numbers. Bins > num1 or < num2 will be labeled. [default %(default)s]" , default= "NA" )
 parser$add_argument("--minMAPQ" , type="integer"   , help="filter out bins MAPQ < --minMAPQ [default %(default)s]", default=0 )
-parser$add_argument("--pseudocount" , type="double" , help="value to add to the normalized median coverage. Avoid infinite (1/0) and NaN (0/0) ratio values [default %(default)s]" , default=0.1)
+parser$add_argument("--pseudocount" , type="double" , help="value to add to the normalized mean coverage. Avoid infinite (1/0) and NaN (0/0) ratio values [default %(default)s]" , default=0.1)
 parser$add_argument("--showSubset" , type="integer" , help="show a random subset of genomic bins above or below --highLowCovThresh. Does not affect the density estimation [default %(default)s]", default=50000)
 parser$add_argument("--bandwidth" , type="double" , nargs="+" , help="numeric vector (length 1 or 2) of smoothing bandwidth(s) (e.g. 0.1 0.05) [default %(default)s]" , default=0.01)
 parser$add_argument("--nbin" , type="integer" ,  nargs="+" , help="numeric vector of length one (for both directions) or two (for x and y separately) specifying the number of equally spaced grid points for the density estimation [default %(default)s]" , default=400)
@@ -67,7 +67,7 @@ chrMids =c(chrMids ,  ( chrSizeCumSum[length(chrSizeCumSum)] + sum(chrSize$size)
 #read covPerBin
 covPerBinList <- list()
 for (s in samples){
-  covPerBinList[[s]] <- fread(cmd=paste0("gunzip -c ", gipOut , "/samples/" , s , "/" , s , ".covPerBin.gz"  ), select=c("chromosome","start","median","MAPQ"))
+  covPerBinList[[s]] <- fread(cmd=paste0("gunzip -c ", gipOut , "/samples/" , s , "/" , s , ".covPerBin.gz"  ), select=c("chromosome","start","normalizedMeanCoverage","MAPQ"))
   positionCorrection <- chrSizeCumSum[match(covPerBinList[[s]]$chromosome, names(chrSizeCumSum))]
   covPerBinList[[s]]$startFixed <- covPerBinList[[s]]$start + positionCorrection
   covPerBinList[[s]]$sample <- s
@@ -76,14 +76,14 @@ covPerBinDf <- do.call(rbind,covPerBinList)
 df <- covPerBinDf[with(covPerBinDf, order(startFixed)), ]
 
 #filter
-df <- df[ df$median <= 0.01 | (df$median > 0.01 & df$MAPQ > minMAPQ) ,]
+df <- df[ df$normalizedMeanCoverage <= 0.01 | (df$normalizedMeanCoverage > 0.01 & df$MAPQ > minMAPQ) ,]
 df <- as.data.frame(df)
 
 #add pseudocount just to deletions
-df$median[df$median <= pseudocount ] = pseudocount
+df$normalizedMeanCoverage[df$normalizedMeanCoverage <= pseudocount ] = pseudocount
 
 #materializedPoints
-materializedPoints <- df[df$median <= 0.5 | df$median >= 1.5,]
+materializedPoints <- df[df$normalizedMeanCoverage <= 0.5 | df$normalizedMeanCoverage >= 1.5,]
 materializedPoints<- unique(materializedPoints)
 maxPointsNum <- min(length(materializedPoints[,1]) , showSubset)
 set.seed(321)
@@ -101,8 +101,8 @@ fudgeit <- function(){
 #plot smooth
 pdf(paste0(outName,".pdf"))
 par(font.axis = 2 , mar = c(5,4,4,5) + .1)
-smoothScatter(x=df$startFixed , y=log(df$median) , bandwidth=bandwidth , nbin=nbin , nrpoints=0 , xlab="chromosomes" , ylab="genomic bin coverage",xaxt = 'n' , postPlotHook = fudgeit , xaxs="i" , yaxs="i" , font=2)
-points(materializedPoints$startFixed, log(materializedPoints$median), pch=19, col="black", cex=0.2)
+smoothScatter(x=df$startFixed , y=log(df$normalizedMeanCoverage) , bandwidth=bandwidth , nbin=nbin , nrpoints=0 , xlab="chromosomes" , ylab="genomic bin coverage",xaxt = 'n' , postPlotHook = fudgeit , xaxs="i" , yaxs="i" , font=2)
+points(materializedPoints$startFixed, log(materializedPoints$normalizedMeanCoverage), pch=19, col="black", cex=0.2)
 segments(x0=0 , y0=log(1.5) , x1=sum(chrSize$size) , y1=log(1.5) , lty=3, col='red', lwd=1)
 segments(x0=0 , y0=0 , x1=sum(chrSize$size) , y1=0 , lty=2, col='black', lwd=1)
 segments(x0=0 , y0=log(0.5) , x1=sum(chrSize$size) , y1=log(0.5) , lty=3, col='red', lwd=1)

@@ -1,17 +1,15 @@
 #!/bin/bash
-GCOV2INT=gencov2intervals.pl
 BINSIZE=25000
 
-while getopts ':i:m:s:g:c:n:b:x:t:z:j:k:w:h' OPTION ; do
+while getopts ':i:m:s:g:c:b:x:t:z:j:k:w:h' OPTION ; do
 case $OPTION in
   i)  SAMPLEID=$OPTARG;;
   m)  BAM=$OPTARG;;
   s)  CHRSIZE=$OPTARG;;
   g)  GEGTF=$OPTARG;;
   c)  CHRtoUSE=$OPTARG;;
-  n)  COVPERNT=$OPTARG;;
   b)  BINSIZE=$OPTARG;;
-  x)  GCOV2INT=$OPTARG;;
+  x)  covPerChr=$OPTARG;;
   t)  CONFTEMPLATE=$OPTARG;;
   z)  TRADATA=$OPTARG;;
   j)  INVDATA=$OPTARG;;
@@ -23,15 +21,14 @@ case $OPTION in
       echo "   -s    chr size file"
       echo "   -g    gene gtf file"
       echo "   -c    space separated list of chromosomes to use in quotation marks"
-      echo "   -n    covPerNt LGERT file"
       echo "   -b    bin size"
-      echo "   -x    gencov2intervals.pl script"
+      echo "   -x    coverage per chromosome file"
       echo "   -t    configuration template"
       echo "   -z    traslocation data"
       echo "   -j    inversion data"
       echo "   -k    duplication data"
       echo "   -w    deletion data"
-      echo "example: ./prepare4Circos.sh -i Ldo_CH33 -m Ldo_CH33_EP.bam -s /pasteur/projets/policy01/BioIT/Giovanni/datasets/projects/p2p5/LdBPKv2.chrSize -g /pasteur/projets/policy01/BioIT/Giovanni/datasets/projects/p2p5/LdBPKv2.ge.gtf -c \"1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36\" -n Ldo_CH33_EP.covPerNt.gz -b 25000 -t templateCircos.conf -z Ldo_CH33_EP+3.delly.TRA.filter.circosBed -j Ldo_CH33_EP+3.delly.INV.filter.circosBed -k Ldo_CH33_EP+3.delly.DUP.filter.circosBed -w Ldo_CH33_EP+3.delly.DEL.filter.circosBed"
+      echo "example: ./prepare4Circos.sh -x chrCoverageMedians_Ldo_CH33 -i Ldo_CH33 -m Ldo_CH33_EP.bam -s /pasteur/projets/policy01/BioIT/Giovanni/datasets/projects/p2p5/LdBPKv2.chrSize -g /pasteur/projets/policy01/BioIT/Giovanni/datasets/projects/p2p5/LdBPKv2.ge.gtf -c \"1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36\" -b 25000 -t templateCircos.conf -z Ldo_CH33_EP+3.delly.TRA.filter.circosBed -j Ldo_CH33_EP+3.delly.INV.filter.circosBed -k Ldo_CH33_EP+3.delly.DUP.filter.circosBed -w Ldo_CH33_EP+3.delly.DEL.filter.circosBed"
 	    exit 0;;
 	\?)	echo "Unknown argument \"-$OPTARG\"."
 	echo $HELP ; exit 1;;
@@ -78,21 +75,24 @@ perl -e '
 #######################################################
 #bin the genome coverage for circos to be able to read#
 #######################################################
-#gunzip -c $COVPERNT > ${COVPERNT}_tmp
+#clean
+rm -rf ${SAMPLEID}.covPerBin.gz
+#covPerBin
+covPerBin $BAM $BINSIZE $CHRSIZE $covPerChr _tmp
+#select chrs to use
 perl -e '
   #hash with chr to use
   $chrString="'"${CHRtoUSE}"'"; @chrs=split(/\s+/,$chrString); foreach $c(@chrs){$chrToUse{$c}=1;}
-  open(F, "gunzip -c '$COVPERNT' |") or die "cannot open gzip file $!\n"; 
+  open(F, "gunzip -c '${SAMPLEID}'.covPerBin.gz |") or die "cannot open gzip file $!\n"; 
   while(<F>){ 
    if($_=~/(\S+)/){
     if ($chrToUse{$1}){print;}
    }
-  }' > ${COVPERNT}_tmp
-$GCOV2INT -gcov ${COVPERNT}_tmp -step $BINSIZE > ${SAMPLEID}.covPerBin
-addMapqToGcovbin $BAM ${SAMPLEID}.covPerBin MEAN
+  }' > _${SAMPLEID}.covPerBin ; 
+mv _${SAMPLEID}.covPerBin ${SAMPLEID}.covPerBin
 tail -n +2 ${SAMPLEID}.covPerBin | awk '{print "chr"$1 "\t" $2 "\t" $3 "\t" $5}' > $D/sample.covPerBin
 tail -n +2 ${SAMPLEID}.covPerBin | awk '{print "chr"$1 "\t" $2 "\t" $3 "\t" $6}' > $D/sample.mapqPerBin
-rm -rf ${COVPERNT}_tmp ${SAMPLEID}.covPerBin
+rm -rf ${SAMPLEID}.covPerBin
 
 
 ###########################

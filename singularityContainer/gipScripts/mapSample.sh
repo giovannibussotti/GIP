@@ -6,9 +6,10 @@ INDEX=$4
 R1=$5
 R2=$6
 OUTDIR=$7
+delDup=$8
 
 if [[ ! $R1 == *","* ]]; then
-	bwaMapSample $S $ASSEMBLY $C $INDEX $OUTDIR $R1 $R2
+	bwaMapSample $S $ASSEMBLY $C $INDEX $OUTDIR $delDup $R1 $R2
 	exit 0
 fi
 
@@ -30,5 +31,5 @@ done
 
 #MAP
 echo "bwaMapSample $S $ASSEMBLY $C $INDEX $OUTDIR $TMP/${S}_1.fastq $TMP/${S}_2.fastq"
-bwaMapSample $S $ASSEMBLY $C $INDEX $OUTDIR $TMP/${S}_1.fastq $TMP/${S}_2.fastq
+bwaMapSample $S $ASSEMBLY $C $INDEX $OUTDIR $delDup $TMP/${S}_1.fastq $TMP/${S}_2.fastq
 

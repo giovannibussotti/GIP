@@ -46,7 +46,7 @@ chrMids =c(chrMids ,  ( chrSizeCumSum[length(chrSizeCumSum)] + sum(chrSize$size)
 
 #read covPerBin
 df        <- fread(cmd=paste("gunzip -c", covPerBin),stringsAsFactors=FALSE , header=T)
-names(df) <- c("chromosome","start","end","meanCoverage","medianCoverage","MAPQ")
+names(df) <- c("chromosome","start","end","meanCoverage","normalizedMeanCoverage","MAPQ")
 df      <- as.data.frame(df , stringsAsFactors = FALSE)
 row.names(df) <- paste(df$chromosome, df$start, df$end, sep="_")
 df$chromosome <- as.character(df$chromosome)
@@ -73,22 +73,22 @@ if(! is.na(significant)){
   df[amplifiedBins,"color"]="orange"
   df[depletedBins,"color"]="blue" 
 } else if (! is.na(coverageColorLimits[1])){
-  df$color[df$medianCoverage > coverageColorLimits[1]] = "orange"
-  df$color[df$medianCoverage < coverageColorLimits[2]] = "blue"
-  df$status[df$medianCoverage > coverageColorLimits[1]]="enriched"
-  df$status[df$medianCoverage < coverageColorLimits[2]]="depleted"
+  df$color[df$normalizedMeanCoverage > coverageColorLimits[1]] = "orange"
+  df$color[df$normalizedMeanCoverage < coverageColorLimits[2]] = "blue"
+  df$status[df$normalizedMeanCoverage > coverageColorLimits[1]]="enriched"
+  df$status[df$normalizedMeanCoverage < coverageColorLimits[2]]="depleted"
 }
 df[df$MAPQ < minMAPQ , "status"] = "lowMAPQ"
 df[df$MAPQ < minMAPQ , "color"]  = "gray"
 
 
 #plot all together
-dfAll <- data.frame(chromosome=df$chromosome , start=df$start , medianCoverage=df$medianCoverage , color=df$color, stringsAsFactors=F)
-dfAll$medianCoverage[dfAll$medianCoverage > ylim[2]] = ylim[2]
+dfAll <- data.frame(chromosome=df$chromosome , start=df$start , normalizedMeanCoverage=df$normalizedMeanCoverage , color=df$color, stringsAsFactors=F)
+dfAll$normalizedMeanCoverage[dfAll$normalizedMeanCoverage > ylim[2]] = ylim[2]
 positionCorrection <- chrSizeCumSum[match(dfAll$chromosome, names(chrSizeCumSum))]
 dfAll$startFixed <- dfAll$start + positionCorrection
 png(paste0(outName,".all.png") , height=binOverviewSize[1], width=binOverviewSize[2] , type='cairo')
-plot(x=dfAll$startFixed , y=dfAll$medianCoverage , xlab="chromosomes" , ylab="genomic bin coverage", col=dfAll$color , xaxt = 'n', xaxs="i" , yaxs="i" , font=2 , pch=19 , ylim=c(ylim[1],ylim[2]))
+plot(x=dfAll$startFixed , y=dfAll$normalizedMeanCoverage , xlab="chromosomes" , ylab="genomic bin coverage", col=dfAll$color , xaxt = 'n', xaxs="i" , yaxs="i" , font=2 , pch=19 , ylim=c(ylim[1],ylim[2]))
 segments(x0=0 , y0=coverageColorLimits[1]  , x1=sum(chrSize$size) , y1=1.5 , lty=3, col='red', lwd=1)
 segments(x0=0 , y0=1   , x1=sum(chrSize$size) , y1=1 , lty=2, col='black', lwd=1)
 segments(x0=0 , y0=coverageColorLimits[2]  , x1=sum(chrSize$size) , y1=0.5 , lty=3, col='red', lwd=1)
@@ -104,8 +104,8 @@ df$chromosome <- factor(df$chromosome , levels=chrs)
 pdf(paste0(outName,".byChr.pdf")) 
 for (chr in chrs){
   dfChr <- subset(df,chromosome == chr)
-  dfChr$medianCoverage[dfChr$medianCoverage > ylim[2]]=ylim[2]
-  p <- ggplot(dfChr, aes(binMidPoint,medianCoverage)) + geom_point(colour="grey50", size = 2, alpha = 0.1) + coord_cartesian(ylim =c(ylim[1],ylim[2])) + theme(legend.position="none") + xlab("genomic bin position") + ggtitle(paste("chromosome",chr)) + theme_bw() + ylab("genomic bin coverage")
+  dfChr$normalizedMeanCoverage[dfChr$normalizedMeanCoverage > ylim[2]]=ylim[2]
+  p <- ggplot(dfChr, aes(binMidPoint,normalizedMeanCoverage)) + geom_point(colour="grey50", size = 2, alpha = 0.1) + coord_cartesian(ylim =c(ylim[1],ylim[2])) + theme(legend.position="none") + xlab("genomic bin position") + ggtitle(paste("chromosome",chr)) + theme_bw() + ylab("genomic bin coverage")
   p <- p + geom_point(size=1.5,alpha = 0.3,aes(colour=status)) + scale_colour_manual(values = c("background" = "black","amplified" = "orange","depleted" = "blue","lowMAPQ" = "gray"),name="copy number")
   print(p)
 }
@@ -114,8 +114,8 @@ dev.off()
 #plot faceting
 png(paste0(outName,".faceting.png"),height=binOverviewSize[1], width=binOverviewSize[2] ,type='cairo')   
 dfFaceting <- df
-dfFaceting$medianCoverage[dfFaceting$medianCoverage > ylim[2]]=ylim[2]
-p <- ggplot(dfFaceting, aes(binMidPoint,medianCoverage)) + geom_point(colour="grey50", size = 1, alpha = 0.1) + facet_wrap(~ chromosome,nrow=4,scales="free") + coord_cartesian(ylim =c(ylim[1],ylim[2])) + theme_bw() + theme(axis.text.x = element_text(angle = 90, hjust = 1)) + xlab("genomic bin position") + ylab("genomic bin coverage") + scale_x_continuous(labels = function(x) format(x, scientific = FALSE))
+dfFaceting$normalizedMeanCoverage[dfFaceting$normalizedMeanCoverage > ylim[2]]=ylim[2]
+p <- ggplot(dfFaceting, aes(binMidPoint,normalizedMeanCoverage)) + geom_point(colour="grey50", size = 1, alpha = 0.1) + facet_wrap(~ chromosome,nrow=4,scales="free") + coord_cartesian(ylim =c(ylim[1],ylim[2])) + theme_bw() + theme(axis.text.x = element_text(angle = 90, hjust = 1)) + xlab("genomic bin position") + ylab("genomic bin coverage") + scale_x_continuous(labels = function(x) format(x, scientific = FALSE))
 p = p + geom_point(size=0.5,alpha=0.5,aes(colour=status)) + scale_colour_manual(values = c("background" = "black","amplified" = "orange","depleted" = "blue","lowMAPQ" = "gray"),name="copy number")
 print(p)
 dev.off()
