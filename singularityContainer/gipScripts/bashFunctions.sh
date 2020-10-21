@@ -1,6 +1,6 @@
 function bwaMapSample {
-    #The function maps the reads, realign to homogenize the indels and mark duplicates
-    #implementing http://www.htslib.org/workflow/#mapping_to_variant
+    #The function maps the reads and mark duplicates
+    #reads realignment is not needed since it is operated by freebayes by default (which is also a haplotype caller, so less affected by the aliment of individual positions)
     ########
     #INPUTS#
     ########
@@ -31,12 +31,8 @@ function bwaMapSample {
     echo "##PROG sort";
     samtools sort -O bam -o ${O}/${S}.bam -T ${O}/__tmpGio${S}__ ${O}/${S}_fixmate.bam;
     samtools index ${O}/${S}.bam;
-    echo "##PROG RealignerTargetCreator";
-    java -Xmx2g -jar /bin/GenomeAnalysisTK.jar -T RealignerTargetCreator -R $ASSEMBLY -I ${O}/${S}.bam -o ${O}/${S}.intervals;
-    echo "##PROG IndelRealigner";
-    java -Xmx4g -jar /bin/GenomeAnalysisTK.jar -T IndelRealigner -R $ASSEMBLY -I ${O}/${S}.bam -targetIntervals ${O}/${S}.intervals -o ${O}/${S}_realigned.bam;
     echo "##PROG Markduplicated";
-    java -jar /bin/picard.jar MarkDuplicates INPUT=${O}/${S}_realigned.bam OUTPUT=${O}/${S}_realignedMarkDup.bam VALIDATION_STRINGENCY=LENIENT M=${O}/${S}.MarkDup.log TMP_DIR=${O}/${S}_MarkDuplicatesTMPDIR REMOVE_DUPLICATES=${delDup};
+    java -jar /bin/picard.jar MarkDuplicates INPUT=${O}/${S}.bam OUTPUT=${O}/${S}_realignedMarkDup.bam VALIDATION_STRINGENCY=LENIENT M=${O}/${S}.MarkDup.log TMP_DIR=${O}/${S}_MarkDuplicatesTMPDIR REMOVE_DUPLICATES=${delDup};
     rm -rf ${O}/${S}.sam ${O}/${S}_fixmate.bam ${O}/${S}.intervals ${O}/${S}.bam ${O}/${S}.bam.bai ${O}/${S}_realigned.bam ${O}/${S}_realigned.bai ${O}/${S}_MarkDuplicatesTMPDIR;
     mv ${O}/${S}_realignedMarkDup.bam ${O}/${S}.bam;
     samtools index ${O}/${S}.bam    

@@ -8,7 +8,8 @@
 -removed BITFLAG option
 -introduced delDup option
 -chromosomes now accept the "all" option to consider all the chromosomes by default
-- 
+-removed indelRealignment from GATK
+-removed freebayes default options "--hwe-priors-off --binomial-obs-priors-off --allele-balance-priors-off". So we reintroduce the mappability priors. Anyway bayesian priors should be compatible with the aneuploidy or CNV situations. See https://galaxyproject.org/tutorials/var_hap/freebayes.pdf and https://groups.google.com/g/freebayes/c/KSHsQ-D_ems . If low frequency variants disappear completely (as written in some post) the user may disable again the priors re-adding these options to gip.config
 
 
 ###################

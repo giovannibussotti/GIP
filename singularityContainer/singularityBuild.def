@@ -26,7 +26,7 @@ From: ubuntu:xenial
   cd packages
   mv bedtools2/ bwa/ htslib/ samtools/ freebayes/ Python3/ R vcftools/ rmblast/ RepeatMasker snpEff circos/ MUMmer/ cdhit/ miniCRAN/ installRpkgs.R Rpkgs.tsv  /opt/
   mv /opt/gipScripts/snpEff.configTemplate /opt/
-  mv picard.jar GenomeAnalysisTK.jar delly bedGraphToBigWig trf409.linux64 Red /bin/
+  mv picard.jar delly bedGraphToBigWig trf409.linux64 Red /bin/
   cd ..
   rm -rf packages
 
