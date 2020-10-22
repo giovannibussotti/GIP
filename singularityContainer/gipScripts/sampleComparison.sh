@@ -19,6 +19,16 @@ OPTS=${ALLIN/$MODE/}
 #findArgs samples "$OPTS"
 #SAMPLES=${ARGfound[0]}
 
+function printHelp {
+  echo "gitools modules:"
+  echo "karyotype"
+}
+
+if [ -z $MODE ]; then
+  printHelp
+  exit 0
+fi
+
 if [ $MODE == "karyotype" ]; then
     CMD="Rscript /bin/karyotype $OPTS"
     echo executing $CMD
@@ -44,26 +54,28 @@ elif [ $MODE == "ternaryBin" ]; then
     echo executing $CMD
     $CMD
 
- elif [ $MODE == "SNV" ]; then
+elif [ $MODE == "SNV" ]; then
     CMD="Rscript /bin/SNV $OPTS"
     echo executing $CMD
     $CMD
 
- elif [ $MODE == "binDensity" ]; then
+elif [ $MODE == "binDensity" ]; then
     CMD="Rscript /bin/binDensity $OPTS"
     echo executing $CMD
     $CMD
 
- elif [ $MODE == "geInteraction" ]; then
+elif [ $MODE == "geInteraction" ]; then
     CMD="Rscript /bin/geInteraction $OPTS"
     echo executing $CMD
     $CMD
 
- elif [ $MODE == "genomeDistance" ]; then
+elif [ $MODE == "genomeDistance" ]; then
     CMD="Rscript /bin/genomeDistance $OPTS"
     echo executing $CMD
     $CMD
-
+elif [ $MODE == "-h" ] || [ $MODE == "--help" ]; then
+    printHelp
+ 
 else 
   echo "Error. $MODE sample comparison mode not recognized"
 fi
