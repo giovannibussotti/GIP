@@ -5,7 +5,7 @@
 #debug=FALSE
 
 suppressPackageStartupMessages(library("argparse"))
-parser <- ArgumentParser(description="Compares samples genomic distance")
+parser <- ArgumentParser(description="Compare samples genomic distance")
 parser$add_argument("--samples" , nargs="+", required=TRUE, help="Sample names [default %(default)s]" )
 parser$add_argument("--gipOut"  , required=TRUE , help="GIP output directory [default %(default)s]" , default="NA")
 parser$add_argument("--outName" , help="Output name [default %(default)s]" , default="NA")

@@ -55,7 +55,7 @@
 #edgesPvalueFilter=0.1
 
 suppressPackageStartupMessages(library("argparse"))
-parser <- ArgumentParser(description="Detects CNV bin or genes in many samples and looks correlating positions")
+parser <- ArgumentParser(description="Detect CNV genes in many samples and produce correlation-based networks")
 parser$add_argument("--samplesList" , nargs="+", required=TRUE, help="file with a column named \"sample\" listing samples names. Additional TSV columns will be used to annotate output figures. \"field\"_COLOR columns are used to map colors to the additional fields" )
 parser$add_argument("--gipOut"  , required=TRUE , help="GIP output directory" , default="NA")
 parser$add_argument("--outName" , help="Output name [default %(default)s]" , default="NA")
@@ -78,7 +78,7 @@ parser$add_argument("--clMaxSDdist" , type="character"  , help="NETWORK FILTER: 
 parser$add_argument("--clMinSize"   , type="integer" , help="NETWORK FILTER: CNV clusters with less than clMinSize members are removed  [default %(default)s]" , default=2)
 parser$add_argument("--edgesMeanCorFilter" , action="store_true" , help="NETWORK: flag. edges below the mean CNV correlation are removed. [default %(default)s]" , default=FALSE)
 parser$add_argument("--edgesPvalueFilter"  , type="double" , help="NETWORK: edges below this adjusted pvalue threshold (e.g. 0.01) will be filtered.  [default %(default)s]" , default="0.1")
-parser$add_argument("--DEVELOP_ONLY"  , action="store_true" , help="DEVELOPER ONLY OPTION. DO NOT USE [default %(default)s]" , default=FALSE)
+#parser$add_argument("--DEVELOP_ONLY"  , action="store_true" , help="DEVELOPER ONLY OPTION. DO NOT USE [default %(default)s]" , default=FALSE)
 parser$add_argument("--debug"  , action="store_true" , help="dump session and quit [default %(default)s]" , default=FALSE)
 
 args <- parser$parse_args()
@@ -94,7 +94,6 @@ suppressPackageStartupMessages(library("RColorBrewer"))
 suppressPackageStartupMessages(library("data.table"))
 suppressPackageStartupMessages(library("openxlsx"))
 suppressPackageStartupMessages(library("fastcluster"))
-#suppressPackageStartupMessages(library("ape"))
 suppressPackageStartupMessages(library("ggplot2"))
 suppressPackageStartupMessages(library("entropy"))
 suppressPackageStartupMessages(library("reshape2"))
@@ -149,29 +148,29 @@ names(df)[1:3] <- c("chr","start","end")
 
 
 #generate correlating genes for testing purpose only
-if (DEVELOP_ONLY) {
- df$score_m1 <- runif(nrow(df))
- df$score_m3 <- runif(nrow(df)) * 1.5
- df$score_m6 <- runif(nrow(df)) * 2  
- df$score_m8 <- runif(nrow(df)) * 4
-makeCorrelatingGenes <- function(n,mu1,mu2,r,row1 , row2) {
- library(MASS)
- data = mvrnorm(n=n, mu=c(mu1, mu2), Sigma=matrix(c(1, r, r, 1), nrow=2), empirical=TRUE)
- data[data < 0]=0.1
- df[c(row1,row2),scoreCols] = t(data)
-}
-scoreCols <- names(df)[grepl(x=names(df),pattern="score_")]
-makeCorrelatingGenes(n=length(scoreCols) , mu1=3 , mu2=3 , r=0.95 , row1=1, row2=2)
-makeCorrelatingGenes(n=length(scoreCols) , mu1=3 , mu2=3 , r=0.99 , row1=2, row2=3)
-makeCorrelatingGenes(n=length(scoreCols) , mu1=3 , mu2=3 , r=0.9 , row1=3, row2=4)
-makeCorrelatingGenes(n=length(scoreCols) , mu1=3 , mu2=3 , r=0.99 , row1=4, row2=5)
-makeCorrelatingGenes(n=length(scoreCols) , mu1=3 , mu2=3 , r=0.99 , row1=5, row2=10)
-makeCorrelatingGenes(n=length(scoreCols) , mu1=3 , mu2=3 , r=-0.95 , row1=10, row2=100)
-makeCorrelatingGenes(n=length(scoreCols) , mu1=3 , mu2=3 , r=-0.99 , row1=1, row2=101)
-makeCorrelatingGenes(n=length(scoreCols) , mu1=3 , mu2=3 , r=-0.9 , row1=2, row2=102)
-makeCorrelatingGenes(n=length(scoreCols) , mu1=3 , mu2=3 , r=-0.99 , row1=30, row2=50)
-makeCorrelatingGenes(n=length(scoreCols) , mu1=3 , mu2=3 , r=-0.99 , row1=140, row2=142)
-}
+#if (DEVELOP_ONLY) {
+# df$score_m1 <- runif(nrow(df))
+# df$score_m3 <- runif(nrow(df)) * 1.5
+# df$score_m6 <- runif(nrow(df)) * 2  
+# df$score_m8 <- runif(nrow(df)) * 4
+#makeCorrelatingGenes <- function(n,mu1,mu2,r,row1 , row2) {
+# library(MASS)
+# data = mvrnorm(n=n, mu=c(mu1, mu2), Sigma=matrix(c(1, r, r, 1), nrow=2), empirical=TRUE)
+# data[data < 0]=0.1
+# df[c(row1,row2),scoreCols] = t(data)
+#}
+#scoreCols <- names(df)[grepl(x=names(df),pattern="score_")]
+#makeCorrelatingGenes(n=length(scoreCols) , mu1=3 , mu2=3 , r=0.95 , row1=1, row2=2)
+#makeCorrelatingGenes(n=length(scoreCols) , mu1=3 , mu2=3 , r=0.99 , row1=2, row2=3)
+#makeCorrelatingGenes(n=length(scoreCols) , mu1=3 , mu2=3 , r=0.9 , row1=3, row2=4)
+#makeCorrelatingGenes(n=length(scoreCols) , mu1=3 , mu2=3 , r=0.99 , row1=4, row2=5)
+#makeCorrelatingGenes(n=length(scoreCols) , mu1=3 , mu2=3 , r=0.99 , row1=5, row2=10)
+#makeCorrelatingGenes(n=length(scoreCols) , mu1=3 , mu2=3 , r=-0.95 , row1=10, row2=100)
+#makeCorrelatingGenes(n=length(scoreCols) , mu1=3 , mu2=3 , r=-0.99 , row1=1, row2=101)
+#makeCorrelatingGenes(n=length(scoreCols) , mu1=3 , mu2=3 , r=-0.9 , row1=2, row2=102)
+#makeCorrelatingGenes(n=length(scoreCols) , mu1=3 , mu2=3 , r=-0.99 , row1=30, row2=50)
+#makeCorrelatingGenes(n=length(scoreCols) , mu1=3 , mu2=3 , r=-0.99 , row1=140, row2=142)
+#}
 
 
 

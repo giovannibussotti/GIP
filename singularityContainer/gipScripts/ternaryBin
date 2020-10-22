@@ -11,7 +11,7 @@
 #showSubset=100
 
 suppressPackageStartupMessages(library("argparse"))
-parser <- ArgumentParser(description="Compare gene sequencing coverage in 3 samples")
+parser <- ArgumentParser(description="Compare bin sequencing coverage in 3 samples")
 parser$add_argument("--samples" , nargs="+", required=TRUE, help="Sample names. It determines the plotting order [default %(default)s]" )
 parser$add_argument("--gipOut"  , required=TRUE , help="GIP output directory [default %(default)s]" , default="NA")
 parser$add_argument("--outName" , help="Output name [default %(default)s]" , default="NA")
