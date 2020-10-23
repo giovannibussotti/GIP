@@ -25,20 +25,20 @@
 
 
 suppressPackageStartupMessages(library("argparse"))
-parser <- ArgumentParser(description="Compare the chromosome sequencing coverage distributions")
+parser <- ArgumentParser(description="Compare chromosome sequencing coverage distributions")
 parser$add_argument("--samples" , nargs="+", required=TRUE, help="Sample names. It determines the plotting order [required]" )
 parser$add_argument("--gipOut"  , required=TRUE , help="GIP output directory [required]")
 parser$add_argument("--outName" , help="Output name. [default %(default)s]" , default="NA")
-parser$add_argument("--ylim" , nargs="+" , type="double" , help="min and max ylim used in the plot. [default %(default)s]" , default=c(0,10))
-parser$add_argument("--chrs"    , nargs="+" , help="chromosomes to use. If not defined, it considers the chromosomes selected at gip runtime [default %(default)s]" , default="NA")
-parser$add_argument("--makeQqplots" , action="store_true" , help="for all samples combinations, and for each chromosome it computes qQplots [default %(default)s]" , default=FALSE)
-parser$add_argument("--window" , type="integer" , help="split each chr in chunks of this size, then take mean coverage out of each window to compare ditributions [default %(default)s]" , default=2500)
-parser$add_argument("--selectQuantiles" , help="remove bins with coverage <10 and >90 quantiles (requires --window >1) [default %(default)s]" , default="no")
-parser$add_argument("--disomicChr"  , help="normalize by this chromosome [default %(default)s]", default="NA" )
-parser$add_argument("--customColors", help="provide a file with header \"SAMPLE HEX\" as first two columns, specifying the color for each sample [default %(default)s]", default="NA" )
-parser$add_argument("--geom" , help="select boxplot or violin [default %(default)s]" , default="boxplot")
-parser$add_argument("--pooled" , action="store_true" , help="flag. pool together all the samples (i.e. one box per chromosome representing the coverage values of all samples) [default %(default)s]" , default=FALSE)
-parser$add_argument("--debug"  , action="store_true" , help="dump session and quit [default %(default)s]" , default=FALSE)
+parser$add_argument("--window"  , type="integer" , help="Split chromosomes in intervals of --window base pairs [default %(default)s]" , default=2500)
+parser$add_argument("--chrs"    , nargs="+" , help="Chromosomes to use. If \"NA\" use the same chromsomes as GIP [default %(default)s]" , default="NA")
+parser$add_argument("--ylim" , nargs="+" , type="double" , help="Min and max plot y-axis limits [default %(default)s]" , default=c(0,10))
+parser$add_argument("--makeQqplots" , action="store_true" , help="Computes Q-Q plots for all chromosomes in all samples combinations" , default=FALSE)
+parser$add_argument("--selectQuantiles" , help="Remove bins with coverage <10 and >90 quantiles (requires --window >1) [default %(default)s]" , default="no")
+parser$add_argument("--disomicChr"  , help="Normalize by this chromosome [default %(default)s]", default="NA" )
+parser$add_argument("--customColors", help="Tab separated file listing samples names (1st column) and associated colors (2nd column). The first two columns must be named \"SAMPLE\" and \"COLOR\" [default %(default)s]", default="NA" )
+parser$add_argument("--geom" , help="Select boxplot or violin [default %(default)s]" , default="boxplot")
+parser$add_argument("--pooled" , action="store_true" , help="Pool all samples together (i.e. one box per chromosome representing the coverage values of all samples)" , default=FALSE)
+parser$add_argument("--debug"  , action="store_true" , help="Dump session and quit" , default=FALSE)
 args <- parser$parse_args()
 #patch NA
 for (n in names(args)){if(args[[n]][1] == "NA"){args[[n]] <- NA}  }
@@ -143,8 +143,9 @@ qqplots <- function (contrasts){
       a <- subset(allSamples[[x[1]]], allSamples[[x[1]]]$chromosome == chr)$score
       b <- subset(allSamples[[x[2]]], allSamples[[x[2]]]$chromosome == chr)$score        
       #qqplot
-      system(paste("mkdir -p qqplots_",outName,sep=""))
-      pdf(paste("qqplots_",outName,"/",x[1],"_VS_",x[2],"_chr",chr,".pdf",sep=""))
+      qqDir=paste0(outName,"_qqplots")
+      system(paste0("mkdir -p ",qqDir))
+      pdf(paste0(qqDir,"/",x[1],"_VS_",x[2],"_chr",chr,".pdf"))
       q <- qqplot(a,b,xlab=paste("quantiles",x[1]),ylab=paste("quantiles",x[2]),main=paste("qqplot chr",chr))
       abline(1,1)
       fit <- lm(q$y ~ q$x)
@@ -238,8 +239,8 @@ AllSamplesDf$chromosome <- factor(AllSamplesDf$chromosome , levels=chrs)
 
 #customColors
 if(! is.na(customColors)){
-  customColDf  <- read.table(customColors,header=T,stringsAsFactors=F)
-  customColVec <- customColDf$HEX
+  customColDf  <- read.table(customColors,header=T,stringsAsFactors=F,sep="\t")
+  customColVec <- customColDf$COLOR
   names(customColVec) <- customColDf$SAMPLE
   customColVec <- gsub(x=customColVec,pattern="^",replacement="\\#")
 }
