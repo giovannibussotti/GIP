@@ -17,6 +17,7 @@ GIP requires the following mandatory input parameters:
 | \-c            | nextflow configuration file       |
 +----------------+-----------------------------------+
 
+| The input **genome** file can be a normal text file or gzip compressed file. The chromosome identifiers can contain white spaces and extra information other than the chromosome identifier itself (e.g. supercontig identifier). However GIP will consider as chromosome identifier just the characters string before the first white space. The user must ensure that the chromosome identifiers are the same between the **genome** and the **annotation** files, considering that GIP does not consider any characters coming after the first white space (if any).
 | All additional GIP parameters can be passed with the command line execution, or set in the **gip.config** configuration file.
 | The configuration file hosts the defalt values of all parameters under the ``params{}`` scope. 
 | The ``process{}`` scope can be used to customize the configuration of all GIP processes, including the allocation of memory or CPUs.

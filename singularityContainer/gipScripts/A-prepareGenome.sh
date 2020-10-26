@@ -34,9 +34,9 @@ done
 #zipped input fasta are also accepted#
 referencedFA=`readlink -f $FA`
 if file $referencedFA | grep -q compressed  ; then
-    gunzip -c $FA | perl -ne 'if($_=~/^>(.*)/){$c=$1; $c=~s/ /_/g; print ">$c\n";}else{print uc($_);} ' > ${OUT}   
+    gunzip -c $FA | perl -ne 'if($_=~/^>(\S+)/){$c=$1; print ">$c\n";}else{print uc($_);} ' > ${OUT}   
 else
-    cat $FA | perl -ne 'if($_=~/^>(.*)/){$c=$1; $c=~s/ /_/g; print ">$c\n";}else{print uc($_);} ' > ${OUT}
+    cat $FA | perl -ne 'if($_=~/^>(\S+)/){$c=$1;  print ">$c\n";}else{print uc($_);} ' > ${OUT}
 fi
 
 #REPEATS

@@ -40,7 +40,7 @@ The output is stored in the **gipOut/genome** directory and includes:
 
 | If ``--geneFunction`` is not specified by default the **geneFunction.tsv** file reports the gene list with not available (NA) functions.
 | The **genome.dict** and the **genome.fa.fai** are generated respectivelly with *picard CreateSequenceDictionary* and *samtools faidx* and are required by downstream analysis tools (e.g. GATK or IGV). 
-| The **genome.fa** file is a copy of the input ``--genome`` file where the chromosome identifiers containing white spaces are changed into underscores, and the repetitive positions have been lowercased.
+| The **genome.fa** file is a copy of the input ``--genome`` file where the repetitive positions have been lowercased.
 | The **repeats/** directory stores the coordinates of the repetitive elements in a .gff formatted file.
 | By default repetitive elements are detected with Red.
 | Red features include:
