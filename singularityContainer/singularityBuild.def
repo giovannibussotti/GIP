@@ -31,7 +31,6 @@ From: ubuntu:xenial
   rm -rf packages
 
   #dirs to mount with singularity -B to for data access in the container 
-  mkdir /pasteur
   mkdir /fq
   mkdir /genome
   mkdir /annotation
