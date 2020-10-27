@@ -376,7 +376,7 @@ function covPerBin {
   local chrCoverageMedians=$4
   local TMP=$5
 
-  mkdir -p $TMP
+  mkdir -p $TMP/_sort1 $TMP/_sort2 $TMP/_sort3
   OUT=${BAM/%.bam/.covPerBin}
   BED=${BAM/%.bam/.bed} 
   bedtools bamtobed -split -i $BAM | sort -k1,1 -k2,2n -T $TMP/_sort1 > $BED
@@ -494,7 +494,7 @@ function covPerGe {
   local TMP=$5
   local OUT=$6
 
-  mkdir -p $TMP
+  mkdir -p $TMP/_sort1 $TMP/_sort2
   cat $GENES | perl -ne '
   if($_=~/gene_id \"([^\"]+)\"/){
   	$ge=$1;

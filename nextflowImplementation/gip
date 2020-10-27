@@ -22,7 +22,7 @@ def helpMessage() {
     
     Usage:
     The typical command for running the pipeline is as follows:
-    nextflow gip --genome genome.fa --annotation annotations.gtf --index index.tsv -c gip.config
+    gip --genome genome.fa --annotation annotations.gtf --index index.tsv -c gip.config
     
     Mandatory arguments:
       --genome                        multi-FASTA genome reference file
@@ -94,7 +94,7 @@ repeatLibrary        = file(params.repeatLibrary)
 Channel
     .fromPath(params.index)
     .splitCsv(header:true , sep:'\t')
-    .map{ row-> tuple(row.sampleId, row.read1, row.read2) }
+    .map{ row-> tuple(row.sampleId, file(row.read1), file(row.read2)) }
     .set { ch1  }
 
 //config file variables
@@ -183,7 +183,7 @@ process map {
   tag { "${sampleId}" }
  
   input:
-  set sampleId , read1 , read2 from ch1
+  tuple val(sampleId) , file(read1) , file(read2) from ch1
   set file(fa) , file(fai) , file(dict) , file(size) from genome_ch1  
   file(db) from bwaDb_ch1
 
@@ -601,4 +601,3 @@ process report {
   """
 }
 */
-
