@@ -35,6 +35,7 @@ def helpMessage() {
       --geneFunction                  gene function annotation file
       --MAPQ                          read MAPQ cut-off  
       --delDup                        delete duplicate reads [true|false]
+      --CGcorrect                     CG-content correction [true|false]
       --customCoverageLimits          Two numbers: N1, N2. Significant CNV genes or bins must also have a coverage > N1 or < N2
       --repeatLibrary                 RepeatMasker library (FASTA file)
     Karyotype Options:
@@ -98,11 +99,12 @@ Channel
     .set { ch1  }
 
 //config file variables
-resultDir  = file(params.resultDir + "/samples")
+resultDir = file(params.resultDir + "/samples")
 resultDir.with{mkdirs()}
-MAPQ    = params.MAPQ
-delDup  = params.delDup
-chrs    = params.chrs
+MAPQ      = params.MAPQ
+delDup    = params.delDup
+CGcorrect = params.CGcorrect
+chrs      = params.chrs
 chrPlotYlim  = params.chrPlotYlim
 binPlotYlim  = params.binPlotYlim
 binOverviewSize = params.binOverviewSize
@@ -274,17 +276,17 @@ process covPerBin {
   set val(sampleId), file ("${sampleId}.covPerBin.gz"), file ("${sampleId}.covPerBin.plot.all.png") , file ("${sampleId}.covPerBin.plot.byChr.pdf") , file ("${sampleId}.covPerBin.plot.tsv.gz") , file ("${sampleId}.covPerBin.plot.faceting.png") , file("${sampleId}.covPerBin.significant.bins.tsv.gz") , file("${sampleId}.covPerBin.significant.segments.tsv.gz") , file("${sampleId}.covPerBin.significant.stats") into (covPerBin)
   set val(sampleId), file(bam) , file(bai) , file(covPerChr) , file ("${sampleId}.covPerBin.gz") , file ("${sampleId}.bed") into (covPerBin4covPerGe , covPerBin4delly) 
 
-  //file ("${SAMPLE.ID}.gcLnorm.covPerBin.pdf") 
-
   """  
   covPerBin $bam $binSize $size $covPerChr _tmp
  
   #CG-content correction
-  gunzip -c ${sampleId}.covPerBin.gz | tail -n +2 | cut -f 1,2,3 > bin.bed
-  bedtools nuc -fi $fa -bed bin.bed > bin.nuc
-  Rscript /bin/covPerBin2loessGCnormalization_v2.R --ASSEMBLY $fa --DIR . --SAMPLE ${sampleId} --outName ${sampleId} --nuc bin.nuc --sampling 20000 
-  mv ${sampleId}.gcLnorm.covPerBin.gz ${sampleId}.covPerBin.gz
-  rm -rf bin.bed bin.nuc
+  if [ $CGcorrect == "true" ]; then
+    gunzip -c ${sampleId}.covPerBin.gz | tail -n +2 | cut -f 1,2,3 > bin.bed
+    bedtools nuc -fi $fa -bed bin.bed > bin.nuc
+    Rscript /bin/covPerBin2loessGCnormalization_v2.R --ASSEMBLY $fa --DIR . --SAMPLE ${sampleId} --outName ${sampleId} --nuc bin.nuc --sampling 20000 
+    mv ${sampleId}.gcLnorm.covPerBin.gz ${sampleId}.covPerBin.gz
+    rm -rf bin.bed bin.nuc
+  fi
 
   Rscript /bin/sigPeaks_CLT.R --input ${sampleId}.covPerBin.gz --outName ${sampleId}.covPerBin.significant --minMAPQ $MAPQ --coverageThresholds $customCoverageLimits  $covPerBinSigOPT
 
@@ -313,10 +315,13 @@ process covPerGe {
   covPerGe $bam $annotation $covPerChr $bed _tmp ${sampleId}.covPerGe
 
   #CG-content correction
-  gunzip -c ${sampleId}.covPerGe.gz | tail -n +2 | cut -f 2 | perl -ne 'if(\$_=~/^(.+):(\\d+)-(\\d+)\$/){print \"\$1\\t\$2\\t\$3\\n\"}' > ge.bed
-  bedtools nuc -fi $fa -bed ge.bed > ge.nuc  
-  Rscript /bin/covPerGe2loessGCnormalization_v2.R --ASSEMBLY $fa --DIR . --SAMPLE ${sampleId} --outName ${sampleId}
-  mv ${sampleId}.gcLnorm.covPerGe.gz ${sampleId}.covPerGe.gz
+  if [ $CGcorrect == "true" ]; then
+    gunzip -c ${sampleId}.covPerGe.gz | tail -n +2 | cut -f 2 | perl -ne 'if(\$_=~/^(.+):(\\d+)-(\\d+)\$/){print \"\$1\\t\$2\\t\$3\\n\"}' > ge.bed
+    bedtools nuc -fi $fa -bed ge.bed > ge.nuc  
+    Rscript /bin/covPerGe2loessGCnormalization_v2.R --ASSEMBLY $fa --DIR . --SAMPLE ${sampleId} --outName ${sampleId} --sampling 20000 --nuc ge.nuc
+    mv ${sampleId}.gcLnorm.covPerGe.gz ${sampleId}.covPerGe.gz
+    rm -rf ge.bed ge.nuc
+  fi
 
   Rscript /bin/sigPeaks_mixture.R --input ${sampleId}.covPerGe.gz --outName ${sampleId}.covPerGe.significant --minMAPQ $MAPQ --coverageThresholds $customCoverageLimits $covPerGeSigOPT
 

@@ -26,16 +26,16 @@ df$chromosome <- as.character(df$chromosome)
 df$CorGfreq   <- read.table(nuc , header=F , stringsAsFactors=F , sep="\t")[,5]
 
 
-#############################################
-#loess fitting then mean coverage correction#
-#############################################
+########################################################
+#loess fitting then normalized mean coverage correction#
+########################################################
 set.seed(1)
 cc <- df[complete.cases(df), ]
 if(sampling == 0){
         sampling = nrow(cc)
 }
 samp1 <- cc[sample(nrow(cc), sampling ,replace=F), ]
-l <- loess.wrapper(samp1$CorGfreq , samp1$meanCoverage , span.vals = seq(0.2,1,by=0.1) , folds=5)
+l <- loess.wrapper(samp1$CorGfreq , samp1$normalizedMeanCoverage , span.vals = seq(0.2,1,by=0.1) , folds=5)
 
 
 #On the normalizedMeanCoverage 
@@ -59,8 +59,8 @@ plotSmooth <- function (cc,N,mc,Y) {
   #bandwidth has the same unit as data
   #so if the range is 1-100 bandwidth 2 will smooth over 2%-wide regions
   #the code below measures the range in each dimension and take the 2%
-  bwx <- ((max(cc$CorGfreq) - min(cc$CorGfreq)) /100) *2
-  bwy <- ((max(cc[[Y]]) - min(cc[[Y]])) /100) *2
+  bwx <- ((max(cc$CorGfreq) - min(cc$CorGfreq)) /100) * 2
+  bwy <- ((max(cc[[Y]]) - min(cc[[Y]])) /100) * 2
   smoothScatter(cc$CorGfreq , cc[[Y]], ylim=c(-3,ylim) , xlim=c(0.2 , 0.8) , xlab="%GC",ylab="coverage",main=N, bandwidth=c(bwx,bwy))
   legend("topleft", c( paste("R=", round(cor(x=cc[[Y]] , y=cc$CorGfreq),2)) , "linear model" , "loess" ) , lty=c(0,2,1), col=c("","black","red") , bty="n" )
   f <- paste(Y , "~ CorGfreq")
