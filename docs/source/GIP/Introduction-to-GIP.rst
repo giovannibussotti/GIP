@@ -33,9 +33,9 @@ GIP can be used to explore the genome instability of biological systems exploiti
 GIP analyses overview
 ---------------------
 
-* prepare the genome 
+* Prepare the genome 
 
-* map the reads
+* Map the reads
 
 * Evaluate chromosome copy number
 
@@ -47,7 +47,7 @@ GIP analyses overview
 
 * Identify SNVs and structural variants
 
-* Generate report file providing summary statistics, tables in exel, figures
+* Generate a report file providing summary statistics, tables in exel, figures
 
 
 

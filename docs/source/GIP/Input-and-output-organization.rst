@@ -40,11 +40,30 @@ GIP requires the following mandatory input parameters:
 
 | The parameter ``runOptions`` parameter can be used to specify bind points with the --bind (or -B) option and the following syntax:
 | *'-B host_directory:container_binding_point'*.
+| If the container binding point is omitted, this will be considered the same as the host directory. 
 | Then the user must have the caution to specify all the input parameters not relative to the host system, but relative to where the data is visible in the container. 
 | For instance, the user can mount the host folder containing the genome file (e.g. /home/user/data/assemblies/reference.fa) to the /genome container folder by specifying ``runOtions='-B /home/user/data/assemblies:/genome'`` in the configuration file.
 | Then, when executing GIP, the user can simply pass the input genome command line with ``--genome /genome/reference.fa``.
-| Multiple host directories can be mounted with additional -B directives. For instance, to mount also the directory containing the sequencing data:
-| ``runOtions='-B /home/user/data/assemblies:/genome -B /home/user/sequencingData:/fq'``  
+| Multiple host directories can be mounted with additional -B directives. For instance, to mount also the working directory (e.g. /home/projects) and the directory containing the sequencing data:
+
+.. code-block:: guess
+
+  singularity {
+    enabled    = true
+    runOptions = '-B /home/projects -B /home/user/data/assemblies:/genome -B /home/user/sequencingData:/fq'
+  }
+  
+| Alternatively, an convenient alternatie is to set ``autoMounts=true`` and bind just a top-level folder of all data folders
+
+.. code-block:: guess
+
+  singularity {
+    enabled    = true
+    autoMounts = true
+    runOptions = '--bind /pasteur'
+  }
+
+| By doing that the file paths inside the container and in the host will be identical, and the user can provide all the input files with the normal host paths.   
 | Please refer to the `Nextflow documentation <https://www.nextflow.io/docs/latest/config.html>_` for the pipeline configuration file to discover all available options.
 
  

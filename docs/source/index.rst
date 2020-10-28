@@ -27,7 +27,7 @@ GIP also enables **giptools**, a tool-suite allowing to  **detect**, **compare**
 Look how easy it is to use.
 Run GIP on a large set of input WGS experiments (e.g. 200 samples)
 
-  ``gip --genome /data/fasta.file --annotation /data/gtf.file --index input.tsv -c gip.config``
+  ``gip --genome fasta.file --annotation gtf.file --index fastqs.tsv -c gip.config``
 
   
 Compare gene CNVs in 3 specific isolates
