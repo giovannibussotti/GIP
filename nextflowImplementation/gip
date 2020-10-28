@@ -255,6 +255,8 @@ process covPerNt {
   covPerNt $bam $size ${sampleId}.covPerNt MEDIAN 0 
   gzip -f ${sampleId}.covPerNt
   pcMapqPerNt $bam $MAPQ ${sampleId}.pcMapqPerNt
+  mkdir -p _tmp
+  TMPDIR=./_tmp
   Rscript /bin/plotGenomeCoverage_V3.R --files ${sampleId}.covPerNt.gz --NAMES ${sampleId} --DIR . --outName ${sampleId}.covPerNt --pcMapqFiles ${sampleId}.pcMapqPerNt.gz --chr $chromosomes --ylim $chrPlotYlim
   """
 }
