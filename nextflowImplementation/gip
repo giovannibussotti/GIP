@@ -278,9 +278,13 @@ process covPerBin {
 
   """  
   covPerBin $bam $binSize $size $covPerChr _tmp
-
-  Rscript /bin/covPerBin2loessGCnormalization_v2.R --ASSEMBLY $fa --DIR . --SAMPLE ${sampleId} --outName ${sampleId} 
+ 
+  #CG-content correction
+  gunzip -c ${sampleId}.covPerBin.gz | tail -n +2 | cut -f 1,2,3 > bin.bed
+  bedtools nuc -fi genome.fa -bed bin.bed > bin.nuc
+  Rscript /bin/covPerBin2loessGCnormalization_v2.R --ASSEMBLY $fa --DIR . --SAMPLE ${sampleId} --outName ${sampleId} --nuc bin.nuc --sampling 20000 
   mv ${sampleId}.gcLnorm.covPerBin.gz ${sampleId}.covPerBin.gz
+  rm -rf bin.bed bin.nuc
 
   Rscript /bin/sigPeaks_CLT.R --input ${sampleId}.covPerBin.gz --outName ${sampleId}.covPerBin.significant --minMAPQ $MAPQ --coverageThresholds $customCoverageLimits  $covPerBinSigOPT
 
