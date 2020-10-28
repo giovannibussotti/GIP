@@ -16,7 +16,6 @@ for (n in names(args)){if(args[[n]][1] == "NA"){args[[n]] <- NA}  }
 for (n in names(args)){assign(n,args[[n]]) }
 if(debug){library(session);save.session("session_DEBUG");quit()}
 
-#library(Biostrings)
 library(bisoreg)
 
 ##############################################
