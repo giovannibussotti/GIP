@@ -281,7 +281,7 @@ process covPerBin {
  
   #CG-content correction
   gunzip -c ${sampleId}.covPerBin.gz | tail -n +2 | cut -f 1,2,3 > bin.bed
-  bedtools nuc -fi genome.fa -bed bin.bed > bin.nuc
+  bedtools nuc -fi $fa -bed bin.bed > bin.nuc
   Rscript /bin/covPerBin2loessGCnormalization_v2.R --ASSEMBLY $fa --DIR . --SAMPLE ${sampleId} --outName ${sampleId} --nuc bin.nuc --sampling 20000 
   mv ${sampleId}.gcLnorm.covPerBin.gz ${sampleId}.covPerBin.gz
   rm -rf bin.bed bin.nuc
@@ -312,6 +312,9 @@ process covPerGe {
   """ 
   covPerGe $bam $annotation $covPerChr $bed _tmp ${sampleId}.covPerGe
 
+  #CG-content correction
+  gunzip -c ${sampleId}.covPerGe.gz | tail -n +2 | cut -f 2 | perl -ne 'if(\$_=~/^(.+):(\\d+)-(\\d+)\$/){print \"\$1\\t\$2\\t\$3\\n\"}' > ge.bed
+  bedtools nuc -fi $fa -bed ge.bed > ge.nuc  
   Rscript /bin/covPerGe2loessGCnormalization_v2.R --ASSEMBLY $fa --DIR . --SAMPLE ${sampleId} --outName ${sampleId}
   mv ${sampleId}.gcLnorm.covPerGe.gz ${sampleId}.covPerGe.gz
 
