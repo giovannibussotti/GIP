@@ -54,30 +54,17 @@ lAfterCorrection = loess(samp2$loessNorm ~ samp2$CorGfreq)
 #for each bin extract the loess (second model, the one done with corrected bins) y value
 df$lPredictAfterCorrection <- predict(lAfterCorrection, df$CorGfreq)
 
-
-
 ###################################################
 #plot cov VS %GC before and after loess correction#
 ###################################################
+library(ggplot2)
+#negative predictions are not shown
+cc <- df[complete.cases(df) & df$lPredict > 0 & df$lPredictAfterCorrection > 0 & df$loessNorm > 0 & df$normalizedMeanCoverage > 0 ,]
+p <- ggplot(data=cc) + geom_smooth(aes(x=CorGfreq, y=normalizedMeanCoverage), method = "lm", se = TRUE, color="black",linetype="dotdash",size=0.7) + geom_point(aes(x=CorGfreq, y=normalizedMeanCoverage))  + geom_line(aes(x=CorGfreq, y= lPredict),color="red") + scale_y_log10() + theme_bw() + ylab("log10 normalized mean coverage") + xlab("%CG") + ggtitle ("before correction") 
+p1 <- ggplot(data=cc) + geom_smooth(aes(x=CorGfreq, y=loessNorm), method = "lm", se = TRUE,color="black",linetype="dotdash",size=0.7) + geom_point(aes(x=CorGfreq, y=loessNorm))  + geom_line(aes(x=CorGfreq, y= lPredictAfterCorrection),color="blue") + scale_y_log10() + theme_bw() + ylab("log10 normalized mean coverage") + xlab("%CG") + ggtitle ("after correction") 
 pdf(paste0(outName,".gcLnorm.covPerBin.pdf"))
-plotSmooth <- function (cc,N,mc,Y) {
-  #bandwidth has the same unit as data
-  #so if the range is 1-100 bandwidth 2 will smooth over 2%-wide regions
-  #the code below measures the range in each dimension and take the 2%
-  bwx <- ((max(cc$CorGfreq) - min(cc$CorGfreq)) /100) * 2
-  bwy <- ((max(cc[[Y]]) - min(cc[[Y]])) /100) * 2
-  smoothScatter(cc$CorGfreq , cc[[Y]], ylim=c(-3,ylim) , xlim=c(0.2 , 0.8) , xlab="%GC",ylab="coverage",main=N, bandwidth=c(bwx,bwy))
-  legend("topleft", c( paste("R=", round(cor(x=cc[[Y]] , y=cc$CorGfreq),2)) , "linear model" , "loess" ) , lty=c(0,2,1), col=c("","black","red") , bty="n" )
-  f <- paste(Y , "~ CorGfreq")
-  l <- lm(f , data=cc)
-  abline(l,lty=2,col="black",lwd=2)
-  grid()
-  lines(cc$CorGfreq[order(cc$CorGfreq)], mc[order(cc$CorGfreq)],col="red")
-}
-par(mfrow=c(1,2))
-cc <- df[complete.cases(df), ]
-plotSmooth(cc,"normalizedMeanCoverage before loess correction",cc$lPredict               ,"normalizedMeanCoverage")
-plotSmooth(cc,"normalizedMeanCoverage after loess correction" ,cc$lPredictAfterCorrection,"loessNorm")
+print(p)
+print(p1)
 dev.off()
 
 ###################################################
