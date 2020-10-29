@@ -1,0 +1,33 @@
+#!/bin/bash
+ALLIN=$*
+IFS=' ' read -r -a IN <<< "$ALLIN"
+MODE=${IN[0]}
+OPTS=${ALLIN/$MODE/}
+#GIPOUT=${IN[1]}
+#OPTS=${ALLIN/$MODE[[:space:]]*$GIPOUT/}
+
+
+#function findArgs {
+#find the content of a parameter
+#returns the ARGfound array where ${ARGfound[0]} contains the parameter, and ${ARGfound[1]} the rest od the command line
+#  local ARG=$1
+#  local OPTS=$2
+#  local res=`echo $OPTS | perl -ne '$arg='$ARG'; chomp $_; if($_=~/--$arg\s+([^-]+)/){print "$1";}else{die "ERROR sampleComparison findArgs. $arg not found";}'`
+#  local rest=${OPTS/--$ARG[[:space:]]*$res}
+#  ARGfound=("$res" "$rest")
+#}
+#findArgs samples "$OPTS"
+#SAMPLES=${ARGfound[0]}
+
+if [ $MODE == "karyotype" ]; then
+    CMD="Rscript /bin/karyotype $OPTS"
+    echo executing $CMD
+    $CMD
+
+elif [ $MODE == "gCNV_3" ]; then
+  echo execute the right script passing the options in OPTS
+
+else 
+  echo "Error. $MODE sample comparison mode not recognized"
+fi
+

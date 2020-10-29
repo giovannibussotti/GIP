@@ -1,5 +1,5 @@
-#First generate genome coverage files (.covPerBin) 
-#Then given a list of gzipped .covPerBin files (--file), convert the bin scores to somy scores which will be used for the boxplots and statistics
+#First generate genome coverage files (.covPerNt) where the sequencing depth of each nucleotide is normalised by the median genomic coverage
+#Then given a list of gzipped .covPerNt files (--file), this script downsample the covPerNt scores (e.g. by binning), then convert the bin scores to somy scores which will be used for the boxplots and statistics
 
 #The somy score is defined as the downsampled score (e.g. bin score) divided by the median downsampled score of a chromosome deemed to be disomic and multiplied by 2
 #If no disomic chromosome is deemed, the somy score is just the downsampled score multiplied by 2
@@ -17,14 +17,19 @@
 
 #To compare coverage distribution shapes the script generates qqplots, comparing the quantiles of the two downsampled distributions. If the dots (quantiles) are on the diagonal, then they distributions have the same shape.
 
+#use --pcMapqFiles to remove the bases where the percent of mapping reads with good MAPQ is < 50%
+
+
 #WARNING: since the coverage vectors of a chromosome in two conditions have the same length, in fact the qqplots is equivalent to sort the two vectors and plot one against the other. So the coordinates x,y of the points are the coverage score in the two conditions (you have as many quantiles as nucleotides, not a fixed quantile interval, like the 25%)
+#WARNING: Converting covPerNt scores to somy scores first, and then downsample (e.g. binning) would results in slightly differet results (medians not exactly centered on 2)
+
 
 suppressPackageStartupMessages(library("argparse"))
 parser <- ArgumentParser(description="Compare chromosome sequencing coverage distributions")
 parser$add_argument("--samples" , nargs="+", required=TRUE, help="Sample names. It determines the plotting order [required]" )
 parser$add_argument("--gipOut"  , required=TRUE , help="GIP output directory [required]")
 parser$add_argument("--outName" , help="Output name. [default %(default)s]" , default="NA")
-parser$add_argument("--MAPQ" , type="integer" , help="bin MAPQ filter [default %(default)s]" , default=0)
+parser$add_argument("--window"  , type="integer" , help="Split chromosomes in intervals of --window base pairs [default %(default)s]" , default=2500)
 parser$add_argument("--chrs"    , nargs="+" , help="Chromosomes to use. If \"NA\" use the same chromsomes as GIP [default %(default)s]" , default="NA")
 parser$add_argument("--ylim" , nargs="+" , type="double" , help="Min and max plot y-axis limits [default %(default)s]" , default=c(0,10))
 parser$add_argument("--makeQqplots" , action="store_true" , help="Computes Q-Q plots for all chromosomes in all samples combinations" , default=FALSE)
@@ -150,6 +155,32 @@ qqplots <- function (contrasts){
     }
   }
 }
+removeLowMAPQ <- function (df,n) {
+    fName <- paste0(gipOut,"/samples/",n,"/",n,".pcMapqPerNt.gz")
+    dfMQ  <- data.frame(fread(paste("gunzip -c", fName),colClasses=list(character=1)) ,stringsAsFactors=F )
+    names(dfMQ) <- c("chromosome","position","pcMapq") 
+    dfMQ$tag <- paste0(dfMQ$chromosome,"_",dfMQ$position)
+    df$tag <- paste0(df$chromosome,"_",df$position)
+    df$pcMapq <- dfMQ[match(df$tag,dfMQ$tag),"pcMapq"]
+    df <- df[df$pcMapq > 50, c("chromosome","position","score")]
+    return(df)
+}
+compressCovPerNt <- function (df) {
+    outDf <- NULL
+    for (chr in chrs) {
+        tmpChr <- subset(df, df$chromosome == chr)
+        a <- c()
+        if (window > 1){
+            #binning
+            a <- sapply(split(tmpChr$score, ceiling(seq_along(tmpChr$score)/window)),mean)
+            if (selectQuantiles == "yes"){
+                a <- subset(a , ((a > quantile(a,0.1)) & (a < quantile(a,0.9))) )
+            }
+        }
+        outDf <- rbind(outDf,data.frame(chromosome=chr,position=1:length(a),score=a))
+    }
+    return(outDf)
+}
 
 #libraries
 suppressPackageStartupMessages(library("data.table"))
@@ -180,19 +211,18 @@ if (!is.na(disomicChr) & ! (disomicChr %in% chrs)) {
     quit(save = "no", status = 1, runLast = FALSE)  
 }
 
-#read .covPerBin files in a list
+#read .covPerNt files in a list
 allSamples <- list()
 for (i in 1:length(samples)){
     n = samples[i]
-    fName = paste0(gipOut,"/samples/",n,"/",n,".covPerBin.gz")
-    allSamples[[n]]    <- fread(cmd=paste("gunzip -c", fName),colClasses=list(character=1))
-    medFile = paste0(gipOut,"/samples/",n,"/",n,".karyotype.medianCoverage")
-    medianCoverageOfAllBins <- read.table(medFile)$V1
-    allSamples[[n]] <- allSamples[[n]][ allSamples[[n]]$MAPQ >= MAPQ , ]
-    allSamples[[n]][,c("end","normalizedMeanCoverage","MAPQ")] <- list(NULL)
+    fName = paste0(gipOut,"/samples/",n,"/",n,".covPerNt.gz")
+    allSamples[[n]]    <- fread(paste("gunzip -c", fName),colClasses=list(character=1))
     names(allSamples[[n]]) <- c("chromosome","position","score") 
-    allSamples[[n]]$score <- allSamples[[n]]$score / medianCoverageOfAllBins
     allSamples[[n]] <- allSamples[[n]][allSamples[[n]]$chromosome %in% chrs,] 
+    #remove lo MAPQ
+    allSamples[[n]] <- removeLowMAPQ(data.frame(allSamples[[n]] , stringsAsFactors=F),n)
+    #compress
+    allSamples[[n]]        <- compressCovPerNt(allSamples[[n]])
     allSamples[[n]]$sample <- n
     #convert score to somy score
     if(!is.na(disomicChr)){

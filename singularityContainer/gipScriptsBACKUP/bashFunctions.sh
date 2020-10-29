@@ -37,6 +37,84 @@ function bwaMapSample {
     mv ${O}/${S}_realignedMarkDup.bam ${O}/${S}.bam;
     samtools index ${O}/${S}.bam    
 }
+function pcMapqPerNt {
+#OUTPUT:
+    #for each base, compute the percent of reads with MAPQ >= of the specified value
+#INPUT:
+    #BAM=bam file
+    #MAPQ=desired MAPQ threshold
+    #OUT=outName
+    local BAM=$1
+    local MAPQ=$2
+    local OUT=$3
+    samtools view -q $MAPQ -o ${OUT}_tmpMapqPerNtFiltered.bam $BAM
+    samtools depth ${OUT}_tmpMapqPerNtFiltered.bam $BAM -aa | awk '{if($4 == 0){r=0}else{r=($3/$4)*100} printf $1 "\t" $2 "\t" ; printf"%.0f\n",r  }'> ${OUT}
+    gzip $OUT
+    rm -rf ${OUT}_tmpMapqPerNtFiltered.bam
+}
+function mapqPerNt {
+    #compute mean read MAPQ mapping score for each base
+    #very slow. Consider using pcMapqPerNt
+    #######
+    #INPUT#
+    #######
+    #BAM: bam file
+    #CHRSIZE: chromosome sizes file
+    #OUT: output file name (including directory path)
+    ########
+    #OUTPUT#
+    ########
+    #.covPerNt file
+    local BAM=$1
+    local CHRSIZE=$2
+    local OUT=$3
+    rm -rf $OUT
+    cat $CHRSIZE | while IFS='' read -r line || [[ -n "$line" ]]; do
+        local CHR=`echo $line |awk '{print $1}'`
+        local SIZE=$(echo $line |awk '{print $2}')
+	for ((pos=1;pos<=$SIZE;pos++)); do 
+		samtools view $BAM ${CHR}:${pos}-$pos | awk '{sum+=$5} END {if(sum > 0){avg = sprintf("%.0f" , sum/NR); print '$CHR' "\t" '$pos' "\t" avg  }else{print 0}}' >> $OUT
+    	done
+    done
+    gzip $OUT
+}
+
+function covPerNt {
+    #very very similar to computCov function, but better written
+    #this function runs bedtools genomecov and normalizes (option) each nucleotide coverage by the median genomic coverage
+    #######
+    #INPUT#
+    #######
+    #BAM: bam file
+    #CHRSIZE: chromosome sizes file
+    #OUT: output file name (including directory path)
+    #MODE: normalization strategy ["MEDIAN"|"NOTNORMALIZED"]
+    #MAPQ: min read MAPQ
+    ########
+    #OUTPUT#
+    ########
+    #.covPerNt file
+    #.medianGenomeCoverage file
+    local BAM=$1
+    local CHRSIZE=$2
+    local OUT=$3
+    local MODE=$4
+    local MAPQ=$5
+    samtools view -b -q $MAPQ $BAM | bedtools genomecov -ibam stdin -g $CHRSIZE -d -split > ${OUT}_notNormalized_
+    if [ $MODE == "MEDIAN" ]; then
+        #the normalization by median coverage works very well. Unless there is an aneuploidy, the expected value is 1 for each nucleotide.
+        mkdir -p ${OUT}_notNormalized_TMPsortDir
+	local MEDIANCOV=`cut -f3 ${OUT}_notNormalized_ | sort -n -T ${OUT}_notNormalized_TMPsortDir |  awk ' { a[i++]=$1; } END { x=int((i+1)/2); if (x < (i+1)/2) print (a[x-1]+a[x])/2; else print a[x-1]; }'`
+        awk '{printf $1 "\t" $2 "\t"; printf "%.2f\n",$3/'$MEDIANCOV' }' ${OUT}_notNormalized_ > $OUT
+	rm -rf ${OUT}_notNormalized_  ${OUT}_notNormalized_TMPsortDir
+        echo $MEDIANCOV > ${OUT}.medianGenomeCoverage
+    elif [ $MODE == "NOTNORMALIZED" ]; then
+        mv ${OUT}_notNormalized_ $OUT
+    else
+        rm ${OUT}_notNormalized_
+        echo "$MODE not recognized";
+    fi
+}
 
 function chrMedianCoverages {
 #INPUT
@@ -465,7 +543,10 @@ function covPerGe {
 }
 
 
-typeset -fx bwaMapSample    
+typeset -fx bwaMapSample 
+typeset -fx pcMapqPerNt 
+typeset -fx mapqPerNt 
+typeset -fx covPerNt   
 typeset -fx covPerGe   
 typeset -fx chrMedianCoverages 
 typeset -fx getSequence 

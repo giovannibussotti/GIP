@@ -64,7 +64,7 @@ Sequencing reads were aligned to the provided genome using `BWA`[[1]](#reference
 **Table `r tableX`** reports the sequencing read alignment statistics computed with `Picard`[[2]](#references)  
 See https://broadinstitute.github.io/picard/picard-metric-definitions.html#AlignmentSummaryMetrics for metrics definition
 ```{r alignmentSummary, cache = FALSE , echo=FALSE , results= 'asis'}
-medianGenomeCov   <- read.table(paste0(sample,".karyotype.medianCoverage"))$V1
+medianGenomeCov   <- read.table(paste0(sample,".covPerNt.medianGenomeCoverage"))$V1
 mappingStatsDf    <- read.delim(paste0(sample,".alignmentMetrics.table"))
 mappingStatsDf[,c("PF_READS","PCT_PF_READS","PF_NOISE_READS","PF_HQ_ALIGNED_READS", "PF_HQ_ALIGNED_BASES" ,"PF_HQ_ALIGNED_Q20_BASES" ,"PF_HQ_MEDIAN_MISMATCHES","PF_HQ_ERROR_RATE","BAD_CYCLES","SAMPLE","LIBRARY","READ_GROUP")]  <-list(NULL) 
 kable(mappingStatsDf , align='c', caption=paste0("Table ",tableX,": Alignment statistics"))
@@ -128,14 +128,14 @@ To calculate the somy score, the sequencing coverage of each nucleotide was norm
 **Figure `r figureX`** and **Figure `r figureX + 1`** are two alternative somy score distribution visualizations. 
   
   
-```{r karyotypeBoxplot  , out.width = "50%" , fig.cap=paste0("Figure ",figureX -1,": Boxplot somy score distribution")}
-knitr::include_graphics(paste0(sample,".karyotype.boxplot.png"))
+```{r covPerNtBoxplot  , out.width = "50%" , fig.cap=paste0("Figure ",figureX -1,": Boxplot somy score distribution")}
+knitr::include_graphics(paste0(sample,".covPerNt.boxplot.png"))
 figureX <- figureX + 1
 ```
   
   
-```{r karyotypeRidges  , out.width = "50%" , fig.cap=paste0("Figure ",figureX -1,": Density plot, somy score distributio")}
-knitr::include_graphics(paste0(sample,".karyotype.ridges.png"))
+```{r covPerNtRidges  , out.width = "50%" , fig.cap=paste0("Figure ",figureX -1,": Density plot, somy score distributio")}
+knitr::include_graphics(paste0(sample,".covPerNt.ridges.png"))
 figureX <- figureX + 1
 ```
   

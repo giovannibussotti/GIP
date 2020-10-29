@@ -1,0 +1,113 @@
+#samplesList="samplesList"
+#gipOut="gipOut"
+#outName=NA
+#chrs=NA
+#debug=FALSE
+#pseudocount=0.1
+#minMAPQ=50
+#highLowCovThresh=c(1.5,0.5)
+#showSubset=50000
+#bandwidth=c(0.1 , 0.05)
+#nbin=400
+
+suppressPackageStartupMessages(library("argparse"))
+parser <- ArgumentParser(description="Density plot of bin sequencing coverage of many samples")
+parser$add_argument("--samplesList" , nargs="+", required=TRUE, help="file listing in one column the samples to use [default %(default)s]" )
+parser$add_argument("--gipOut"  , required=TRUE , help="GIP output directory [default %(default)s]" , default="NA")
+parser$add_argument("--outName" , help="Output name [default %(default)s]" , default="NA")
+parser$add_argument("--chrs"    , nargs="+" , help="chromosomes to use. If not defined, it considers the chromosomes selected at gip runtime [default %(default)s]" , default="NA")
+parser$add_argument("--highLowCovThresh" , nargs="+" , type="character" , help="Provide two numbers. Bins > num1 or < num2 will be labeled. [default %(default)s]" , default= "NA" )
+parser$add_argument("--minMAPQ" , type="integer"   , help="filter out bins MAPQ < --minMAPQ [default %(default)s]", default=0 )
+parser$add_argument("--pseudocount" , type="double" , help="value to add to the normalized mean coverage. Avoid infinite (1/0) and NaN (0/0) ratio values [default %(default)s]" , default=0.1)
+parser$add_argument("--showSubset" , type="integer" , help="show a random subset of genomic bins above or below --highLowCovThresh. Does not affect the density estimation [default %(default)s]", default=50000)
+parser$add_argument("--bandwidth" , type="double" , nargs="+" , help="numeric vector (length 1 or 2) of smoothing bandwidth(s) (e.g. 0.1 0.05) [default %(default)s]" , default=0.01)
+parser$add_argument("--nbin" , type="integer" ,  nargs="+" , help="numeric vector of length one (for both directions) or two (for x and y separately) specifying the number of equally spaced grid points for the density estimation [default %(default)s]" , default=400)
+parser$add_argument("--debug"  , action="store_true" , help="dump session and quit [default %(default)s]" , default=FALSE)
+args <- parser$parse_args()
+
+#patch NA
+for (n in names(args)){if(args[[n]][1] == "NA"){args[[n]] <- NA}  }
+for (n in names(args)){assign(n,args[[n]]) }
+if (! is.na(highLowCovThresh[1])){highLowCovThresh <- as.double(highLowCovThresh)}
+
+suppressPackageStartupMessages(library(data.table))
+suppressPackageStartupMessages(library(fields))
+suppressPackageStartupMessages(library("openxlsx"))
+suppressPackageStartupMessages(library("session"))
+options(datatable.fread.input.cmd.message=FALSE)
+if(debug){library(session);save.session("session_DEBUG_binDensity");quit()}
+
+#setup
+outDir <- paste0(gipOut,"/sampleComparison/")
+system(paste0("mkdir -p ", outDir))
+if (is.na(outName)){
+  outName <- paste0(outDir,"binDensity")
+}
+samples <- read.table(samplesList,stringsAsFactors=F)$V1
+chrSel      <- as.character(read.table(paste0(gipOut,"/samples/",samples[1],"/chrCoverageMedians_",samples[1]),header=T)[,1])
+chrSize     <- read.table(paste0(gipOut,"/genome/genome.chrSize"),sep="\t", stringsAsFactors = F, header=F , col.names=c("chr","size"))
+chrSize$chr <- as.character(chrSize$chr)
+chrSize     <- chrSize[match(chrSel,chrSize$chr),]
+if (is.na (chrs[1])){
+  chrs <- chrSize$chr
+}
+chrSize <- chrSize[chrSize$chr %in% chrs,]
+
+#chr size cumulative sum
+chrSizeCumSum <- cumsum(chrSize$size)
+v <- c(0,chrSizeCumSum)
+chrSizeCumSum <- v[-length(v)]
+names(chrSizeCumSum) <- chrSize$chr
+
+#chr mid points
+chrMids <- c()
+for (i in 1:length(chrSizeCumSum)-1) {chrMids = c(chrMids , (chrSizeCumSum[i] + chrSizeCumSum[i + 1]) / 2)}
+chrMids =c(chrMids ,  ( chrSizeCumSum[length(chrSizeCumSum)] + sum(chrSize$size) ) / 2)
+
+#read covPerBin
+covPerBinList <- list()
+for (s in samples){
+  covPerBinList[[s]] <- fread(cmd=paste0("gunzip -c ", gipOut , "/samples/" , s , "/" , s , ".covPerBin.gz"  ), select=c("chromosome","start","normalizedMeanCoverage","MAPQ"))
+  positionCorrection <- chrSizeCumSum[match(covPerBinList[[s]]$chromosome, names(chrSizeCumSum))]
+  covPerBinList[[s]]$startFixed <- covPerBinList[[s]]$start + positionCorrection
+  covPerBinList[[s]]$sample <- s
+}
+covPerBinDf <- do.call(rbind,covPerBinList)
+df <- covPerBinDf[with(covPerBinDf, order(startFixed)), ]
+
+#filter
+df <- df[ df$normalizedMeanCoverage <= 0.01 | (df$normalizedMeanCoverage > 0.01 & df$MAPQ > minMAPQ) ,]
+df <- as.data.frame(df)
+
+#add pseudocount just to deletions
+df$normalizedMeanCoverage[df$normalizedMeanCoverage <= pseudocount ] = pseudocount
+
+#materializedPoints
+materializedPoints <- df[df$normalizedMeanCoverage <= 0.5 | df$normalizedMeanCoverage >= 1.5,]
+materializedPoints<- unique(materializedPoints)
+maxPointsNum <- min(length(materializedPoints[,1]) , showSubset)
+set.seed(321)
+materializedPoints <- materializedPoints[sample(nrow(materializedPoints), maxPointsNum), ]
+
+#legend for smoothScatter
+fudgeit <- function(){
+  xm <- get('xm', envir = parent.frame(1))
+  ym <- get('ym', envir = parent.frame(1))
+  z  <- get('dens', envir = parent.frame(1))
+  colramp <- get('colramp', parent.frame(1))
+  fields::image.plot(xm,ym,z, col = colramp(256), legend.only = T, add =F)# , horizontal=T)
+}
+
+#plot smooth
+pdf(paste0(outName,".pdf"))
+par(font.axis = 2 , mar = c(5,4,4,5) + .1)
+smoothScatter(x=df$startFixed , y=log(df$normalizedMeanCoverage) , bandwidth=bandwidth , nbin=nbin , nrpoints=0 , xlab="chromosomes" , ylab="genomic bin coverage",xaxt = 'n' , postPlotHook = fudgeit , xaxs="i" , yaxs="i" , font=2)
+points(materializedPoints$startFixed, log(materializedPoints$normalizedMeanCoverage), pch=19, col="black", cex=0.2)
+segments(x0=0 , y0=log(1.5) , x1=sum(chrSize$size) , y1=log(1.5) , lty=3, col='red', lwd=1)
+segments(x0=0 , y0=0 , x1=sum(chrSize$size) , y1=0 , lty=2, col='black', lwd=1)
+segments(x0=0 , y0=log(0.5) , x1=sum(chrSize$size) , y1=log(0.5) , lty=3, col='red', lwd=1)
+abline(v=chrSizeCumSum[-1], lty=1, col='gray', lwd=2)
+axis(1, at=chrMids, labels=names(chrMids) , font=2)
+invisible(dev.off())
+
+

@@ -49,8 +49,6 @@ parser$add_argument("--outName" , help="out name [default %(default)s]" , defaul
 parser$add_argument("--ylim" , nargs="+" , type="double" , help="min and max ylim used in the plot. default 0 10 [default %(default)s]" , default="NA")
 parser$add_argument("--chrs" , nargs="+", required=TRUE,  help="List of chromosome names to plot. This also defines the plotting order[default %(default)s]" )
 parser$add_argument("--pcMapqFiles" , nargs="+", help="list of gzipped files of the same length of --files and --NAMES generated with the pcMapqPerNt function. In these files each base has the percent of reads with good MAPQ score. If specified --pcMapqFiles remove the bases where the percent of mapping reads with good MAPQ is < 50 [default %(default)s]", default="NA" )
-parser$add_argument("--MAPQ" , type="integer" , help="bin MAPQ filter (DEPENDENCY: --FORMAT covPerBin)  [default %(default)s]" , default=0)
-parser$add_argument("--FORMAT" , required=TRUE , help="input file format [covPerNt|covPerBin]" )
 parser$add_argument("--makeQqplots" , action="store_true" , help="for all samples combinations, and for each chromosome it computes qQplots [default %(default)s]" , default=FALSE)
 parser$add_argument("--fft"  , help="run fourier transform to reduce the size of chromosome coverage vectore [default %(default)s]" , default="no")
 parser$add_argument("--maxShrinkedLength" , type="integer" , help="if some chromosomes are very big the script dynamically increases the shrinkingFactor till the shrinked chromosome length is below --maxShrinkedLength  [default %(default)s]" , default=100)
@@ -202,7 +200,7 @@ qqplots <- function (contrasts){
 removeLowMAPQ <- function (df) {
 	f  <- pcMapqFiles[i]
 	fName <- paste(DIR,"/",f,sep="");
-	dfMQ <- data.frame(fread(cmd=paste("gunzip -c", fName),colClasses=list(character=1)) ,stringsAsFactors=F )
+	dfMQ <- data.frame(fread(paste("gunzip -c", fName),colClasses=list(character=1)) ,stringsAsFactors=F )
 	names(dfMQ) <- c("chromosome","position","pcMapq") 
 	dfMQ$tag <- paste0(dfMQ$chromosome,"_",dfMQ$position)
 	df$tag <- paste0(df$chromosome,"_",df$position)
@@ -241,7 +239,7 @@ library(gtools)
 library(ggridges)
 options(datatable.fread.input.cmd.message=FALSE)
 
-if(debug){library(session);save.session("session_DEBUG");quit()}
+if(debug){library(session);save.session("session_sigPeaksCLT");quit()}
 
 #read .gcov files in a list
 allSamples <- list()
@@ -249,28 +247,14 @@ for (i in 1:length(files)){
     f = files[i]
     n = NAMES[i]
     fName = paste0(DIR,"/",f);
-    allSamples[[n]]    <- fread(cmd=paste("gunzip -c", fName),colClasses=list(character=1))
-
-    if (FORMAT == "covPerNt") {
-      names(allSamples[[n]]) <- c("chromosome","position","score") 
-      allSamples[[n]] <- allSamples[[n]][allSamples[[n]]$chromosome %in% chrs,] 
-      if (! is.na(pcMapqFiles[1])){
-        allSamples[[n]] <- removeLowMAPQ(data.frame(allSamples[[n]] , stringsAsFactors=F))
-      }
-      #compress
-      allSamples[[n]]        <- compressCovPerNt(allSamples[[n]])
-    } 
-
-    if (FORMAT == "covPerBin"){
-       allSamples[[n]] <- allSamples[[n]][ allSamples[[n]]$MAPQ >= MAPQ , ]
-       allSamples[[n]][,c("end","normalizedMeanCoverage","MAPQ")] <- list(NULL)
-       names(allSamples[[n]]) <- c("chromosome","position","score") 
-       medianCoverageOfAllBins <- median(allSamples[[n]]$score)
-       write.table(x=medianCoverageOfAllBins , file=paste0(n,".karyotype.medianCoverage") , quote=F,col.names=F,row.names=F)
-       allSamples[[n]]$score <- allSamples[[n]]$score / medianCoverageOfAllBins
-       allSamples[[n]] <- allSamples[[n]][allSamples[[n]]$chromosome %in% chrs,] 
+    allSamples[[n]]    <- fread(paste("gunzip -c", fName),colClasses=list(character=1))
+    names(allSamples[[n]]) <- c("chromosome","position","score") 
+    allSamples[[n]] <- allSamples[[n]][allSamples[[n]]$chromosome %in% chrs,] 
+    if (! is.na(pcMapqFiles[1])){
+      allSamples[[n]] <- removeLowMAPQ(data.frame(allSamples[[n]] , stringsAsFactors=F))
     }
-
+    #compress
+    allSamples[[n]]        <- compressCovPerNt(allSamples[[n]])
     allSamples[[n]]$sample <- n
     #convert score to somy score
     if(!is.na(disomicChr)){
@@ -279,7 +263,6 @@ for (i in 1:length(files)){
     }
     allSamples[[n]]$score <- allSamples[[n]]$score * 2
 }
-
 
 #reformat
 AllSamplesDf <- do.call(rbind,allSamples)

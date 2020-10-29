@@ -1,0 +1,203 @@
+#samples=c("Dog3","Dog1-P2","DogX")
+#gipOut="gipOut"
+#outName=NA
+#chrs=NA
+#MAPQ=50
+#colorByDelta=FALSE
+#highLowDeltaColor=c("black","green")
+#showDensity=FALSE
+#highLowDensityColor=c("black","gray")
+#debug=FALSE
+#plot3dMaxCOV=3
+#plot3dMaxFC=3
+
+
+suppressPackageStartupMessages(library("argparse"))
+parser <- ArgumentParser(description="Compare gene sequencing coverage in 3 samples")
+parser$add_argument("--samples" , nargs="+", required=TRUE, help="Sample names. It determines the plotting order [default %(default)s]" )
+parser$add_argument("--gipOut"  , required=TRUE , help="GIP output directory [default %(default)s]" , default="NA")
+parser$add_argument("--outName" , help="Output name [default %(default)s]" , default="NA")
+parser$add_argument("--chrs"    , nargs="+" , help="chromosomes to use. If not defined, it considers the chromosomes selected at gip runtime [default %(default)s]" , default="NA")
+parser$add_argument("--MAPQ"  , type="integer" , help="Points with MAPQ < --MAPQ will be labeled [default %(default)s]" , default=-1)
+parser$add_argument("--colorByDelta" , action="store_true" , help="Color genes by increasing delta [default %(default)s]", default=FALSE)
+parser$add_argument("--highLowDeltaColor" , nargs="+", help="Colors for high and low delta. DEPENDENCY --colorByDelta Default: black blue [default %(default)s]", default=c("black","green"))
+parser$add_argument("--showDensity"  , action="store_true" , help="Show density area [default %(default)s]", default=FALSE)
+parser$add_argument("--highLowDensityColor" , nargs="+", help="Colors for high and low density. DEPENDENCY --showDensity. Default: black blue [default %(default)s]", default=c("black","gray"))
+parser$add_argument("--plot3dMaxCOV" , type="double" , help="Graphical option. Genes/cluster coverage values > plot3dMaxCOV are shown as plot3dMaxCOV [default %(default)s]" , default=3)
+parser$add_argument("--plot3dMaxFC"  , type="double" , help="Graphical option. Genes/cluster fold change values > plot3dMaxFC are shown as plot3dMaxFC [default %(default)s]" , default=3)
+parser$add_argument("--debug"  , action="store_true" , help="Dump session and quit [default %(default)s]" , default=FALSE)
+args <- parser$parse_args()
+#patch NA
+for (n in names(args)){if(args[[n]][1] == "NA"){args[[n]] <- NA}  }
+for (n in names(args)){assign(n,args[[n]]) }
+
+suppressPackageStartupMessages(library("ggtern"))
+suppressPackageStartupMessages(library("plot3D"))
+suppressPackageStartupMessages(library("openxlsx"))
+suppressPackageStartupMessages(library("GenomicRanges"))
+suppressPackageStartupMessages(library("session"))
+if(debug){save.session("session_DEBUG_ternary");quit()}
+
+if (showDensity && colorByDelta){
+  stop("Error. You cannot specify both colorByDelta and showDensity")
+  quit(save = "no", status = 1, runLast = FALSE)  
+}
+
+#setup
+outDir <- paste0(gipOut,"/sampleComparison/")
+system(paste0("mkdir -p ", outDir))
+if (is.na(outName)){
+  outName <- paste0(outDir,"ternary")
+}
+s1=samples[1]
+s2=samples[2]
+s3=samples[3]
+if (is.na (chrs[1])){ 
+  chrs <- as.character(read.table(paste0(gipOut,"/samples/",s1,"/chrCoverageMedians_",s1),header=T)[,1])
+}
+
+#READ
+genes <- list()
+genes[[s1]] <- read.delim(paste0(gipOut,"/samples/",s1,"/",s1,".covPerGe.gz") , header=T,stringsAsFactors=F,row.names=1)
+genes[[s2]] <- read.delim(paste0(gipOut,"/samples/",s2,"/",s2,".covPerGe.gz") , header=T,stringsAsFactors=F,row.names=1)
+genes[[s3]] <- read.delim(paste0(gipOut,"/samples/",s3,"/",s3,".covPerGe.gz") , header=T,stringsAsFactors=F,row.names=1)
+geFunDf <- read.delim(paste0(gipOut,"/genome/geneFunction.tsv") , sep="\t", stringsAsFactors = F, header=F ,col.names=c("geId","geneFunction"))
+repeats <- tryCatch(read.table(paste0(gipOut,"/genome/repeatMasker/genome.out.gff") , sep="\t", stringsAsFactors = F, header=F )[,c(1,4,5)] ,error=function(cond){message(cond);return(NULL)})
+gaps    <- tryCatch(read.table(paste0(gipOut,"/genome/genome.gaps.gz") , sep="\t", stringsAsFactors = F, header=F),error=function(cond){message(cond);return(NULL)}) 
+clstr <- list()
+clstr[[s1]] <- tryCatch(read.delim(paste0(gipOut,"/covPerClstr/",s1,".covPerClstr.gz") , header=T,stringsAsFactors=F,row.names=1),error=function(cond){message(cond);return(NULL)})
+clstr[[s2]] <- tryCatch(read.delim(paste0(gipOut,"/covPerClstr/",s2,".covPerClstr.gz") , header=T,stringsAsFactors=F,row.names=1),error=function(cond){message(cond);return(NULL)})
+clstr[[s3]] <- tryCatch(read.delim(paste0(gipOut,"/covPerClstr/",s3,".covPerClstr.gz") , header=T,stringsAsFactors=F,row.names=1),error=function(cond){message(cond);return(NULL)})
+clstrFun <- tryCatch(read.delim(paste0(gipOut,"/covPerClstr/clstrAnnFormat2.tsv") , header=F,stringsAsFactors=F,col.names=c("geId","clstrFunction","clstrId")),error=function(cond){message(cond);return(NULL)})
+
+#MAKE DF
+makeDf <- function(List){
+ #consider just the ids available on all samples
+ ids <- Reduce(intersect, list(row.names(List[[s1]]), row.names(List[[s2]]), row.names(List[[s3]])))
+ d <- data.frame(
+  chromosome = as.character(gsub(x=List[[s1]][ids,]$locus,pattern="^([^\\:]+)\\:.+",replacement="\\1")) , 
+  geneStart  = as.numeric(gsub(x=List[[s1]][ids,]$locus,pattern="^([^\\:]+)\\:(\\d+)-(\\d+)$",replacement="\\2")) , 
+  geneEnd    = as.numeric(gsub(x=List[[s1]][ids,]$locus,pattern="^([^\\:]+)\\:(\\d+)-(\\d+)$",replacement="\\3")) , 
+  covS1 = List[[s1]][ids,"normalizedMeanCoverage"] , 
+  covS2 = List[[s2]][ids,"normalizedMeanCoverage"] ,
+  covS3 = List[[s3]][ids,"normalizedMeanCoverage"] ,
+  color = "black" ,
+  type = "normal" ,
+  MAPQ  = pmin(List[[s1]][ids,"MAPQ"] , List[[s2]][ids,"MAPQ"], List[[s3]][ids,"MAPQ"]) , 
+  stringsAsFactors=FALSE)
+ row.names(d)=ids
+ d$delta <- apply(d[,c("covS1","covS2","covS3")],1,function(x){max(x)-min(x)})
+ d$foldChange    <- apply(d[,c("covS1","covS2","covS3")],1,function(x){max(x)/min(x)})
+ #select chrs and sort by position
+ d <- d[d$chromosome %in% chrs,]
+ d <- d[with(d, order(chromosome , geneStart)), ]
+ #label low MAPQ
+ d$color[d$MAPQ < MAPQ] = "gray"
+ d$type[d$MAPQ < MAPQ] = "lowMAPQ"
+ d$type <- factor(d$type,levels=c("normal","lowMAPQ"))
+ return(d)
+}
+df <- makeDf(genes)
+if(! is.null (clstr)) {
+  dfCl <- makeDf(clstr)
+  dfCl$type <- "cluster"
+  dfCl$color  <- "red"
+  df <- rbind(df,dfCl)
+  df$type <- factor(df$type,levels=c("normal","lowMAPQ","cluster"))
+}
+
+#PLOT
+#triangle
+pdf(paste0(outName,".pdf"))
+p <- ggtern(data = df, aes(covS1,covS2,covS3)) 
+if (showDensity) {
+ p <- p + stat_density_tern(geom='polygon' , n=200 , bins=10 , aes(fill=..level.. , alpha=..level..) , bdl = 0.001, bdl.val = 0) + scale_fill_gradient(low = highLowDensityColor[2],high = highLowDensityColor[1])   + geom_point(aes(colour=type)) + scale_color_manual(values=c(normal="black", cluster="red", lowMAPQ="gray")) + guides(alpha = "none") #+ guides(color = "none", fill = "none")
+} else if(colorByDelta){
+  p <- p + geom_point(aes(color=delta,alpha=delta,shape=type,size=foldChange)) + scale_colour_gradient(low = highLowDeltaColor[2],high = highLowDeltaColor[1])
+} else {
+  p <- p  + geom_point(aes(colour=type,size=foldChange)) + scale_color_manual(values=c(normal="black", cluster="red", lowMAPQ="gray")) + guides(alpha = "none")
+}
+p <- p + theme_rgbw() + labs(x=s1,y=s2,z=s3) 
+print(p)
+#scatter 3D
+scatter3DwithSmallDots <- function(x, y, z , key , ..., colvar = z) {
+  # Add small dots on basal plane and on the depth plane
+  panelfirst <- function(pmat) {
+    XY <- trans3D(x, y, z = rep(min(z), length(z)), pmat = pmat)
+    scatter2D(XY$x, XY$y, colvar = colvar, pch = ".", cex = 2, add = TRUE, colkey = FALSE , clim=c(0,plot3dMaxFC) )
+
+    XY <- trans3D(x = rep(min(x), length(x)), y, z, pmat = pmat)
+    scatter2D(XY$x, XY$y, colvar = colvar, pch = ".", cex = 2, add = TRUE, colkey = FALSE , clim=c(0,plot3dMaxFC) )
+  }
+  if(key==TRUE){
+   scatter3D(x, y, z, ..., colvar = colvar, panel.first=panelfirst, clim=c(0,plot3dMaxFC) , xlim=c(minCov,maxCov), ylim=c(minCov,maxCov), zlim=c(minCov,maxCov), colkey = list(length = 0.5, width = 0.5, cex.clab = 0.75 ) )
+  } else {
+   scatter3D(x, y, z, ..., colvar = colvar, panel.first=panelfirst, clim=c(0,plot3dMaxFC) , xlim=c(minCov,maxCov), ylim=c(minCov,maxCov), zlim=c(minCov,maxCov), colkey=FALSE)
+  }
+}
+#saturare
+df3d <- df
+df3d[df3d$foldChange > plot3dMaxFC,"foldChange"]=plot3dMaxFC
+df3d[,c("covS1","covS2","covS3")][df3d[,c("covS1","covS2","covS3")]>plot3dMaxCOV] = plot3dMaxCOV
+maxCov <- max(c(df3d$covS1,df3d$covS2,df3d$covS3))
+minCov <- min(c(df3d$covS1,df3d$covS2,df3d$covS3))
+df3d <- split(df3d,f=df3d$type)
+#plot
+scatter3DwithSmallDots(x=df3d[["normal"]][,"covS1"], y=df3d[["normal"]][,"covS2"], z=df3d[["normal"]][,"covS3"] , key=TRUE , pch = 19, cex = 1 ,  bty = "b2"  , ticktype = "detailed" , phi = 0 , xlab = s1 , ylab=s2,zlab=s3 , clab = c("fold change") , colvar=df3d[["normal"]]$foldChange)
+if(length(df3d[["cluster"]][,1]) > 0){
+  scatter3DwithSmallDots(x=df3d[["cluster"]][,"covS1"], y=df3d[["cluster"]][,"covS2"], z=df3d[["cluster"]][,"covS3"] , key=FALSE , add=TRUE, pch = 15, cex = 1 ,  bty = "b2"  , ticktype = "detailed" , phi = 0 , xlab = s1 , ylab=s2,zlab=s3 , clab = c("fold change") , colvar=df3d[["cluster"]]$foldChange)
+}
+if(length(df3d[["lowMAPQ"]][,1]) > 0){
+  scatter3DwithSmallDots(x=df3d[["lowMAPQ"]][,"covS1"], y=df3d[["lowMAPQ"]][,"covS2"], z=df3d[["lowMAPQ"]][,"covS3"] , key=FALSE , add=TRUE, pch = 17, cex = 1 ,  bty = "b2"  , ticktype = "detailed" , phi = 0 , xlab = s1 , ylab=s2,zlab=s3 , col="gray", colvar=df3d[["lowMAPQ"]]$foldChange)
+}
+invisible(dev.off())
+
+#OUTPUT TABLE
+dfCl <- df[ df$type == "cluster", ]
+df   <- df[ df$type != "cluster", ]
+#label overlap with gaps or repeats
+addOverlapAnnotations <- function(bed){
+  ovAnnotations <- rep("no",length(df[,1]))
+  if(is.null(bed)) {
+    return(ovAnnotations)
+  }
+  names(bed) <- c("chr","start","end")
+  bed        <- bed[bed$chr %in% df$chromosome,]
+  bedGr      <- with(bed, GRanges(chr, IRanges(start, end)))
+  genesGr    <- with(df,  GRanges(chromosome, IRanges(geneStart, geneEnd)))
+  ov  <- findOverlaps(genesGr,bedGr)
+  ovAnnotations[queryHits(ov)]="yes"
+  return(ovAnnotations) 
+}
+df$repeatsOverlap <- addOverlapAnnotations(repeats)
+df$gapsOverlap    <- addOverlapAnnotations(gaps)
+#rounding-off
+is.num     <- sapply(df, is.numeric)
+df[is.num] <- lapply(df[is.num], round, 3)
+#add gene function
+geFunDf$geneFunction[is.na(geFunDf$geneFunction)]="NA"
+df$geneFunction <- geFunDf[ match(row.names(df),geFunDf$geId) , "geneFunction"]
+#rename
+df$geneId <- row.names(df)
+df$color <- NULL
+names(df) <- c("chromosome" , "start" , "end" , paste0("normalizedMeanCoverage_",s1) , paste0("normalizedMeanCoverage_",s2) ,  paste0("normalizedMeanCoverage_",s3) , "type" , "min_MAPQ" , "delta_coverage" , "fold_change" , "repeats_overlap" , "gaps_overlap" , "gene_function" , "gene_id")
+df <- df[,c(ncol(df),1:(ncol(df)-1)) ]
+
+#prepare clstr table
+if( ! is.null(dfCl) ) {
+ is.num      <- sapply(dfCl, is.numeric)
+ dfCl[is.num] <- lapply(dfCl[is.num], round, 3)
+ dfCl$clstr_id <- row.names(dfCl)
+ dfCl <- dfCl[,c(ncol(dfCl),1:(ncol(dfCl)-1)) ]
+ #removing featurs that are meaningless for clstrs
+ dfCl[,c("chromosome", "geneStart", "geneEnd","MAPQ")] <-list(NULL)
+ clstrFunS <- split(clstrFun,f=clstrFun$clstrId)
+ clstrFun2 <- t(as.data.frame(sapply(clstrFunS,function(x){list(clstr_members=paste(x$geId,collapse=",") , clstrFunction=paste(unique(x$clstrFunction),collapse=","))}),stringsAsFactors=F))
+ dfCl$clstr_members <- clstrFun2[row.names(dfCl),"clstr_members"]
+ dfCl$clstrFunction <- clstrFun2[row.names(dfCl),"clstrFunction"]
+ dfCl[,c("color","type")] <- list(NULL)
+ names(dfCl) <- c("clstr_id",paste0("normalizedMeanCoverage_",s1) , paste0("normalizedMeanCoverage_",s2) ,  paste0("normalizedMeanCoverage_",s3) , "delta_coverage" , "fold_change" ,  "clstr_members","clstr_function")
+ write.xlsx(file=paste0(outName,".xlsx") , x=list(gene_comparison=df,clstr_comparison=dfCl) , asTable=TRUE)
+} else{
+  write.xlsx(file=paste0(outName,".xlsx") , x=df , asTable=TRUE)
+}
