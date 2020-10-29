@@ -13,7 +13,7 @@ vim: syntax=groovy
 ----------------------------------------------------------------------------------------
 */
 
-version = "1.0.3"
+version = "1.0.4"
 def helpMessage() {
     log.info"""
     =========================================
@@ -149,7 +149,7 @@ process prepareGenome {
   output:
   file ("db") into bwaDb_ch1
   file("genome.chrSize") into chrSize_ch1
-  set file("genome.fa") , file("genome.fa.fai") , file("genome.dict") , file("genome.chrSize") into (genome_ch1 , genome_ch2 , genome_ch3 , genome_ch4 , genome_ch5 , genome_ch6 , genome_ch7 , genome_ch8, genome_ch9, genome_ch10)
+  set file("genome.fa") , file("genome.fa.fai") , file("genome.dict") , file("genome.chrSize") into (genome_ch1 , genome_ch2 , genome_ch4 , genome_ch5 , genome_ch6 , genome_ch7 , genome_ch8, genome_ch9, genome_ch10)
   file("genome.gaps.gz") into (gaps_ch1 , gaps_ch2)
   file("repeats") into (repeats_ch1 , repeats_ch2 , repeats_ch3, repeats_ch4)
   file("snpEff")  into snpEffDb_ch1
@@ -232,34 +232,11 @@ process covPerChr {
   val(chromosomes) from chromosomes
 
   output:
-  set val(sampleId), file(bam) , file(bai), file("chrCoverageMedians_$sampleId") into (covPerChr1 , covPerChr2 , covPerChr3, covPerChr4 )
+  set val(sampleId), file(bam) , file(bai), file("chrCoverageMedians_$sampleId") into ( covPerChr2 , covPerChr3, covPerChr4 )
 
   """
   IFS=' ' read -r -a CHRS <<< "$chromosomes"  
   chrMedianCoverages $sampleId $size $MAPQ \$CHRS . $gaps
-  """
-}
-
-process covPerNt {
-  publishDir "$params.resultDir/samples/$sampleId"
-  tag { "${sampleId}" }
-
-  input:
-  set val(sampleId), file(bam) , file(bai) , file(covPerChr) from covPerChr1
-  set file(fa) , file(fai) , file(dict) , file(size) from genome_ch3
-  val(chromosomes) from chromosomes  
-
-  output:
-  set val(sampleId), file ("${sampleId}.covPerNt.gz") , file ("${sampleId}.pcMapqPerNt.gz") , file ("${sampleId}.covPerNt.boxplot.png") , file ("${sampleId}.covPerNt.ridges.png") , file ("${sampleId}.covPerNt.allMedians.tsv") , file ("${sampleId}.covPerNt.medianGenomeCoverage") into (covPerNt)
-
-  script:
-  """
-  covPerNt $bam $size ${sampleId}.covPerNt MEDIAN 0 
-  gzip -f ${sampleId}.covPerNt
-  pcMapqPerNt $bam $MAPQ ${sampleId}.pcMapqPerNt
-  mkdir -p _tmp
-  TMPDIR=./_tmp
-  Rscript /bin/plotGenomeCoverage_V3.R --files ${sampleId}.covPerNt.gz --NAMES ${sampleId} --DIR . --outName ${sampleId}.covPerNt --pcMapqFiles ${sampleId}.pcMapqPerNt.gz --chr $chromosomes --ylim $chrPlotYlim
   """
 }
 
@@ -275,6 +252,8 @@ process covPerBin {
   output:
   set val(sampleId), file ("${sampleId}.covPerBin.gz"), file ("${sampleId}.covPerBin.plot.all.png") , file ("${sampleId}.covPerBin.plot.byChr.pdf") , file ("${sampleId}.covPerBin.plot.tsv.gz") , file ("${sampleId}.covPerBin.plot.faceting.png") , file("${sampleId}.covPerBin.significant.bins.tsv.gz") , file("${sampleId}.covPerBin.significant.segments.tsv.gz") , file("${sampleId}.covPerBin.significant.stats") into (covPerBin)
   set val(sampleId), file(bam) , file(bai) , file(covPerChr) , file ("${sampleId}.covPerBin.gz") , file ("${sampleId}.bed") into (covPerBin4covPerGe , covPerBin4delly) 
+  set val(sampleId), file ("${sampleId}.karyotype.boxplot.png") , file ("${sampleId}.karyotype.ridges.png") , file ("${sampleId}.karyotype.allMedians.tsv") , file ("${sampleId}.karyotype.medianCoverage") into (karyotype)
+
 
   """  
   covPerBin $bam $binSize $size $covPerChr _tmp
@@ -291,6 +270,10 @@ process covPerBin {
   Rscript /bin/sigPeaks_CLT.R --input ${sampleId}.covPerBin.gz --outName ${sampleId}.covPerBin.significant --minMAPQ $MAPQ --coverageThresholds $customCoverageLimits  $covPerBinSigOPT
 
   Rscript /bin/plotCovPerBin.R --covPerBin ${sampleId}.covPerBin.gz --outName ${sampleId}.covPerBin.plot --chrs $chromosomes --significant ${sampleId}.covPerBin.significant.bins.tsv.gz --chrSizeFile genome.chrSize --minMAPQ $MAPQ --ylim $binPlotYlim --coverageColorLimits $customCoverageLimits --binOverviewSize $binOverviewSize
+
+  mkdir -p _tmp
+  TMPDIR=./_tmp
+  Rscript /bin/plotGenomeCoverage_V3.R --files ${sampleId}.covPerBin.gz --NAMES ${sampleId} --DIR . --outName ${sampleId}.karyotype --MAPQ $MAPQ --FORMAT covPerBin --chr $chromosomes --ylim $chrPlotYlim
   """
 }
 
@@ -578,7 +561,7 @@ process report {
   publishDir "$params.resultDir/reports" , mode: 'copy'
 
   input:
-  file ('*') from covPerChr4.join(covPerNt).join(covPerBin).join(mappingStats).join(covPerGeDump1).join(snpEff).join(delly).join(mapDump1).join(bigWigGenomeCov)
+  file ('*') from covPerChr4.join(karyotype).join(covPerBin).join(mappingStats).join(covPerGeDump1).join(snpEff).join(delly).join(mapDump1).join(bigWigGenomeCov)
   file repeats from repeats_ch4
   file('*') from genome_ch10
    
@@ -602,7 +585,7 @@ process report {
   publishDir "$params.resultDir/samples/$sampleId"
 
   input:
-  tuple val(sampleId), file ('*') from covPerChr4.join(covPerNt).join(covPerBin).join(mappingStats).join(covPerGeDump1).join(snpEff).join(delly).join(mapDump1).join(bigWigGenomeCov).toList()
+  tuple val(sampleId), file ('*') from covPerChr4.join(karyotype).join(covPerBin).join(mappingStats).join(covPerGeDump1).join(snpEff).join(delly).join(mapDump1).join(bigWigGenomeCov).toList()
 
   output:
   set val(sampleId), file("report_${sampleId}.html") into (report)

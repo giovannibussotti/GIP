@@ -112,8 +112,7 @@ figureX <- figureX + 1
 
 
 ## Genome coverage
-### Sequencing depth
-The median genome sequencing coverage is **`r medianGenomeCov`**.    
+### Sequencing depth    
 **Table `r tableX`** reports the median sequencing coverage (MEDIANCOV) for individual chromosomes.  
 MEDIANCOVminus2MAD and MEDIANCOVplus2MAD reflect the sequencing coverage variability, indicating the median sequencing coverage -/+ 2 mean absolute deviations respectively.
 ```{r covPerChr, cache = FALSE , echo=FALSE , results= 'asis'}
@@ -121,30 +120,8 @@ covPerChr <- read.table(paste0("chrCoverageMedians_",sample),header=T,stringsAsF
 kable(covPerChr , align='c', "simple" ,caption=paste0("Table ",tableX,": Chromosome coverage"))
 tableX <- tableX + 1
 ```
-  
-### Somy score normalization
-The distribution of nucleotide sequencing coverage was used to estimate chromosome copy number.  
-To calculate the somy score, the sequencing coverage of each nucleotide was normalized by the median genome sequencing coverage and multiplied by two.  
-**Figure `r figureX`** and **Figure `r figureX + 1`** are two alternative somy score distribution visualizations. 
-  
-  
-```{r karyotypeBoxplot  , out.width = "50%" , fig.cap=paste0("Figure ",figureX -1,": Boxplot somy score distribution")}
-knitr::include_graphics(paste0(sample,".karyotype.boxplot.png"))
-figureX <- figureX + 1
-```
-  
-  
-```{r karyotypeRidges  , out.width = "50%" , fig.cap=paste0("Figure ",figureX -1,": Density plot, somy score distributio")}
-knitr::include_graphics(paste0(sample,".karyotype.ridges.png"))
-figureX <- figureX + 1
-```
-  
-The genome sequencing coverage density is available in bigWig format from [here](`r paste0("../samples/",sample,"/",sample,".bw")`).  
-BigWig file format is compatible with genome browsers such as `IGV`[[3]](#references).  
-A description of the bigWig format is available from https://genome.ucsc.edu/goldenPath/help/bigWig.html  
 
-
-# Genomic bins coverage
+### Binning
 ```{r covPerStats}
 tmp <- read.table(paste0(sample,".covPerBin.gz"),header=T)[1,]
 binSize <-  tmp$end - tmp$start + 1
@@ -175,13 +152,38 @@ displaySigAmpSegTab <- length(sigAmpSegments[,1]) > 0
 displaySigDepSegTab <- length(sigDepSegments[,1]) > 0
 ```
 
-The genome was divided in contiguous bins spanning `r binSize` nucleotides, and their coverage was evaluated by  
+The genome was divided in contiguous bins spanning `r binSize` nucleotides. For each bin GIP:
 
-* measuring the sequencing coverage of each nucleotide  
-* computing the mean bin coverage  
-* normalizing by the median chromosome coverage   
+* Measured the sequencing coverage of each nucleotide  
+* Computed the mean bin coverage  
+* Normalized by the median chromosome coverage   
+* Computed the mean MAPQ score of the reads aligning to the bin 
 
-The mean MAPQ score of the reads aligning to each bin was also computed.  
+The median of the genomic bin intervals is **`r medianGenomeCov`**.
+  
+### Somy score normalization  
+To calculate the somy score, the mean sequencing coverage of each genomic bin with mean MAPQ score > `r minMAPQbin` was normalized by the median of all bins and multiplied by two.  
+**Figure `r figureX`** and **Figure `r figureX + 1`** are two alternative somy score distribution visualizations. 
+  
+  
+```{r karyotypeBoxplot  , out.width = "50%" , fig.cap=paste0("Figure ",figureX -1,": Boxplot somy score distribution")}
+knitr::include_graphics(paste0(sample,".karyotype.boxplot.png"))
+figureX <- figureX + 1
+```
+  
+  
+```{r karyotypeRidges  , out.width = "50%" , fig.cap=paste0("Figure ",figureX -1,": Density plot, somy score distributio")}
+knitr::include_graphics(paste0(sample,".karyotype.ridges.png"))
+figureX <- figureX + 1
+```
+  
+The genome sequencing coverage density is available in bigWig format from [here](`r paste0("../samples/",sample,"/",sample,".bw")`).  
+BigWig file format is compatible with genome browsers such as `IGV`[[3]](#references).  
+A description of the bigWig format is available from https://genome.ucsc.edu/goldenPath/help/bigWig.html  
+
+
+# Genomic bins coverage
+ 
 Genomic bins with mean MAPQ score > `r minMAPQbin` were evaluated to identify significantly amplified or depleted regions.  
 Considering an adjusted p-value threshold of `r covPerBinSigPvalThresh` and considering possible user-defined additional coverage cut-offs, a total of `r numSigCovPerBin` genomic bins were deemed to be either significantly enriched or depleted.
 

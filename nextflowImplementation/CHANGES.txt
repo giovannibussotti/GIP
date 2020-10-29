@@ -1,4 +1,13 @@
 ###################
+#v1.0.4- 28102020#
+###################
+- CG-correction is optional
+- CG-correction is faster because now the %CG percent for each interval is measured with bedtools nuc
+- CG-correction for bins now is log10 scaled, is a ggplot scatterplot instead of a smooth scatter
+- removed covPerNt. The karyotype is computed from covPerBin files. The median genome coverage used for boxplot normalization is now the median of the covPerBin meanCoverage values (which approximates well to the median coverage and is much faster to compute)
+- the karyotype module now requires covPerBin instead of covPerNt
+
+###################
 #v1.0.3- 21102020#
 ###################
 -changed covPerBin and covPerGe functions. Now are much faster.
