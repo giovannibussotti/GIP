@@ -2,7 +2,7 @@
 sudo singularity build --disable-cache giptools singularityBuild.def >>giptools.build.log 2>&1
 
 #build container (for development)
-sudo singularity build --disable-cache --sandbox gipContainerDev.simg singularityBuild.def
+sudo singularity build --disable-cache --sandbox gipContainerDev.simg singularityBuild.def >>gipContainerDev.build.log 2>&1
 
 #access container
 sudo singularity shell --writable gipContainerDev.simg/

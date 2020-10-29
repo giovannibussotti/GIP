@@ -23,15 +23,20 @@ library(bisoreg)
 ##############################################
 df    <- read.table(paste0(DIR,"/",SAMPLE,".covPerBin.gz"),header=T,stringsAsFactors=F,sep="\t")
 df$chromosome <- as.character(df$chromosome)
-df$CorGfreq   <- read.table(nuc , header=F , stringsAsFactors=F , sep="\t")[,5]
-
+df$tag <- paste(df$chromosome,df$start,df$end,sep="_")
+nucDf   <- read.table(nuc , header=F , stringsAsFactors=F , sep="\t")[,c(1,2,3,5)]
+names(nucDf) <- c("chromosome","start","end","CorGfreq")
+nucDf$tag <- paste(nucDf$chromosome,nucDf$start,nucDf$end,sep="_")
+df <- merge(df,nucDf[,c("tag","CorGfreq")],by="tag")
+df$tag <- NULL
+rm(nucDf)
 
 ########################################################
 #loess fitting then normalized mean coverage correction#
 ########################################################
 set.seed(1)
 cc <- df[complete.cases(df), ]
-if(sampling == 0){
+if ((sampling == 0) || (sampling > nrow(cc)))  {
         sampling = nrow(cc)
 }
 samp1 <- cc[sample(nrow(cc), sampling ,replace=F), ]

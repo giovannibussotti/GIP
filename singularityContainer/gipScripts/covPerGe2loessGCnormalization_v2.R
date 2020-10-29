@@ -40,7 +40,13 @@ df            <- read.table(paste0(DIR,"/",SAMPLE,".covPerGe.gz"),header=T,strin
 df$chromosome <- gsub(x=df$locus,pattern="(.+):(.+)-(.+)$",replacement="\\1")
 df$start      <- as.numeric(gsub(x=df$locus,pattern="(.+):(.+)-(.+)$",replacement="\\2"))
 df$end        <- as.numeric(gsub(x=df$locus,pattern="(.+):(.+)-(.+)$",replacement="\\3"))
-df$CorGfreq   <- read.table(nuc , header=F , stringsAsFactors=F , sep="\t")[,5]
+df$tag <- paste(df$chromosome,df$start,df$end,sep="_")
+nucDf   <- read.table(nuc , header=F , stringsAsFactors=F , sep="\t")[,c(1,2,3,5)]
+names(nucDf) <- c("chromosome","start","end","CorGfreq")
+nucDf$tag <- paste(nucDf$chromosome,nucDf$start,nucDf$end,sep="_")
+df <- merge(df,nucDf[,c("tag","CorGfreq")],by="tag")
+df$tag <- NULL
+rm(nucDf)
 
 ###############################################################
 #loess fitting then normalizedMeanCoverage coverage correction#
@@ -48,7 +54,7 @@ df$CorGfreq   <- read.table(nuc , header=F , stringsAsFactors=F , sep="\t")[,5]
 set.seed(1)
 #sampling
 cc <- df[complete.cases(df), ]
-if(sampling == 0){
+if ((sampling == 0) || (sampling > nrow(cc)))  {
         sampling = nrow(cc)
 }
 samp1 <- cc[sample(nrow(cc), sampling ,replace=F), ]
