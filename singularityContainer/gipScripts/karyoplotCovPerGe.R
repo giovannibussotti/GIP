@@ -158,8 +158,6 @@ if(! is.na(geneFunction)){
  geFunDf <- read.delim(geneFunction,header=F,stringsAsFactors=F ,sep="\t",col.names=c("geId","annotation"))
  covPerGeDf$annotation <- geFunDf[ match(covPerGeDf$gene_id , geFunDf$geId) , "annotation" ]
 }
-library(session)
-save.session("session")
 write.table(x=covPerGeDf,file=paste0(outDir,"/covPerGePlotData.tsv"),col.names=T,row.names=F, sep="\t")
 
 
