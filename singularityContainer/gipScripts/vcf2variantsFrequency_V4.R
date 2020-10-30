@@ -80,14 +80,14 @@ parser$add_argument("--densityYlim" , help="graphical parameter: coord_cartesian
 parser$add_argument("--histogramYlim" , help="graphical parameter: coord_cartesian ylim (counts) histogram plots [default %(default)s]" , default="NA")
 parser$add_argument("--alphaCovergeVSfrequency" , type="integer" , help="graphical parameter: alpha transparency in _coverageVSfreq.pdf plot [default %(default)s]" , default="255")
 parser$add_argument("--useENDfield" , help="VariantAnnotation uses the info(vcf) END field to define the variant end [yes|no]. Not recommended if you process freebayes vcfs [default %(default)s]" , default="no")
-
+parser$add_argument("--debug"  , action="store_true" , help="Dump session and quit" , default=FALSE)
 args <- parser$parse_args()
 #patch NA
 for (n in names(args)){if(args[[n]][1] == "NA"  ){args[[n]] <- NA  } }
 for (n in names(args)){assign(n,args[[n]]) }
-
+if(debug){library(session);save.session("session_DEBUG");quit()}
 #fix type
-densityYlim <- as.numeric(densityYlim)
+densityYlim   <- as.numeric(densityYlim)
 histogramYlim <- as.numeric(histogramYlim)
 
 
@@ -106,63 +106,68 @@ plotAll <- function(varPerChrNormalised , df , outName , chrSizes){
     df$chr <- factor(df$chr,levels=chrs)
     
     #tot var perChr (normalised)
-    #pdf(paste(outdir,"/",outName,"_summary.pdf",sep=""),width=10,height=10)
-    png(paste0(outdir,"/",outName,"_totVarPerChr.png"),type='cairo')
-    barplot(varPerChrNormalised , main="", ylab="chromosome",xlab="number of SNVs per Kb", names.arg=names(varPerChrNormalised),horiz=TRUE , col="#69b3a2",las=1)
+    png(paste0(outdir,"/",outName,"_totVarPerChr.png"),type='cairo' , width = 1000, height = 1000)
+    varPerChrNormalisedDf <- as.data.frame(varPerChrNormalised)
+    p <- ggplot(data=varPerChrNormalisedDf, aes(x=CHRforEachAllele, y=Freq)) +  geom_bar(stat="identity",fill="#69b3a2") 
+    p <- p + coord_flip() + theme_bw() + ylab("chromosome") + xlab("number of SNVs per Kb")
+    p <- p + theme(axis.text=element_text(size=18), axis.title=element_text(size=21,face="bold"))
+    print(p)
     dev.off()
 
     #all density plots
-    png(paste0(outdir,"/",outName,"_allDensities.png"),type='cairo')
-    densities <- ggplot(df , aes(x=freq)) + geom_density() + xlim(0,1) + theme_bw() + facet_wrap(~ chr, scales = "free") + theme(axis.text.x = element_text(angle = 90, hjust = 1)) + xlab("VRF")
+    png(paste0(outdir,"/",outName,"_allDensities.png"),type='cairo', width = 1000, height = 1000 )
+    densities <- ggplot(df , aes(x=freq)) + geom_density() + xlim(0,1) + theme_bw() + facet_wrap(~ chr, scales = "free") 
+    densities <- densities + theme(axis.text.x = element_text(angle = 90, hjust = 1) , axis.text=element_text(size=14), axis.title=element_text(size=21,face="bold")) + xlab("VRF")
     if (! is.na(densityYlim)){ densities <- densities + coord_cartesian(ylim=c(0,densityYlim))}
     print(densities)
     dev.off()
     
     #all histogram plots (actual counts of variants in bins of 0.10)
-    png(paste0(outdir,"/",outName,"_allHists.png"),type='cairo')
-    hist <- ggplot(df , aes(x=freq)) + geom_histogram(position = "identity" , bins=10,binwidth=0.1, boundary = -0.05, color = "black", fill="blue")  + theme_bw()  + theme(axis.text.x = element_text(angle = 90, hjust = 1,vjust = 0.5)) +  scale_x_continuous(breaks=seq(0,1,0.1)) + facet_wrap(~ chr) + xlab("VRF") 
+    png(paste0(outdir,"/",outName,"_allHists.png"),type='cairo', width = 1000, height = 1000)
+    hist <- ggplot(df , aes(x=freq)) + geom_histogram(position = "identity" , bins=10, binwidth=0.1, boundary = -0.05, color = "black", fill="blue") + theme_bw() 
+    hist <- hist + theme(axis.text.x = element_text(angle = 90, hjust = 1,vjust = 0.5,size =12), axis.text.y=element_text(size=18) , axis.title=element_text(size=21,face="bold")) 
+    hist <- hist + scale_x_continuous(breaks=seq(0,1,0.1)) + facet_wrap(~ chr) + xlab("VRF") 
     if (! is.na(histogramYlim)){ hist <- hist + coord_cartesian(ylim=c(0,histogramYlim))}
     print(hist)
     dev.off()
     
     #all histogram plots sqrt scaled (the y axis reports the real counts, but the size of the bars is sqrt scaled)
-    png(paste0(outdir,"/",outName,"_allHistsSqrt.png"),type='cairo')
-    histSqrt <- ggplot(df , aes(x=freq)) + geom_histogram(position = "identity" , bins=10,binwidth=0.1, boundary = -0.05, color = "black", fill="red")  + theme_bw()  + theme(axis.text.x = element_text(angle = 90, hjust = 1 , vjust = 0.5)) +  scale_x_continuous(breaks=seq(0,1,0.1)) + facet_wrap(~ chr) + scale_y_sqrt() + ylab("counts sqrt scale")
+    png(paste0(outdir,"/",outName,"_allHistsSqrt.png"),type='cairo', width = 1000, height = 1000)
+    histSqrt <- ggplot(df , aes(x=freq)) + geom_histogram(position = "identity" , bins=10,binwidth=0.1, boundary = -0.05, color = "black", fill="red") + theme_bw() 
+    histSqrt <- histSqrt + theme(axis.text.x = element_text(angle = 90, hjust = 1,vjust = 0.5,size =12), axis.text.y=element_text(size=17) , axis.title=element_text(size=21,face="bold"))  
+    histSqrt <- histSqrt + scale_x_continuous(breaks=seq(0,1,0.1)) + facet_wrap(~ chr) + scale_y_sqrt() + ylab("counts sqrt scale")
     print(histSqrt)
     dev.off()
     
     #VRF vs position (faceting)
-    png(paste0(outdir,"/",outName,"_VRFvsPosFaceting.png"),type='cairo')
-    options(scipen=999)
-    par(mfrow=c(ceiling(length(chrs)/6),6))
-    par(oma = c(4, 4, 4, 2)) # make room (i.e. the 4's) for the overall x and y axis titles
-    par(mar = c(3, 2, 1, 1)) # make the plots be closer together
-    par(cex.main=0.9)
-    par(cex.axis=0.8)
-    for (chr in chrs){
-      tdf <- df[df$chr == chr,]
-      tChrSize <-  chrSizes[chrSizes$chr == chr,"size"]
-      plot(tdf$position,tdf$freq,pch=19,xlim=c(0,tChrSize),ylim=c(0,1), main=chr , cex=.5 , las=2 , xaxt="n",yaxt="n")
-      axis(2, mgp=c(3, .5, 0),las=1)
-      axis(1, mgp=c(3, .5, 0),las=2)
-      abline(h=0.5,col="blue",lty=2)
-      abline(h=0.33,col="red",lty=3)
-      abline(h=0.66,col="red",lty=3)
+    png(paste0(outdir,"/",outName,"_VRFvsPosFaceting.png"),type='cairo', width = 1000, height = 1000)
+    #prepare df with x and y axes range
+    axesDf <- data.frame(x = numeric(), y = numeric(), chr = character())
+    for (chr in chrSizes$chr){
+     size <- chrSizes[ match(chr , chrSizes$chr) , "size" ]
+     axesDf <- rbind(axesDf, data.frame(x = 0    , y = 0, chr = chr))
+     axesDf <- rbind(axesDf, data.frame(x = size , y = 1, chr = chr))
     }
-    mtext('SNV position'  , side = 1, outer = TRUE, line = 2)
-    mtext('VRF', side = 2, outer = TRUE, line = 2)
+    p <- ggplot() + geom_hline(yintercept=.5, linetype="dashed", color = "blue", size=.5) 
+    p <- p + geom_hline(yintercept=c(.33,.66), linetype="dotted", color = "red", size=.5) + geom_point(data=df , aes(x=position, y=freq))
+    p <- p + geom_blank(data = axesDf, aes(x = x, y = y)) + theme_bw() + facet_wrap(~chr, scales = "free") + xlab("position") + ylab("frequency") 
+    p <- p + theme(axis.text.x = element_text(angle = 90, hjust = 1,  size =12), axis.text.y=element_text(size=17) , axis.title=element_text(size=21,face="bold"))
+    print(p)
     dev.off()
 
     #count variantTypes and color by mean variantType frequency
-    png(paste0(outdir,"/",outName,"_variantType.png"),type='cairo')
+    png(paste0(outdir,"/",outName,"_variantType.png"),type='cairo', width = 1000, height = 1000)
     meanFrequenciesPerMutation <- NULL;  for (mut in unique(df$ref_alt)) { mf <- mean(df[df$ref_alt == mut , "freq"]); names(mf)<-mut; meanFrequenciesPerMutation <- c(meanFrequenciesPerMutation , mf)   }
     mutId <- names(meanFrequenciesPerMutation)
     mutDf <- data.frame(variantId=mutId, meanFrequenciesPerMutation= meanFrequenciesPerMutation , mutationCount=as.numeric(table(df$ref_alt)[mutId]))
-    print(ggplot(mutDf, aes(y=mutationCount,x=variantId,fill=meanFrequenciesPerMutation)) + geom_bar(stat="identity") + theme_minimal()   +  scale_fill_continuous(guide = guide_legend(title = "mean varyant type\nfrequency")) + xlab("variant type") + ylab("number"))
-   dev.off()
+    p <- ggplot(mutDf, aes(y=mutationCount,x=variantId,fill=meanFrequenciesPerMutation)) + geom_bar(stat="identity") + theme_minimal() 
+    p <- p + scale_fill_continuous(guide = guide_legend(title = "mean varyant type\nfrequency")) + xlab("variant type") + ylab("number")
+    p <- p + theme(axis.text=element_text(size=20), axis.title=element_text(size=23,face="bold"), legend.title=element_text(size=23), legend.text=element_text(size=20))
+    print(p)
+    dev.off()
   
     #combining equivalent types 
-    png(paste0(outdir,"/",outName,"_variantTypeCombined.png"),type='cairo')
+    png(paste0(outdir,"/",outName,"_variantTypeCombined.png"),type='cairo', width = 1000, height = 1000)
     mutDfCombo <- NULL
     mutDfCombo <- rbind(data.frame(variantId="A_C,T_G" , meanFrequenciesPerMutation=mean(c(mutDf["A_C","meanFrequenciesPerMutation"], mutDf["T_G","meanFrequenciesPerMutation"])) , mutationCount=sum(c(mutDf["A_C","mutationCount"], mutDf["T_G","mutationCount"]))) , mutDfCombo )
     mutDfCombo <- rbind(data.frame(variantId="A_G,T_C" , meanFrequenciesPerMutation=mean(c(mutDf["A_G","meanFrequenciesPerMutation"], mutDf["T_C","meanFrequenciesPerMutation"])) , mutationCount=sum(c(mutDf["A_G","mutationCount"], mutDf["T_C","mutationCount"]))) , mutDfCombo )
@@ -170,36 +175,45 @@ plotAll <- function(varPerChrNormalised , df , outName , chrSizes){
     mutDfCombo <- rbind(data.frame(variantId="C_A,G_T" , meanFrequenciesPerMutation=mean(c(mutDf["C_A","meanFrequenciesPerMutation"], mutDf["G_T","meanFrequenciesPerMutation"])) , mutationCount=sum(c(mutDf["C_A","mutationCount"], mutDf["G_T","mutationCount"]))) , mutDfCombo )
     mutDfCombo <- rbind(data.frame(variantId="C_G,G_C" , meanFrequenciesPerMutation=mean(c(mutDf["C_G","meanFrequenciesPerMutation"], mutDf["G_C","meanFrequenciesPerMutation"])) , mutationCount=sum(c(mutDf["C_G","mutationCount"], mutDf["G_C","mutationCount"]))) , mutDfCombo )
     mutDfCombo <- rbind(data.frame(variantId="C_T,G_A" , meanFrequenciesPerMutation=mean(c(mutDf["C_T","meanFrequenciesPerMutation"], mutDf["G_A","meanFrequenciesPerMutation"])) , mutationCount=sum(c(mutDf["C_T","mutationCount"], mutDf["G_A","mutationCount"]))) , mutDfCombo )
-    print(ggplot(mutDfCombo, aes(y=mutationCount,x=variantId,fill=meanFrequenciesPerMutation)) + geom_bar(stat="identity") + theme_minimal()   +  scale_fill_continuous(guide = guide_legend(title = "mean variant type\nfrequency")) + xlab("variant type") + ylab("number"))
+    p <- ggplot(mutDfCombo, aes(y=mutationCount,x=variantId,fill=meanFrequenciesPerMutation)) + geom_bar(stat="identity") + theme_minimal()  
+    p <- p +  scale_fill_continuous(guide = guide_legend(title = "mean variant type\nfrequency")) + xlab("variant type") + ylab("number")
+    p <- p + theme(axis.text=element_text(size=20), axis.title=element_text(size=23,face="bold"), legend.title=element_text(size=23), legend.text=element_text(size=20))
+    print(p)
     dev.off()
     
     #coverage vs VRF
-    png(paste0(outdir,"/",outName,"_depthVsVRF.png"),type='cairo')
-    allLetters <- c(LETTERS ,letters)
-    names(allLetters) <- 1:52
-    df$symbols <- allLetters[df$chr]
-    colors     <- colorRampPalette(brewer.pal(12,"Set3"))(length(selectedChrs))
-    colors     <- addTransparency(colors,alphaCovergeVSfrequency)
-    names(colors) <- selectedChrs
-    df$colors     <- colors[df$chr]
-    plot(df$freq,df$totDepth,ylab="variant depth",xlab="VRF",main="")
-    par(mar=c(5.1, 4.1, 4.1, 8.1), xpd=TRUE)
-    dev.off    
-
-    png(paste0(outdir,"/",outName,"_depthVsVRFletters.png"),type='cairo')
-    plot(df$freq,df$totDepth,type="n",ylab="variant depth",xlab="VRF",main="")
-    text(df$freq,df$totDepth,labels=df$symbols,col=df$colors)
-    legend("topright", inset=c(-0.2,0), legend=selectedChrs , pch=allLetters[1:length(selectedChrs)], title="Legend", col=unique(df$colors), bty='n', cex=0.8)
+    png(paste0(outdir,"/",outName,"_depthVsVRF.png"),type='cairo', width = 1000, height = 1000)
+    p <- ggplot(data=df , aes(x=freq, y=totDepth)) + geom_point() + ylab("variant depth") + xlab("VRF") + theme_bw()
+    p <- p + theme(axis.text=element_text(size=18), axis.title=element_text(size=21,face="bold"))
+    print(p)
     dev.off()
 
-    png(paste0(outdir,"/",outName,"_VRFvsAO.png"),type='cairo')
-    plot(x=df$freq,y=df$AO, main="", pch=19,xlab="VRF",ylab="AO")
+    library("randomcoloR")
+    allLetters     <- c(LETTERS ,letters)
+    missingLetters <- length(allLetters) - length(selectedChrs)
+    if(missingLetters < 0){ allLetters <- c(allLetters,rep(0,abs(missingLetters)))  }
+    palDf  <- data.frame(chr=selectedChrs,color=distinctColorPalette(length(selectedChrs)),symbol=allLetters[1:length(selectedChrs)])
+    df <- merge(df,palDf,by="chr",all.x=TRUE,sort=F) 
+    png(paste0(outdir,"/",outName,"_depthVsVRFletters.png"),type='cairo', width = 1000, height = 1000)
+    p <- ggplot(data=df) + geom_text(aes(x=freq, y=totDepth , label=symbol , color=chr) ) + ylab("variant depth") + xlab("VRF") + theme_bw()
+    p <- p + scale_color_manual("chromosomes", values = palDf$color , labels=palDf$chr ,breaks=palDf$chr)
+    p <- p + guides(colour = guide_legend(override.aes = list(label = palDf$symbol)))
+    p <- p + theme(axis.text=element_text(size=18), axis.title=element_text(size=21,face="bold"), legend.title=element_text(size=18), legend.text=element_text(size=16)) 
+    print(p)
     dev.off()
 
-    png(paste0(outdir,"/",outName,"_VRFvsAOletters.png"),type='cairo')
-    plot(x=df$freq,y=df$AO, main="", pch=19,xlab="VRF",ylab="AO",type="n")
-    text(df$freq,df$AO,labels=df$symbols,col=df$colors)
-    legend("topright", inset=c(-0.2,0), legend=selectedChrs , pch=allLetters[1:length(selectedChrs)], title="Legend", col=unique(df$colors), bty='n', cex=0.8)
+    png(paste0(outdir,"/",outName,"_VRFvsAO.png"),type='cairo', width = 1000, height = 1000)
+    p <- ggplot(data=df , aes(x=freq, y=AO)) + geom_point() + ylab("AO") + xlab("VRF") + theme_bw()
+    p <- p + theme(axis.text=element_text(size=18), axis.title=element_text(size=21,face="bold"))
+    print(p)
+    dev.off()
+
+    png(paste0(outdir,"/",outName,"_VRFvsAOletters.png"),type='cairo', width = 880, height = 880)
+    p <- ggplot(data=df) + geom_text(aes(x=freq, y=AO , label=symbol , color=chr) ) + ylab("AO") + xlab("VRF") + theme_bw()
+    p <- p + scale_color_manual("chromosomes", values = palDf$color , labels=palDf$chr ,breaks=palDf$chr)
+    p <- p + guides(colour = guide_legend(override.aes = list(label = palDf$symbol)))
+    p <- p + theme(axis.text=element_text(size=18), axis.title=element_text(size=21,face="bold"), legend.title=element_text(size=18), legend.text=element_text(size=16)) 
+    print(p)
     dev.off()
 
     #individual plots (coloured by base quality)
@@ -212,6 +226,7 @@ plotAll <- function(varPerChrNormalised , df , outName , chrSizes){
         print(dens)
     }
     dev.off()
+
     #individual plots (coloured by variantTypes)
     df$ref_alt_combo <- df$ref_alt
     df$ref_alt_combo[df$ref_alt_combo == "A_C" | df$ref_alt_combo == "T_G"] = "A_C,T_G"
@@ -240,17 +255,17 @@ plotAll <- function(varPerChrNormalised , df , outName , chrSizes){
     #context
     system(paste0("mkdir -p ",outdir,"/context"))
     for (mut in unique(df$ref_alt)){
-	png(paste0(outdir,"/context/",outName,"_",mut,".png"),type='cairo')
-	tmpDf <- df[df$ref_alt == mut,]  
-	tmpDf <- data.frame(do.call('rbind', strsplit(as.character(tmpDf$context),'',fixed=TRUE)))
-	for(i in 1:length(tmpDf[1,]) ){
+	  png(paste0(outdir,"/context/",outName,"_",mut,".png"),type='cairo')
+	  tmpDf <- df[df$ref_alt == mut,]  
+	  tmpDf <- data.frame(do.call('rbind', strsplit(as.character(tmpDf$context),'',fixed=TRUE)))
+	  for(i in 1:length(tmpDf[1,]) ){
 		tmpDf[,i]<- factor(tmpDf[,i],levels=c("A","C","G","T","N"))  
-	}
-	tmpDfCounts <- NULL; for(i in 1:length(tmpDf[1,]) ){  rbind(tmpDfCounts , table(tmpDf[,i]) ) -> tmpDfCounts  }
-	tmpDfFreq <- apply(tmpDfCounts,1,function(x){ x/sum(x)  } )
-	p <- makePWM(tmpDfFreq[1:4,])
-	seqLogo(p,ic.scale=T)
-	dev.off()
+	  }
+	  tmpDfCounts <- NULL; for(i in 1:length(tmpDf[1,]) ){  rbind(tmpDfCounts , table(tmpDf[,i]) ) -> tmpDfCounts  }
+	  tmpDfFreq <- apply(tmpDfCounts,1,function(x){ x/sum(x)  } )
+	  p <- makePWM(tmpDfFreq[1:4,])
+	  seqLogo(p,ic.scale=T)
+	  dev.off()
     }
 }
 normalise <- function (varPerChr , chrSizes ){
@@ -407,9 +422,6 @@ library(seqLogo)
 library(gridExtra)
 system(paste("mkdir -p",outdir))
 
-#library(session)
-#save.session("session")
-#quit()
 
 #read
 vcf            <- readVcf(vcfFile, "placeHolderFakeName")
@@ -451,7 +463,8 @@ df <- makeDf(CHRforEachAllele , startForEachAllele , RRforEachAllele , AOforEach
 #total allele variants per chr
 varPerChr <- table(CHRforEachAllele) [match (chrs , names(table(CHRforEachAllele)))]
 varPerChrNormalised <- normalise(varPerChr , chrSizes )
-plotAll(varPerChrNormalised , df , variants , chrSizes)
+outName <- variants
+plotAll(varPerChrNormalised , df , outName , chrSizes)
 
 
 
