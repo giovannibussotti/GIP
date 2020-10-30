@@ -106,7 +106,7 @@ plotAll <- function(varPerChrNormalised , df , outName , chrSizes){
     df$chr <- factor(df$chr,levels=chrs)
     
     #tot var perChr (normalised)
-    png(paste0(outdir,"/",outName,"_totVarPerChr.png"),type='cairo' , width = 500, height = 500)
+    png(paste0(outdir,"/",outName,"_totVarPerChr.png"),type='cairo' , width = 1000, height = 1000)
     varPerChrNormalisedDf <- as.data.frame(varPerChrNormalised)
     p <- ggplot(data=varPerChrNormalisedDf, aes(x=CHRforEachAllele, y=Freq)) +  geom_bar(stat="identity",fill="#69b3a2") 
     p <- p + coord_flip() + theme_bw() + ylab("chromosome") + xlab("number of SNVs per Kb")
