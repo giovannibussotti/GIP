@@ -192,6 +192,7 @@ plotAll <- function(varPerChrNormalised , df , outName , chrSizes){
     allLetters     <- c(LETTERS ,letters)
     missingLetters <- length(allLetters) - length(selectedChrs)
     if(missingLetters < 0){ allLetters <- c(allLetters,rep(0,abs(missingLetters)))  }
+    set.seed(1)
     palDf  <- data.frame(chr=selectedChrs,color=distinctColorPalette(length(selectedChrs)),symbol=allLetters[1:length(selectedChrs)])
     df <- merge(df,palDf,by="chr",all.x=TRUE,sort=F) 
     png(paste0(outdir,"/",outName,"_depthVsVRFletters.png"),type='cairo', width = 1000, height = 1000)

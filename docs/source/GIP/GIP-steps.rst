@@ -247,7 +247,7 @@ Measure gene sequencing coverage
 | sampleId.covPerGeKaryoplot/          | folder with CNV genes plots |
 +--------------------------------------+-----------------------------+
 
-The **sampleId.covPerGeKaryoplot/** folder includes plot generated with the `karyoploteR <https://www.bioconductor.org/packages/release/bioc/html/karyoploteR.html>`_ package. Only chromosomes hosting significant gene CNVs are shown. Amplified genes are shown in orange, whereas depleted genes are shown in blue. If any, the repetitive elements located in proximity of gene CNVs are marked in the bottom part of the plots. The ``--repeatRange`` parameter can be used to set the maximum distance (in nucleotides) from each gene CNVs in which repeats are labelled.
+The **sampleId.covPerGeKaryoplot/** folder includes plot generated with the `karyoploteR <https://www.bioconductor.org/packages/release/bioc/html/karyoploteR.html>`_ package. Only chromosomes hosting significant gene CNVs are shown. Amplified genes are shown in orange, whereas depleted genes are shown in blue. If any, the repetitive elements located in proximity of gene CNVs are marked in the bottom part of the plots. The ``--repeatRange`` parameter can be used to set the maximum distance (in nucleotides) from each gene CNVs in which repeats are labelled. To put the gene CNVs in context of possible larger CNV regions the figure also reports a gray slope indicating the normalized bin coverage scores. In most cases the normalized coverage values of genes and bins are very close. However, for certain genes much shorter than the bin size, the plots may show a discrepancy between bin and gene readouts.  
 
 
 Detect, annotate and filter single nucleotide variants
