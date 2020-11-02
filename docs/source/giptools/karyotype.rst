@@ -5,7 +5,7 @@ karyotype
 Purpose
 -------
 
-The karyotype modules aims at comparing the chromosome sequencing coverage distributions of multiple samples. This module is useful when trying to detect chromosome ploidy differences in different isolates.
+The ``karyotype`` module aims at comparing the chromosome sequencing coverage distributions of multiple samples. This module is useful when trying to detect chromosome ploidy differences in different isolates.
 
 Algorithm
 ---------
@@ -19,13 +19,13 @@ Options
 +-------------------+------------------------------------------------------------------+----------------+
 |Option             |Description                                                       |Argument        |
 +===================+==================================================================+================+
-|\-\-samples        |Sample names. It determines the plotting order [**required**]     |[char ...]      |                        
+|\-\-samples        |Sample names. It determines the plotting order [**required**]     |[char ...]      | |                   |                                                                  |                |    
 +-------------------+------------------------------------------------------------------+----------------+
 |\-\-gipOut         |GIP output directory [**required**]                               |[char]          |
 +-------------------+------------------------------------------------------------------+----------------+
 |\-\-outName        |Output name [default NA]                                          |[char]          |
 +-------------------+------------------------------------------------------------------+----------------+
-|\-\-chrs           |Chromosomes to use. If "NA" use the same chromsomes as GIP        |[char ...]      |
+|\-\-chrs           |Chromosomes to use. If "NA" it uses the same chromsomes as GIP    |[char ...]      |
 |                   |                                                                  |                |
 |                   |[default NA]                                                      |                |
 +-------------------+------------------------------------------------------------------+----------------+  
