@@ -5,15 +5,8 @@
 #If no disomic chromosome is deemed, the somy score is just the downsampled score multiplied by 2
 #To assess what chromosome is disomic you can do a dry run of the script and pick a chromsome that has median cenetered on 2 and does not vary much across the various samples
 
-#To test whether the chromosome coverage varies in different conditions in theory one could use a wilcoxon (default), ks or aov test.
-#In practice, since there are many many observations (nucleotide) the distributions of the coverages will look always statistically significant (even if from the boxplot sometimes you can see they are very very similar).
-#Since the coverage vectors are big the statistical test have an hard time (wilcoxon or ks tests return mostly pvalues of 0 and 1).
-#that is why it is needed to adopt a downsampling approach. It simply bins the chromosomes and estimate the median coverage of each bin (--window).
-#It works much better than the fourier approach.
-#As an option (--selectQuantiles) out of each distribution of bins it considers just those between the 10th and the 90th quantile, so to strip out outliers bins. This is because outliers, hotpost loci can also artificially return into statistically significant comparisons, while in fact the genomic coverage distributions are very similar (except for these outliers)
-
-#the script runs Wilcoxon, Kolmogorov-Smirnov and AOV tests on the downsampled data for each comparison and returns one table for each test.
-#it also return the difference between the median downsampled somy score for each chromosome and for each comparison
+#To test whether the chromosome coverage varies in different conditions the script runs Wilcoxon, Kolmogorov-Smirnov and AOV tests for each comparison and returns one table for each test.
+#it also return the difference between the median  somy score for each chromosome and for each comparison
 
 #To compare coverage distribution shapes the script generates qqplots, comparing the quantiles of the two downsampled distributions. If the dots (quantiles) are on the diagonal, then they distributions have the same shape.
 
@@ -28,7 +21,6 @@ parser$add_argument("--MAPQ" , type="integer" , help="bin MAPQ filter [default %
 parser$add_argument("--chrs"    , nargs="+" , help="Chromosomes to use. If \"NA\" use the same chromsomes as GIP [default %(default)s]" , default="NA")
 parser$add_argument("--ylim" , nargs="+" , type="double" , help="Min and max plot y-axis limits [default %(default)s]" , default=c(0,10))
 parser$add_argument("--makeQqplots" , action="store_true" , help="Computes Q-Q plots for all chromosomes in all samples combinations" , default=FALSE)
-parser$add_argument("--selectQuantiles" , help="Remove bins with coverage <10 and >90 quantiles (requires --window >1) [default %(default)s]" , default="no")
 parser$add_argument("--disomicChr"  , help="Normalize by this chromosome [default %(default)s]", default="NA" )
 parser$add_argument("--customColors", help="Tab separated file listing samples names (1st column) and associated colors (2nd column). The first two columns must be named \"SAMPLE\" and \"COLOR\" [default %(default)s]", default="NA" )
 parser$add_argument("--geom" , help="Select boxplot or violin [default %(default)s]" , default="boxplot")

@@ -50,5 +50,5 @@ GIP analyses overview
 * Generate a report file providing summary statistics, tables in exel, figures
 
 
-
+Once GIP execution completed, the user can execute giptools to compare samples sub-sets and highlight chromosome copy number, gene copy number and SNV differences.  
 

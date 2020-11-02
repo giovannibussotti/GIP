@@ -119,40 +119,6 @@ Evaluate chromosome coverage
 | Otherwise, by default this parameter is set to "all", indicating that all chromosomes present in the input fasta genome will be considered.
 
 
-Measure nucleotide coverage
----------------------------
-
-| Mapped reads are used to measure the sequencing coverage of each nucleotide in the *covPerNt* process.
-| Tools used at this step include Samtools view and Bedtools genomecov (options "-d -split").
-| To account for differences in sequencing library size and enable comparisons between samples, the nucleotide sequencing coverage is normalized by the median genomic coverage.
-| The files generated at this step are placed in the **gipOut/samples/sampleId** folder, and include:
-
-+----------------------------------------+-------------------------------------+
-| sampleId.covPerNt.gz                   | nucelotide coverage                 |
-+----------------------------------------+-------------------------------------+
-| sampleId.covPerNt.medianGenomeCoverage | median genome coverage              |
-+----------------------------------------+-------------------------------------+
-| sampleId.pcMapqPerNt.gz                | % of high MAPQ reads per nucleotide |
-+----------------------------------------+-------------------------------------+
-
-| The syntax of the **sampleId.covPerNt.gz** file is: chromosome<Tab>position<Tab>normalized sequencing coverage
-| The **sampleId.pcMapqPerNt.gz** file reports the percent of reads with MAPQ greater or equal to the ``--MAPQ`` value.
-| The file syntax is: chromosome<Tab>position<Tab>%reads
-| These files are used to evaluate the chromosomes somy score distritributions and generate additional results providing a karyotype overview: 
-
-+----------------------------------+----------------------------------+
-| sampleId.covPerNt.allMedians.tsv |  chromosomes median somy scores  | 
-+----------------------------------+----------------------------------+
-| sampleId.covPerNt.boxplot.png    |  somy scores boxplot             |
-+----------------------------------+----------------------------------+
-| sampleId.covPerNt.ridges.png     |  somy scores ridge plot          |
-+----------------------------------+----------------------------------+
-
-| To reduce noise, CPU and memory requirements GIP downsamples the **sampleId.covPerNt.gz** nucleotide coverage scores by binnig the genome into 2500 nucleotide long windows. 
-| Then for each window the somy score is computed measuring the mean nucleotide coverage scores and multiplying by 2.
-| The chromosome median somy score reflects the chromosome copy number under the assuption that most nucleotides in the genome are present in two copies (e.g. disomic chromosomes).
-
-
 Measure genomic bin sequencing coverage
 ---------------------------------------
 
@@ -166,11 +132,11 @@ Measure genomic bin sequencing coverage
 2. Divides the genome in contiguous genomic bins whose size is determined by the ``--binSize`` parameter (default 300bp)
 3. Computes mean sequencing coveage scores for each bin
 4. Normalizes the mean bin coverage by median chromosome sequencing coverage
-5. Applieas a GC content correction on the normalized mean bin coverage 
+5. Applies a GC-content correction on the normalized mean bin coverage (optional)
 6. Estimates the mean MAPQ score for each bin  
 
 | Please note that it is possible to obtain genomic bins with 0 mean coverage, but MAPQ greather than 0. This is the case in genomic depletions where very few reads map to the bin with a certain MAPQ score greather than 0. 
-| The GC content correction is meant to limit potential sequencing biases during DNA amplification. Given the distribution of bin mean coverage scores and GC-content, GIP fits a loess regression using using a 5 folds cross validation to explore the loess *span* parameter (which relates with the fraction of points used to fit the local regressions, and influence the model smoothness).
+| The GC-content correction is enabled setting the parameter ``CGcorrect = true``and is meant to limit potential sequencing biases during DNA amplification. Given the distribution of the normalized bin mean coverage scores and their GC-content, GIP fits a loess regression using using a 5 folds cross validation to explore the loess *span* parameter (which relates with the fraction of points used to fit the local regressions, and influence the model smoothness).
 | Then GIP corrects the original bin coverage by subtracting the values on the loess model, and adding back the difference between the median coverage of all bin before and after subtraction (i.e. recentering the median of the bin coverage scores to 1). Genomic bins that after correction have negative coverage are reported with a 0 value.
 
 
@@ -221,12 +187,29 @@ Measure genomic bin sequencing coverage
 | In all three plots, the bins with mean MAPQ lower than ``--MAPQ`` are shown in gray. The statistically significant bins corresponding to amplifications and depletions are shown respectivelly in orange and blu. The y-axis minimum and maximum limits can be set with the parameter ``--binPlotYlim`` (default ``"0 3"``). Depending on the genome size the overview plots may result too small and unreadable. The parameter ``--binOverviewSize`` accepts two integers controlling respectivelly the plots heights and the widths (default ``"400 1000"``). The values specified with the ``--customCoverageLimits`` parameter will be highligthed with red dashed lines. The **sampleId.bed** file is an intermediate file used by GIP from the quantification of genomic intervals. It is not automatically removed by GIP because it allows the user to re-execute the pipeline with the ``-resume`` option. However, if the user is not planning on re-executing GIP he/she can simply delete this file from the **work/** directory to save disk space.     
 
 
+| Genomic bin sequencing coverage values are also used to compute the chromosome somy score distritributions and evaluate the chromosome copy number. Bins whith mean MAPQ score lower than the ``--MAPQ`` value are not considered.
+| To account for differences in sequencing library size and enable comparisons between samples, the mean bin sequencing coverage is normalized by the median of all genomic bins. 
+| Then for each window the somy score is computed measuring the mean nucleotide coverage scores and multiplying by 2.
+| The chromosome median somy score reflects the chromosome copy number under the assuption that most nucleotides in the genome are present in two copies (e.g. disomic chromosomes).
+| The files produced at this step provide an overview of the sample karyotype and include:
+
++----------------------------------------+--------------------------------+
+| sampleId.karyotype.medianCoverage      | median coverage of all bins    |
++----------------------------------------+--------------------------------+
+| sampleId.karyotype.allMedians.tsv      | chromosomes median somy scores | 
++----------------------------------------+--------------------------------+
+| sampleId.karyotype.boxplot.png         | somy scores boxplot            |
++----------------------------------------+--------------------------------+
+| sampleId.karyotype.ridges.png          | somy scores ridge plot         |
++----------------------------------------+--------------------------------+
+ 
+
 
 Measure gene sequencing coverage
 --------------------------------
 
 | Mapped reads are used to measure the mean sequencing coverage of annotated genes in the *covPerGe* process.  
-| To estimate the mean coverage the N bases are not considered. GIP normalizes the coverage scores by the chromosome median coverage. correct for potential GC-content biases at gene level GIP utilizes the same approach described for genomic bins (see above).To detect statistically significant CNV genes GIP fits a gaussian mixture distribution with 2 components. One distribution accounting for the vast majority of observations fitting the coverage of non-CNV genes (central distribution), and another distribution fitting the CNV genes (outliers distribution). The cental distributions represents the-null hypothesis under which a given coverage value is merely caused by artefact fluctuations in sequencing depth, rather than a genuine, biologically meaningful gene amplification or depletion. To test CNV significance GIP uses the mean and the standard deviation of the central distribution and assigns a z-score and a p-value to all genes. Significant genes with a mean MAPQ score lower than ``--MAPQ`` are discarded. In the same way as for genomic bins, the parameter ``--customCoverageLimits`` can be used to enforce custom coverage threshold on significant genes. The parameter ``--covPerGeSigOPT`` accepts  a string of 3 parameters and can be used to control the statical test.
+| GIP normalizes the coverage scores by the chromosome median coverage. To correct for potential GC-content biases at gene level GIP utilizes the same approach described for genomic bins (option enabled by ``CGcorrect = true``, see above).To detect statistically significant CNV genes GIP fits a gaussian mixture distribution with 2 components. One distribution accounting for the vast majority of observations fitting the coverage of non-CNV genes (central distribution), and another distribution fitting the CNV genes (outliers distribution). The cental distributions represents the-null hypothesis under which a given coverage value is merely caused by artefact fluctuations in sequencing depth, rather than a genuine, biologically meaningful gene amplification or depletion. To test CNV significance GIP uses the mean and the standard deviation of the central distribution and assigns a z-score and a p-value to all genes. Significant genes with a mean MAPQ score lower than ``--MAPQ`` are discarded. In the same way as for genomic bins, the parameter ``--customCoverageLimits`` can be used to enforce custom coverage threshold on significant genes. The parameter ``--covPerGeSigOPT`` accepts  a string of 3 parameters and can be used to control the statical test.
 
 * *--pThresh* - adjusted p-value threshold [num] 
 * *--padjust* - method for multiple testing correction [num]
