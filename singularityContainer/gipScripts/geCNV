@@ -16,20 +16,20 @@
 
 suppressPackageStartupMessages(library("argparse"))
 parser <- ArgumentParser(description="Compare gene sequencing coverage in 2 samples")
-parser$add_argument("--samples" , nargs="+", required=TRUE, help="Sample names. It determines the plotting order [default %(default)s]" )
-parser$add_argument("--gipOut"  , required=TRUE , help="GIP output directory [default %(default)s]" , default="NA")
+parser$add_argument("--samples" , nargs="+", required=TRUE, help="Sample names. It determines the plotting order [required]" )
+parser$add_argument("--gipOut"  , required=TRUE , help="GIP output directory [required]")
 parser$add_argument("--outName" , help="Output name [default %(default)s]" , default="NA")
-parser$add_argument("--chrs"    , nargs="+" , help="chromosomes to use. If not defined, it considers the chromosomes selected at gip runtime [default %(default)s]" , default="NA")
-parser$add_argument("--MAPQ"  , type="integer" , help="points with MAPQ < --MAPQ will be labeled [default %(default)s]" , default=-1)
-parser$add_argument("--highLowRatio" , nargs="+" , type="character" , help="Provide two numbers. Bins > num1 or < num2 will be colored differently (default 1.5 0.5)" , default= "NA" )
-parser$add_argument("--pseudocount" , type="double" , help="value to add to the normalized median coverage. Avoid infinite (1/0) and NaN (0/0) ratio values [default %(default)s]" , default=0.1)
-parser$add_argument("--debug"  , action="store_true" , help="dump session and quit [default %(default)s]" , default=FALSE)
-parser$add_argument("--plot1_ylim" , type="double" , help="graphical parameter plot1: max ratio value before saturation [default %(default)s]" , default=5)
-parser$add_argument("--plot3_min"  , type="double" , help="graphical parameter plot3: min shown value. DEPENDENCY:--scaleFree no [default %(default)s]" , default=0)
-parser$add_argument("--plot3_max"  , type="double" , help="graphical parameter plot3: max shown value. DEPENDENCY:--scaleFree no [default %(default)s]" , default=100)
-parser$add_argument("--plot24_min" , type="double" , help="graphical parameter plot2&4: min shown value. DEPENDENCY:--scaleFree no [default %(default)s]" , default=-1)
-parser$add_argument("--plot24_max" , type="double" , help="graphical parameter plot2&4: max shown value. DEPENDENCY:--scaleFree no [default %(default)s]" , default=3)
-parser$add_argument("--scaleFree"  , help="graphical parameter plot3&4: should faceting plot be scale free? [yes|no] [default %(default)s]" , default="yes")
+parser$add_argument("--chrs"    , nargs="+" , help="Chromosomes to use. If \"NA\" it uses the same chromsomes as GIP [default %(default)s]" , default="NA")
+parser$add_argument("--MAPQ"  , type="integer" , help="Label genes with MAPQ < --MAPQ [default %(default)s]" , default=0)
+parser$add_argument("--highLowRatio" , nargs="+" , type="double" , help="Provide 2 numbers. Genes with ratio scores > num1 or < num2 will be colored differently" , default= c(1.5,0.5) )
+parser$add_argument("--pseudocount" , type="double" , help="Normalized mean coverage pseudocount value preventing infinite (1/0) and NaN (0/0) ratio values [default %(default)s]" , default=0.1)
+parser$add_argument("--plot1_ylim" , type="double" , help="Plot1 visualization threshold. Gene ratio values greather than this threshold are shown as --ylim [default %(default)s]" , default=5)
+parser$add_argument("--plot3_min"  , type="double" , help="Plot3 visualization threshold. Min normalized gene coverage. DEPENDENCY:--scaleFree no [default %(default)s]" , default=0)
+parser$add_argument("--plot3_max"  , type="double" , help="Plot3 visualization threshold. Max normalized gene coverage. DEPENDENCY:--scaleFree no [default %(default)s]" , default=100)
+parser$add_argument("--plot24_min" , type="double" , help="Plots 2 and 4 visualization threshold. Min normalized gene coverage (log10 scale). DEPENDENCY:--scaleFree no [default %(default)s]" , default=-1)
+parser$add_argument("--plot24_max" , type="double" , help="Plots 2 and 4 visualization threshold. Max normalized gene coverage (log10 scale). DEPENDENCY:--scaleFree no [default %(default)s]" , default=3)
+parser$add_argument("--scaleFree"  , help="Graphical parameter plots 3 and 4. Set scale free axes [yes|no] [default %(default)s]" , default="yes")
+parser$add_argument("--debug"  , action="store_true" , help="Dump session and quit [default %(default)s]" , default=FALSE)
 args <- parser$parse_args()
 #patch NA
 for (n in names(args)){if(args[[n]][1] == "NA"){args[[n]] <- NA}  }
@@ -58,11 +58,6 @@ if (is.na (chrs[1])){
   chrs <- chrSize$chr
 }
 chrSize <- chrSize[chrSize$chr %in% chrs,]
-if (! is.na(highLowRatio[1])){
-  highLowRatio <- as.numeric(highLowRatio)
-} else {
-  highLowRatio <- c(1.5,0.5)
-}
 
 #READ
 allSamples <- list()

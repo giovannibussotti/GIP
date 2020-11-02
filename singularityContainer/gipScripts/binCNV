@@ -4,10 +4,10 @@ parser$add_argument("--samples" , nargs="+", required=TRUE, help="Sample names. 
 parser$add_argument("--gipOut"  , required=TRUE , help="GIP output directory [required]")
 parser$add_argument("--outName" , help="Output name [default %(default)s]" , default="NA")
 parser$add_argument("--chrs"    , nargs="+" , help="Chromosomes to use. If \"NA\" it uses the same chromsomes as GIP [default %(default)s]" , default="NA")
-parser$add_argument("--MAPQ"  , type="integer" , help="Label bins with MAPQ < --MAPQ [default %(default)s]" , default="0")
+parser$add_argument("--MAPQ"  , type="integer" , help="Label bins with MAPQ < --MAPQ [default %(default)s]" , default=0)
 parser$add_argument("--ylim" , type="double" , help="Plot visualization threshold. Bin ratio values greather than this threshold are shown as --ylim [default %(default)s]" , default="3")
-parser$add_argument("--highLowRatio" , nargs="+" , type="double" , help="Provide two numbers. Bins > num1 or < num2 will be colored differently [default %(default)s]" , default= c(1.5,0.5) )
-parser$add_argument("--pseudocount" , type="double" , help="Normalized mean coverage pseudo count value preventing infinite (1/0) and NaN (0/0) ratio values [default %(default)s]" , default=0.1)
+parser$add_argument("--highLowRatio" , nargs="+" , type="double" , help="Provide 2 numbers. Bins with ratio scores > num1 or < num2 will be colored differently [default %(default)s]" , default= c(1.5,0.5) )
+parser$add_argument("--pseudocount" , type="double" , help="Normalized mean coverage pseudocount value preventing infinite (1/0) and NaN (0/0) ratio values [default %(default)s]" , default=0.1)
 parser$add_argument("--debug"  , action="store_true" , help="Dump session and quit [default %(default)s]" , default=FALSE)
 args <- parser$parse_args()
 #patch NA

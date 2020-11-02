@@ -35,9 +35,9 @@ Options
 |                   |                                                                  |                |   
 |                   |threshold are shown as --ylim [default 3]                         |                |
 +-------------------+------------------------------------------------------------------+----------------+
-|\-\-highLowRatio   | Provide two numbers. Bins > num1 or < num2 will                  |[double,double] |
+|\-\-highLowRatio   | Provide 2 numbers. Bins with ratio scores > num1                 |[double,double] |
 |                   |                                                                  |                |
-|                   | be colored differently [default (1.5 , 0.5)]                     |                |
+|                   | or < num2 will be colored differently [default (1.5 , 0.5)]      |                |
 +-------------------+------------------------------------------------------------------+----------------+
 |\-\-pseudocount    | Normalized mean coverage pseudo count value preventing           |[double]        |
 |                   |                                                                  |                |
