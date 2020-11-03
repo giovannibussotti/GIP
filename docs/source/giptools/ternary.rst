@@ -2,11 +2,6 @@
 ternary
 #######
 
-#####
-geCNV
-#####
-
-
 Purpose
 -------
 The ``ternary`` module aims at comparing the gene sequencing coverage of 3 samples to identify gene CNVs.
@@ -20,42 +15,54 @@ The module loads for the three samples the GIP files with the gene sequencing co
 Options
 -------
 
-+-------------------+------------------------------------------------------------------+----------------+
-|Option             |Description                                                       |Argument        |
-+===================+==================================================================+================+
-|\-\-samples        |Sample names. It determines the plotting order [**required**]     |[char ...]      | |                   |                                                                  |                |    
-+-------------------+------------------------------------------------------------------+----------------+
-|\-\-gipOut         |GIP output directory [**required**]                               |[char]          |
-+-------------------+------------------------------------------------------------------+----------------+
-|\-\-outName        |Output name [default NA]                                          |[char]          |
-+-------------------+------------------------------------------------------------------+----------------+
-|\-\-chrs           |Chromosomes to use. If "NA" it uses the same chromsomes as GIP    |[char ...]      |
-|                   |                                                                  |                |
-|                   |[default NA]                                                      |                |
-+-------------------+------------------------------------------------------------------+----------------+
-|\-\-MAPQ           |Label genes with MAPQ < --MAPQ [default 0]                        |[int]           |
-+-------------------+------------------------------------------------------------------+----------------+
++-----------------------+--------------------------------------------------------------+----------------+
+|Option                 |Description                                                   |Argument        |
++=======================+==============================================================+================+
+|\-\-samples            |Sample names. It determines the plotting order [**required**] |[char ...]      |     
++-----------------------+--------------------------------------------------------------+----------------+
+|\-\-gipOut             |GIP output directory [**required**]                           |[char]          |
++-----------------------+--------------------------------------------------------------+----------------+
+|\-\-outName            |Output name [default NA]                                      |[char]          |
++-----------------------+--------------------------------------------------------------+----------------+
+|\-\-chrs               |Chromosomes to use. If "NA" it uses the same chromsomes as GIP|[char ...]      |
+|                       |                                                              |                |
+|                       |[default NA]                                                  |                |
++-----------------------+--------------------------------------------------------------+----------------+
+|\-\-MAPQ               |Label genes with MAPQ < --MAPQ [default 0]                    |[int]           |
++-----------------------+--------------------------------------------------------------+----------------+
+|\-\-pseudocount        |Normalized mean coverage                                      |[double]        |
+|                       |                                                              |                |
+|                       |pseudocount value (for plots only)  [default 0.1]             |                |
++-----------------------+--------------------------------------------------------------+----------------+
+|\-\-colorByDelta       | Color genes by increasing delta                              |                |
++-----------------------+--------------------------------------------------------------+----------------+
+|\-\-highLowDeltaColor  | Colors for high and low delta.                               |[char char]     |
+|                       |                                                              |                |
+|                       | DEPENDENCY \-\-colorByDelta  [default black green]           |                |
++-----------------------+--------------------------------------------------------------+----------------+
+|\-\-showDensity        | Show density area                                            |                |
++-----------------------+--------------------------------------------------------------+----------------+
+|\-\-highLowDensityColor| Colors for high and low density                              |[char char]     |
+|                       |                                                              |                |
+|                       | DEPENDENCY \-\-showDensity. [default black gray]             |                |
++-----------------------+--------------------------------------------------------------+----------------+
+|\-\-plot3dMaxCOV       | 3-D scatteplot visualization threshold.                      |[double]        |
+|                       |                                                              |                |
+|                       | Gene/cluster coverage values greather than this threshold    |                |
+|                       |                                                              |                |
+|                       | are shown as \-\-plot3dMaxCOV  [default 3]                   |                |
++-----------------------+--------------------------------------------------------------+----------------+
+|\-\-plot3dMaxFC        | 3-D scatteplot visualization threshold. Gene/cluster coverage|[double]        |
+|                       |                                                              |                |
+|                       | fold change values greather than this threshold              |                |
+|                       |                                                              |                |
+|                       | are shown as \-\-plot3dMaxFC [default 3]                     |                |
++-----------------------+--------------------------------------------------------------+----------------+  
+|\-\-debug              |Dump session and quit                                         |                |
++-----------------------+--------------------------------------------------------------+----------------+
+|\-h, \-\-help          |Show help message                                             |                |
++-----------------------+--------------------------------------------------------------+----------------+
 
-
-
-+-------------------+------------------------------------------------------------------+----------------+  
-|\-\-debug          |Dump session and quit                                             |                |
-+-------------------+------------------------------------------------------------------+----------------+
-|\-h, \-\-help      |Show help message                                                 |                |
-+-------------------+------------------------------------------------------------------+----------------+
-
-
-TO ADD
-+-------------------+------------------------------------------------------------------+----------------+
---colorByDelta" , action="store_true" , help="Color genes by increasing delta [default %(default)s]", default=FALSE)
-+-------------------+------------------------------------------------------------------+----------------+
---highLowDeltaColor" , nargs="+", help="Colors for high and low delta. DEPENDENCY --colorByDelta [default %(default)s]", default=c("black","green"))
-+-------------------+------------------------------------------------------------------+----------------+
---showDensity"  , action="store_true" , help="Show density area [default %(default)s]",--highLowDensityColor" , nargs="+", help="Colors for high and low density. DEPENDENCY --showDensity. [default %(default)s]", default=c("black","gray"))
-+-------------------+------------------------------------------------------------------+----------------+
---plot3dMaxCOV" , type="double" , help="3-D scatteplot visualization threshold. Gene/cluster coverage values greather than this threshold are shown as --plot3dMaxCOV [default %(default)s]" , default=3)
-+-------------------+------------------------------------------------------------------+----------------+
---plot3dMaxFC"  , type="double" , help="3-D scatteplot visualization threshold. Gene/cluster coverage fold change values greather than this threshold are shown as --plot3dMaxFC [default %(default)s]" , default=3)
 
 
 

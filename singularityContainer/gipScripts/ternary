@@ -19,6 +19,7 @@ parser$add_argument("--gipOut"  , required=TRUE , help="GIP output directory [re
 parser$add_argument("--outName" , help="Output name [default %(default)s]" , default="NA")
 parser$add_argument("--chrs"    , nargs="+" , help="Chromosomes to use. If \"NA\" it uses the same chromsomes as GIP [default %(default)s]" , default="NA")
 parser$add_argument("--MAPQ"  , type="integer" , help="Label genes with MAPQ < --MAPQ [default %(default)s]" , default=0)
+parser$add_argument("--pseudocount" , type="double" , help="Normalized mean coverage pseudocount value (for plots only) [default %(default)s]" , default=0.1)
 parser$add_argument("--colorByDelta" , action="store_true" , help="Color genes by increasing delta [default %(default)s]", default=FALSE)
 parser$add_argument("--highLowDeltaColor" , nargs="+", help="Colors for high and low delta. DEPENDENCY --colorByDelta [default %(default)s]", default=c("black","green"))
 parser$add_argument("--showDensity"  , action="store_true" , help="Show density area [default %(default)s]", default=FALSE)
@@ -78,9 +79,9 @@ makeDf <- function(List){
   chromosome = as.character(gsub(x=List[[s1]][ids,]$locus,pattern="^([^\\:]+)\\:.+",replacement="\\1")) , 
   geneStart  = as.numeric(gsub(x=List[[s1]][ids,]$locus,pattern="^([^\\:]+)\\:(\\d+)-(\\d+)$",replacement="\\2")) , 
   geneEnd    = as.numeric(gsub(x=List[[s1]][ids,]$locus,pattern="^([^\\:]+)\\:(\\d+)-(\\d+)$",replacement="\\3")) , 
-  covS1 = List[[s1]][ids,"normalizedMeanCoverage"] , 
-  covS2 = List[[s2]][ids,"normalizedMeanCoverage"] ,
-  covS3 = List[[s3]][ids,"normalizedMeanCoverage"] ,
+  covS1 = List[[s1]][ids,"normalizedMeanCoverage"] + pseudocount , 
+  covS2 = List[[s2]][ids,"normalizedMeanCoverage"] + pseudocount ,
+  covS3 = List[[s3]][ids,"normalizedMeanCoverage"] + pseudocount ,
   color = "black" ,
   type = "normal" ,
   MAPQ  = pmin(List[[s1]][ids,"MAPQ"] , List[[s2]][ids,"MAPQ"], List[[s3]][ids,"MAPQ"]) , 
@@ -153,6 +154,11 @@ if(length(df3d[["lowMAPQ"]][,1]) > 0){
 invisible(dev.off())
 
 #OUTPUT TABLE
+#remove pseudocount
+df$covS1 <- df$covS1 - pseudocount 
+df$covS2 <- df$covS2 - pseudocount 
+df$covS3 <- df$covS3 - pseudocount 
+#separate
 dfCl <- df[ df$type == "cluster", ]
 df   <- df[ df$type != "cluster", ]
 #label overlap with gaps or repeats
