@@ -36,9 +36,33 @@ Options
 |                   |                                                                  |                |
 |                   | or < num2 will be colored differently [default (1.5 , 0.5)]      |                |
 +-------------------+------------------------------------------------------------------+----------------+
-|\-\-pseudocount    |Normalized mean coverage pseudo count value preventing           |[double]        |
+|\-\-pseudocount    |Normalized mean coverage pseudo count value preventing            |[double]        |
 |                   |                                                                  |                |
 |                   |  infinite (1/0) and NaN (0/0) ratio values [default 0.1]         |                |
++-------------------+------------------------------------------------------------------+----------------+
+|\-\-plot1_ylim     |Plot1 visualization threshold. Gene ratio values greather         |[double]        |
+|                   |                                                                  |                | 
+|                   | than this threshold are shown as --ylim  [default 5]             |                |
++-------------------+------------------------------------------------------------------+----------------+
+|\-\-plot3_min      |Plot3 visualization threshold. Min normalized gene coverage       |[double]        |
+|                   |                                                                  |                |
+|                   |DEPENDENCY:--scaleFree no [default 0]                             |                |
++-------------------+------------------------------------------------------------------+----------------+
+|\-\-plot3_max      |Plot3 visualization threshold. Max normalized gene coverage       |[double]        |
+|                   |                                                                  |                |
+|                   |DEPENDENCY:--scaleFree no [default 100]                           |                |
++-------------------+------------------------------------------------------------------+----------------+
+|\-\-plot24_min     |Plots 2 and 4 visualization threshold. Min normalized gene        |[double]        |
+|                   |                                                                  |                |
+|                   |coverage (log10 scale). DEPENDENCY:--scaleFree no [default -1]    |                |
++-------------------+------------------------------------------------------------------+----------------+
+|\-\-plot24_max     |Plots 2 and 4 visualization threshold. Max normalized gene        |[double]        |
+|                   |                                                                  |                |
+|                   |coverage (log10 scale). DEPENDENCY:--scaleFree no [default 3]     |                |
++-------------------+------------------------------------------------------------------+----------------+
+|\-\-scaleFree      | Graphical parameter plots 3 and 4.                               |[yes|no]        |
+|                   |                                                                  |                |
+|                   | Set scale free axes [default yes]                                |                |
 +-------------------+------------------------------------------------------------------+----------------+  
 |\-\-debug          |Dump session and quit                                             |                |
 +-------------------+------------------------------------------------------------------+----------------+
@@ -46,22 +70,7 @@ Options
 +-------------------+------------------------------------------------------------------+----------------+
 
 
-TO ADD:
-+-------------------+------------------------------------------------------------------+----------------+
-|\-\-plot1_ylim     |Plot1 visualization threshold. Gene ratio values greather         |[double]        |
-|                   |                                                                  |                | 
-|                   | than this threshold are shown as --ylim  [default 5]             |                |
-+-------------------+------------------------------------------------------------------+----------------+
-\-\-plot3_min"  , type="double" , help="Plot3 visualization threshold. Min normalized gene coverage. DEPENDENCY:--scaleFree no [default %(default)s]" , default=0)
-+-------------------+------------------------------------------------------------------+----------------+
-\-\-plot3_max"  , type="double" , help="Plot3 visualization threshold. Max normalized gene coverage. DEPENDENCY:--scaleFree no [default %(default)s]" , default=100)
-+-------------------+------------------------------------------------------------------+----------------+
-\-\-plot24_min" , type="double" , help="Plots 2 and 4 visualization threshold. Min normalized gene coverage (log10 scale). DEPENDENCY:--scaleFree no [default %(default)s]" , default=-1)
-+-------------------+------------------------------------------------------------------+----------------+
-\-\-plot24_max" , type="double" , help="Plots 2 and 4 visualization threshold. Max normalized gene coverage (log10 scale). DEPENDENCY:--scaleFree no [default %(default)s]" , default=3)
-+-------------------+------------------------------------------------------------------+----------------+
-\-\-scaleFree"  , help="Graphical parameter plots 3 and 4. Set scale free axes [yes|no] [default %(default)s]" , default="yes")
-+-------------------+------------------------------------------------------------------+----------------+
+
 
 Output
 ------
