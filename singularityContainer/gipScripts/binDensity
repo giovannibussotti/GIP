@@ -12,23 +12,22 @@
 
 suppressPackageStartupMessages(library("argparse"))
 parser <- ArgumentParser(description="Density plot of bin sequencing coverage of many samples")
-parser$add_argument("--samplesList" , nargs="+", required=TRUE, help="file listing in one column the samples to use [default %(default)s]" )
-parser$add_argument("--gipOut"  , required=TRUE , help="GIP output directory [default %(default)s]" , default="NA")
+parser$add_argument("--samplesList" , nargs="+", required=TRUE, help="File listing in one column the samples to use [required]" )
+parser$add_argument("--gipOut"  , required=TRUE , help="GIP output directory [required]")
 parser$add_argument("--outName" , help="Output name [default %(default)s]" , default="NA")
-parser$add_argument("--chrs"    , nargs="+" , help="chromosomes to use. If not defined, it considers the chromosomes selected at gip runtime [default %(default)s]" , default="NA")
-parser$add_argument("--highLowCovThresh" , nargs="+" , type="character" , help="Provide two numbers. Bins > num1 or < num2 will be labeled. [default %(default)s]" , default= "NA" )
-parser$add_argument("--minMAPQ" , type="integer"   , help="filter out bins MAPQ < --minMAPQ [default %(default)s]", default=0 )
-parser$add_argument("--pseudocount" , type="double" , help="value to add to the normalized mean coverage. Avoid infinite (1/0) and NaN (0/0) ratio values [default %(default)s]" , default=0.1)
-parser$add_argument("--showSubset" , type="integer" , help="show a random subset of genomic bins above or below --highLowCovThresh. Does not affect the density estimation [default %(default)s]", default=50000)
-parser$add_argument("--bandwidth" , type="double" , nargs="+" , help="numeric vector (length 1 or 2) of smoothing bandwidth(s) (e.g. 0.1 0.05) [default %(default)s]" , default=0.01)
-parser$add_argument("--nbin" , type="integer" ,  nargs="+" , help="numeric vector of length one (for both directions) or two (for x and y separately) specifying the number of equally spaced grid points for the density estimation [default %(default)s]" , default=400)
-parser$add_argument("--debug"  , action="store_true" , help="dump session and quit [default %(default)s]" , default=FALSE)
+parser$add_argument("--chrs"    , nargs="+" , help="Chromosomes to use. If \"NA\" it uses the same chromsomes as GIP [default %(default)s]" , default="NA")
+parser$add_argument("--highLowCovThresh" , nargs="+" , type="double" , help="Provide two numbers. Bins with normalized coverage values > num1 or < num2 will be labeled. [default %(default)s]" , default= c(1.5,0.5) )
+parser$add_argument("--minMAPQ" , type="integer"   , help="Filter out bins with MAPQ < --minMAPQ [default %(default)s]", default=0 )
+parser$add_argument("--pseudocount" , type="double" , help="Normalized mean coverage pseudocount value preventing minus infinite values in log10 transformation [default %(default)s]" , default=0.1)
+parser$add_argument("--showSubset" , type="integer" , help="Show a random subset of genomic bins with normalized coverage values above or below --highLowCovThresh. This random subset does not affect the density estimation [default %(default)s]", default=50000)
+parser$add_argument("--bandwidth" , type="double" , nargs="+" , help="Smoothing bandwidth value. Provide two numbers to enforce different bandwidths on the x and y axes respectively [default %(default)s]" , default=0.01)
+parser$add_argument("--nbin" , type="integer" ,  nargs="+" , help="Number of equally spaced grid points for the density estimation. Provide two numbers to use different numbers for the x and y axes respectively [default %(default)s]" , default=400)
+parser$add_argument("--debug"  , action="store_true" , help="Dump session and quit [default %(default)s]" , default=FALSE)
 args <- parser$parse_args()
 
 #patch NA
 for (n in names(args)){if(args[[n]][1] == "NA"){args[[n]] <- NA}  }
 for (n in names(args)){assign(n,args[[n]]) }
-if (! is.na(highLowCovThresh[1])){highLowCovThresh <- as.double(highLowCovThresh)}
 
 suppressPackageStartupMessages(library(data.table))
 suppressPackageStartupMessages(library(fields))
@@ -83,7 +82,7 @@ df <- as.data.frame(df)
 df$normalizedMeanCoverage[df$normalizedMeanCoverage <= pseudocount ] = pseudocount
 
 #materializedPoints
-materializedPoints <- df[df$normalizedMeanCoverage <= 0.5 | df$normalizedMeanCoverage >= 1.5,]
+materializedPoints <- df[df$normalizedMeanCoverage <= highLowCovThresh[2] | df$normalizedMeanCoverage >= highLowCovThresh[1],]
 materializedPoints<- unique(materializedPoints)
 maxPointsNum <- min(length(materializedPoints[,1]) , showSubset)
 set.seed(321)
@@ -101,11 +100,11 @@ fudgeit <- function(){
 #plot smooth
 pdf(paste0(outName,".pdf"))
 par(font.axis = 2 , mar = c(5,4,4,5) + .1)
-smoothScatter(x=df$startFixed , y=log(df$normalizedMeanCoverage) , bandwidth=bandwidth , nbin=nbin , nrpoints=0 , xlab="chromosomes" , ylab="genomic bin coverage",xaxt = 'n' , postPlotHook = fudgeit , xaxs="i" , yaxs="i" , font=2)
-points(materializedPoints$startFixed, log(materializedPoints$normalizedMeanCoverage), pch=19, col="black", cex=0.2)
-segments(x0=0 , y0=log(1.5) , x1=sum(chrSize$size) , y1=log(1.5) , lty=3, col='red', lwd=1)
+smoothScatter(x=df$startFixed , y=log10(df$normalizedMeanCoverage) , bandwidth=bandwidth , nbin=nbin , nrpoints=0 , xlab="chromosomes" , ylab="log10 normalized bin coverage",xaxt = 'n' , postPlotHook = fudgeit , xaxs="i" , yaxs="i" , font=2)
+points(materializedPoints$startFixed, log10(materializedPoints$normalizedMeanCoverage), pch=19, col="black", cex=0.2)
+segments(x0=0 , y0=log10(highLowCovThresh[1]) , x1=sum(chrSize$size) , y1=log10(highLowCovThresh[1]) , lty=3, col='red', lwd=1)
 segments(x0=0 , y0=0 , x1=sum(chrSize$size) , y1=0 , lty=2, col='black', lwd=1)
-segments(x0=0 , y0=log(0.5) , x1=sum(chrSize$size) , y1=log(0.5) , lty=3, col='red', lwd=1)
+segments(x0=0 , y0=log10(highLowCovThresh[2]) , x1=sum(chrSize$size) , y1=log10(highLowCovThresh[2]) , lty=3, col='red', lwd=1)
 abline(v=chrSizeCumSum[-1], lty=1, col='gray', lwd=2)
 axis(1, at=chrMids, labels=names(chrMids) , font=2)
 invisible(dev.off())
