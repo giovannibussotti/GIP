@@ -9,13 +9,13 @@
 
 suppressPackageStartupMessages(library("argparse"))
 parser <- ArgumentParser(description="Compare SNVs in multiple samples")
-parser$add_argument("--samples" , nargs="+", required=TRUE, help="Sample names. It determines the plotting order [default %(default)s]" )
+parser$add_argument("--samples" , nargs="+", required=TRUE, help="Sample names. It determines the plotting order [required]" )
 parser$add_argument("--gipOut"  , required=TRUE , help="GIP output directory [default %(default)s]" , default="NA")
 parser$add_argument("--outName" , help="Output name [default %(default)s]" , default="NA")
-parser$add_argument("--chrs"    , nargs="+" , help="chromosomes to use. If not defined, it considers the chromosomes selected at gip runtime [default %(default)s]" , default="NA")
-parser$add_argument("--coordCartesianYlim" , help="max y-axis value for density plots [default %(default)s]" , default="NA")
-parser$add_argument("--minVRF" , type="double" , help="use just the SNVs with frequency >= minVRF [default %(default)s]" , default=0)
-parser$add_argument("--debug"  , action="store_true" , help="dump session and quit [default %(default)s]" , default=FALSE)
+parser$add_argument("--chrs"    , nargs="+" , help="Chromosomes to use. If \"NA\" it uses the same chromsomes as GIP [default %(default)s]" , default="NA")
+parser$add_argument("--coordCartesianYlim" , help="Max y-axis value for density plots. If \"NA\" the value is automatically attributed [default %(default)s]" , default="NA")
+parser$add_argument("--minVRF" , type="double" , help="Discard SNVs with frequency < --minVRF [default %(default)s]" , default=0)
+parser$add_argument("--debug"  , action="store_true" , help="Dump session and quit [default %(default)s]" , default=FALSE)
 args <- parser$parse_args()
 #patch NA
 for (n in names(args)){if(args[[n]][1] == "NA"){args[[n]] <- NA}  }
