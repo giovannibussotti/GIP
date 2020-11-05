@@ -29,7 +29,7 @@ Options
 |                       |                                                              |                |
 |                       |[default NA]                                                  |                |
 +-----------------------+--------------------------------------------------------------+----------------+
-|\-\-MAPQ               |Remove bins with MAPQ < --MAPQ [default 0]                    |[int]           |
+|\-\-minMAPQ            |Remove bins with MAPQ < --MAPQ [default 0]                    |[int]           |
 +-----------------------+--------------------------------------------------------------+----------------+
 |\-\-pseudocount        |Normalized mean coverage                                      |[double]        |
 |                       |                                                              |                |
