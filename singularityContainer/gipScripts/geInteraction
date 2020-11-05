@@ -1,34 +1,3 @@
-#given a folder with multiple covPerBin.gz or covPerGe.gz or chrStartEndScore.gz this script:
-#1) selects the bins showing high delta coverage (> --minDelta) (and MAPQ > --minMAPQ) (for covPerBin and covPerGe)
-#2) when possible it merges together adjacent bins (with cov > --minDelta) averaging the coverage scores, generating a "CNV" dataset (for covPerBin or chrStartEndScore). CNVs can be filtered by --minCNVLength
-#3) generates several heatmaps: 
-  #1 Scaled
-  #2 log10 
-  #3 for each CNV, the values are subtracted by the minimum coverage and then saturated. The latter is useful to focus on coverage variation. This is valuable because it shows you the coverage folds variation much better in situations where a peak (or gene) is highly amplified in all samples (say normalized coverage of 10) and it is hard to appreciate the variation of just one unit (e.g. 10, 11, 9, 10) because the color is saturated 
-  #4 saturated scores and using just a four colors palette
-  #5 sort columns (samples) by in a specific order defined in sampleSelection. exclude the other samples. (Optional)
-  #6 correlation scores (all CNVs vs all CNVs) 
-#4) a lollipop plot sorted like the all CNVs vs all CNVs correlation heatmap 
-#5) PCA analysis on the CNVs 
-#6) hist of entropy and SD of both the selected CNVs and the entire unfiltered set (coverage saturated) 
-#7) hierachical clustering on the samples eucledian distance estimated on the peaks   
-
-#The second part of the script is about NETWORKS
- #-given the all vs all CNV correlation matrix (cmr)
- #-take the absolute value of the correlation to consider equally negative and positive correlations
- #-compute mclust clusters 
- #-remove small clusters and the element from the cluster that are far away from the centroid. To do that, for each cluster it measures the centroid (multi dimentional vector) and measure the mean euclidian distance and the standard deviation. Members with distance > clMaxSDdist standard deviations from the mean are removed
- #-write in a folder the filtered clusters
- #-make a network plot (see https://rstudio-pubs-static.s3.amazonaws.com/337696_c6b008e0766e46bebf1401bea67f7b10.html)
-
-#The third part of the script regard tries to turn the igraph network into an interactive network with D3
-#example: http://kateto.net/network-visualization
- #The inputs are the standard edges and a nodes data frames, but with a few little twists. 
- #The node IDs in the edges data frame must be integers, and they also have to start from 0. An easy was to get there is to sort the IDs, then transform the character IDs to a factor variable, then transform that to integers (and make sure it starts from zero by subtracting 1).
- #WARNING!!! http://kateto.net/network-visualization is wrong because it converts the source and the target node IDs to integer separatelly. The correct way to do this is implemented in this script. Briefly, 1) sort the edge data frame by IDs in "source"  2) append "source" and "target" together, and assign integer IDs 3) sort the nodes in the nodes dataframe following the same order defined by the node IDS integers
-
-#Rscript  binCoverage2cnvs.R --DIR ../../pipeOut/brazilDeletion/lsdOut/ --minMAPQ 50 --minDelta 1 --outName bin2peakDelta --inFormat covPerBin --filePattern .covPerBin.gz --geBedFile /Volumes/BioIT/Giovanni/datasets/projects/p2p5/Linf.ge.bed 
-
 #samplesList="samplesList2_info"
 #gipOut="gipOut"
 #outName=NA
@@ -56,14 +25,14 @@
 
 suppressPackageStartupMessages(library("argparse"))
 parser <- ArgumentParser(description="Detect CNV genes in many samples and produce correlation-based networks")
-parser$add_argument("--samplesList" , nargs="+", required=TRUE, help="file with a column named \"sample\" listing samples names. Additional TSV columns will be used to annotate output figures. \"field\"_COLOR columns are used to map colors to the additional fields" )
-parser$add_argument("--gipOut"  , required=TRUE , help="GIP output directory" , default="NA")
+parser$add_argument("--samplesList" , nargs="+", required=TRUE, help="File with a column named \"sample\" listing samples names. Additional TSV columns will be used to annotate the output figures. \"field\"_COLOR columns are used to map colors to the additional fields [required]" )
+parser$add_argument("--gipOut"  , required=TRUE , help="GIP output directory")
 parser$add_argument("--outName" , help="Output name [default %(default)s]" , default="NA")
-parser$add_argument("--chrs"    , nargs="+" , help="chromosomes to use. If not defined, it considers the chromosomes selected at gip runtime [default %(default)s]" , default="NA")
-parser$add_argument("--minMAPQ"  , type="integer" , help="FILTER: min bin/gene MAPQ [default %(default)s]" , default=-1)
-parser$add_argument("--minDelta" , type="integer" , help="FILTER: min bin/gene coverage delta between files [default %(default)s]" , default=1)
-parser$add_argument("--minMaxCov" , type="character" , nargs="+" , help="FILTER: keep bins/genes with coverage >Value1 or <Value2 in at least one sample" , default="NA" )
-parser$add_argument("--heatmapQuantileSaturation" , type="character" , nargs="+" , help="Saturate the matrix values < and > these quantiles (e.g. 0.02 0.98). Affects the plotting of heatmaps 1 and 2 [default %(default)s]" , default="NA" )
+parser$add_argument("--chrs"    , nargs="+" , help="Chromosomes to use. If \"NA\" it uses the same chromsomes as GIP [default %(default)s]" , default="NA")
+parser$add_argument("--minMAPQ" , type="integer"   , help="Remove genes with MAPQ < --minMAPQ [default %(default)s]", default=0 )
+parser$add_argument("--minDelta" , type="integer" , help="Min normalized coverage delta between samples [default %(default)s]" , default=1)
+parser$add_argument("--minMaxCov" , type="character" , nargs="+" , help="Use only genes with normalized coverage >Value1 or <Value2 in at least one sample. If \"NA\" no filter is applied " , default="NA" )
+parser$add_argument("--heatmapQuantileSaturation" , type="character" , nargs="+" , help="Provide two numbers. Saturate the matrix color for values < num1 and > num2 these quantiles (e.g. 0.02 0.98). Affects the plotting of the gene CNV vs samples heatmap. DEPENDENCY --heatmapType [scaled|log10] [default %(default)s]" , default="NA" )
 parser$add_argument("--clusteringMethod"  , type="character" , help="Clustering method for heatmaps. (ward.D2, ward, single, complete, average, mcquitty, median, centroid) [default %(default)s]" , default="complete")
 parser$add_argument("--cutree_cnv" , type="integer" , help="number of clusters the genes are divided into, based on the hierarchical clustering [default %(default)s]" , default=1)
 parser$add_argument("--cutree_samp" , type="integer" , help="number of clusters the samples are divided into, based on the hierarchical clustering [default %(default)s]" , default=1)
@@ -133,7 +102,7 @@ allFiles <- list()
 for (i in 1:length(samples)){
   N <- RsyntaxConvertedNames[i]
   allFiles[[N]] <- as.data.frame(fread(cmd=paste0("gunzip -c ", gipOut , "/samples/" , N , "/" , N , ".covPerGe.gz") , colClasses=list(character=1)))
-  allFiles[[N]] <- allFiles[[N]][ allFiles[[N]]$normalizedMeanCoverage <= 0.01 | (allFiles[[N]]$normalizedMeanCoverage > 0.01 & allFiles[[N]]$MAPQ > minMAPQ) ,]  #filter just if it is not a deletion (we keep deletions)
+  allFiles[[N]] <- allFiles[[N]][ allFiles[[N]]$normalizedMeanCoverage <= 0.01 | (allFiles[[N]]$normalizedMeanCoverage > 0.01 & allFiles[[N]]$MAPQ >= minMAPQ) ,]  #filter just if it is not a deletion (we keep deletions)
   allFiles[[N]]$chr    <- gsub(x=allFiles[[N]]$locus,pattern="(.+):(.+)-(.+)$",replacement="\\1")
   allFiles[[N]]$start  <- as.numeric(gsub(x=allFiles[[N]]$locus,pattern="(.+):(.+)-(.+)$",replacement="\\2"))
   allFiles[[N]]$end    <- as.numeric(gsub(x=allFiles[[N]]$locus,pattern="(.+):(.+)-(.+)$",replacement="\\3"))
@@ -182,7 +151,7 @@ df <- df[complete.cases(df),]
 names(df) <- gsub(x=names(df),pattern="score_(.*)",replacement="\\1")
 #delta filter
 df$delta <- apply( subset(df,select=-c(1,2,3)) , 1 , function(x){d=max(x)-min(x)} )
-df <- df[df$delta > minDelta,]
+df <- df[df$delta >= minDelta,]
 if (nrow(df) < 2) {
   print( paste( "less than 2 genes show a delta coverage greather than --minDelta. Quitting..") )
   quit()
