@@ -2,15 +2,146 @@
 geInteraction
 #############
 
-purpose
+Purpose
+-------
+The ``geInteraction`` module aims at detecting CNV genes across multiple samples and identifying gene interactions using a correlation-based network approach.
+
+
+Algorithm
+---------
+
+The module loads the GIP files with the gene sequencing coverage values (.covPerGe.gz files) of all samples, then selects CNV genes. These are defined as the genes with a normalized coverage variation within the sample set greather than --minDelta. Next it builds a network and evaluates clusters based on the correlation computed between all CNV gene pairs. 
+  
+
+
+Options
 -------
 
++-----------------------+--------------------------------------------------------------+----------------+
+|Option                 |Description                                                   |Argument        |
++=======================+==============================================================+================+
+|\-\-samplesList        |File with a column named \"sample\" listing samples names.    |[char]          |
+|                       |                                                              |                |
+|                       |Additional TSV columns will be used to annotate the output    |                |
+|                       |                                                              |                |
+|                       |figures. \"field\"_COLOR columns are used to map colors       |                |
+|                       |                                                              |                |
+|                       |to the additional fields [**required**]                       |                |
++-----------------------+--------------------------------------------------------------+----------------+
+|\-\-gipOut             |GIP output directory [**required**]                           |[char]          |
++-----------------------+--------------------------------------------------------------+----------------+
+|\-\-outName            |Output name [default NA]                                      |[char]          |
++-----------------------+--------------------------------------------------------------+----------------+
+|\-\-chrs               |Chromosomes to use. If "NA" it uses the same chromsomes as GIP|[char ...]      |
+|                       |                                                              |                |
+|                       |[default NA]                                                  |                |
++-----------------------+--------------------------------------------------------------+----------------+
+|\-\-minMAPQ            |Remove genes with MAPQ < --MAPQ [default 0]                   |[int]           |
++-----------------------+--------------------------------------------------------------+----------------+
 
-example commandline
 
-example figure
++-----------------------+--------------------------------------------------------------+----------------+
+|\-\-minDelta           |Min normalized coverage delta between samples [default 1]     |[int]           |
++-----------------------+--------------------------------------------------------------+----------------+
+|\-\-minMaxCov          |Use only genes with normalized coverage >Value1 or <Value2    |[num num]       |
+|                       |                                                              |                |
+|                       |in at least one sample.                                       |                |
+|                       |                                                              |                |
+|                       |If \"NA\" no filter is applied [default NA]                   |                |
++-----------------------+--------------------------------------------------------------+----------------+
+|\-\-heatmapType        |Gene CNV vs samples heatmap type [default scaled]              [scaled|log10
+                       
+                                                                                        |minSubtractedAndSaturated|
+               
+                                                                                        saturated]
++-----------------------------+--------------------------------------------------------------+----------------+
+|\-\-heatmapQuantileSaturation|Provide two numbers. Saturate the colors of the gene CNV       [double double]
+               
+                                vs samples heatmap for quantiles < num1 or > num2
 
-Other options
+                                DEPENDENCY \-\-heatmapType \"scaled\" or \"log10\""  
+
+                                [default 0 1] 
++-----------------------+--------------------------------------------------------------+----------------+
+|\-\-doNotClusterSamples |Do not cluster heatmap columns. 
+
+                         Show the samples in the same order as in \-\-samplesList 
++-----------------------+--------------------------------------------------------------+----------------+
+|\-\-clusteringMethod     Heatmaps clustering method [default complete]                  [ward.D2|ward|
+
+                                                                                        single|complete| 
+
+                                                                                        average|mcquitty|
+
+                                                                                        median|centroid]
++-----------------------+--------------------------------------------------------------+----------------+
+|\-\cutree_cnv           Based on the hierarchical clustering,                          [int]
+
+                         divide the genes in this number of clusters [default 1] 
++-----------------------+--------------------------------------------------------------+----------------+
+|\-\-cutree_samp         Based on the hierarchical clustering, divide the samples       [int]
+
+                         in this number of clusters [default 1] 
++-----------------------+--------------------------------------------------------------+----------------+
+|\-\-show_geneNames      Show gene names in the heatmaps
++-----------------------+--------------------------------------------------------------+----------------+
+|\-\-show_sampNames      Show sample names in the heatmaps
++-----------------------+--------------------------------------------------------------+----------------+
+|\-\-kmeansClusters      NETWORK. Use this number of k-means clusters for               [int]
+
+                         network clustering. If \"NA\" use mclust [default NA] 
++-----------------------+--------------------------------------------------------------+----------------+
+|\-\-MCLinflation        NETWORK. Use this inflation MCL value for network clustering.  [int]
+
+                         Higher inflation values result in increased 
+
+                         cluster granularity. If \"NA\" use mclust  [default NA] 
++-----------------------+--------------------------------------------------------------+----------------+
+|\-\-MCLexpansion        NETWORK. MCL expansion value.                                  [int]
+
+                         DEPENDENCY \-\-MCLinflation not \"NA\" [default 2] 
++-----------------------+--------------------------------------------------------------+----------------+
+|\-\-clMaxSDdist         NETWORK. Gene CNVs with distance from the cluster              [double] 
+
+                        centroid > \-\-clMaxSDdist standard deviations from the 
+
+                        mean distance are removed from the cluster. High values make 
+
+                        this filter unffective. [default Inf] 
++-----------------------+--------------------------------------------------------------+----------------+
+|\-\-clMinSize"          NETWORK. Min number of members in a cluster [default 2]        [int]
++-----------------------+--------------------------------------------------------------+----------------+
+|\-\-edgesMeanCorFilter  NETWORK. Remove edges representing CNV correlation scores 
+
+                         lower than the mean absolute CNV correlation  
++-----------------------+--------------------------------------------------------------+----------------+
+|\-\-edgesPvalueFilter   NETWORK. Remove edges with adjusted pvalue                     [double]
+
+                         below this threshold  [default 0.1]  
++-----------------------+--------------------------------------------------------------+----------------+
+
+
+
++-----------------------+--------------------------------------------------------------+----------------+  
+|\-\-debug              |Dump session and quit                                         |                |
++-----------------------+--------------------------------------------------------------+----------------+
+|\-h, \-\-help          |Show help message                                             |                |
++-----------------------+--------------------------------------------------------------+----------------+
+
+TO ADD
+
+
+
+
+Output
+------
+
+
+
+
+
+Example
+-------
 
 
 #given a folder with multiple covPerBin.gz or covPerGe.gz or chrStartEndScore.gz this script:

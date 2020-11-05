@@ -24,7 +24,7 @@
 #edgesPvalueFilter=0.1
 
 suppressPackageStartupMessages(library("argparse"))
-parser <- ArgumentParser(description="Detect CNV genes in many samples and produce correlation-based networks")
+parser <- ArgumentParser(description="Detect CNV genes across multiple samples and produce correlation-based networks")
 parser$add_argument("--samplesList" , nargs="+", required=TRUE, help="File with a column named \"sample\" listing samples names. Additional TSV columns will be used to annotate the output figures. \"field\"_COLOR columns are used to map colors to the additional fields [required]" )
 parser$add_argument("--gipOut"  , required=TRUE , help="GIP output directory")
 parser$add_argument("--outName" , help="Output name [default %(default)s]" , default="NA")
@@ -35,7 +35,7 @@ parser$add_argument("--minMaxCov" , type="character" , nargs="+" , help="Use onl
 parser$add_argument("--heatmapType" , help="Gene CNV vs samples heatmap type [scaled|log10|minSubtractedAndSaturated|saturated]" , default="scaled" )
 parser$add_argument("--heatmapQuantileSaturation" , type="double" , nargs="+" , help="Provide two numbers. Saturate the colors of the gene CNV vs samples heatmap for quantiles < num1 or > num2 (e.g. 0.02 0.98). DEPENDENCY --heatmapType [scaled|log10] [default %(default)s]" , default=c(0,1))
 parser$add_argument("--doNotClusterSamples"  , action="store_false" , help="Do not cluster heatmap columns. Show the samples in the same order as in --samplesList [default %(default)s]" , default=TRUE)
-parser$add_argument("--clusteringMethod" , help="Heatmaps clustering method [ward.D2|ward|single|complete| average|mcquitty|median|centroid) [default %(default)s]" , default="complete")
+parser$add_argument("--clusteringMethod" , help="Heatmaps clustering method [ward.D2|ward|single|complete|average|mcquitty|median|centroid] [default %(default)s]" , default="complete")
 parser$add_argument("--cutree_cnv" , type="integer" , help="Based on the hierarchical clustering, divide the genes in this number of clusters [default %(default)s]" , default=1)
 parser$add_argument("--cutree_samp" , type="integer" , help="Based on the hierarchical clustering, divide the samples in this number of clusters  [default %(default)s]" , default=1)
 parser$add_argument("--show_geneNames"  , action="store_true" , help="Show gene names in the heatmaps [default %(default)s]" , default=FALSE)
@@ -43,7 +43,7 @@ parser$add_argument("--show_sampNames"  , action="store_true" , help="Show sampl
 parser$add_argument("--kmeansClusters" , help="NETWORK. Use this number of k-means clusters for network clustering. If \"NA\" use mclust [default %(default)s]" , default="NA")
 parser$add_argument("--MCLinflation" , help="NETWORK. Use this inflation MCL value for network clustering. Higher inflation values result in increased cluster granularity. If \"NA\" use mclust [default %(default)s]" , default="NA")
 parser$add_argument("--MCLexpansion" , type="integer" , help="NETWORK. MCL expansion value. DEPENDENCY --MCLinflation not \"NA\" [default %(default)s]" , default=2)
-parser$add_argument("--clMaxSDdist" , type="character", help="NETWORK. Gene CNVs with distance from the cluster centroid > --clMaxSDdist standard deviations from the mean distance are removed from the cluster. High values make this filter unffective. Set 2 for a reasonable filter    [default %(default)s]" , default="Inf")
+parser$add_argument("--clMaxSDdist" , type="character", help="NETWORK. Gene CNVs with distance from the cluster centroid > --clMaxSDdist standard deviations from the mean distance are removed from the cluster. High values make this filter unffective. [default %(default)s]" , default="Inf")
 parser$add_argument("--clMinSize"   , type="integer" , help="NETWORK. Min number of members in a cluster [default %(default)s]" , default=2)
 parser$add_argument("--edgesMeanCorFilter" , action="store_true" , help="NETWORK. Remove edges representing CNV correlation scores lower than the mean absolute CNV correlation [default %(default)s]" , default=FALSE)
 parser$add_argument("--edgesPvalueFilter"  , type="double" , help="NETWORK. Remove edges with adjusted pvalue below this threshold  [default %(default)s]" , default="0.1")
