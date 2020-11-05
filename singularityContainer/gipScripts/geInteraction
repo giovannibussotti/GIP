@@ -15,7 +15,7 @@
 #heatmapType="scaled"
 #doNotClusterSamples=TRUE
 #DEVELOP_ONLY=TRUE
-#kmeansCenters=3
+#kmeansClusters=3
 #MCLinflation=NA
 #MCLexpansion=2
 #clMaxSDdist=Inf
@@ -29,26 +29,25 @@ parser$add_argument("--samplesList" , nargs="+", required=TRUE, help="File with 
 parser$add_argument("--gipOut"  , required=TRUE , help="GIP output directory")
 parser$add_argument("--outName" , help="Output name [default %(default)s]" , default="NA")
 parser$add_argument("--chrs"    , nargs="+" , help="Chromosomes to use. If \"NA\" it uses the same chromsomes as GIP [default %(default)s]" , default="NA")
-parser$add_argument("--minMAPQ" , type="integer"   , help="Remove genes with MAPQ < --minMAPQ [default %(default)s]", default=0 )
+parser$add_argument("--minMAPQ" , type="integer" , help="Remove genes with MAPQ < --minMAPQ [default %(default)s]", default=0 )
 parser$add_argument("--minDelta" , type="integer" , help="Min normalized coverage delta between samples [default %(default)s]" , default=1)
 parser$add_argument("--minMaxCov" , type="character" , nargs="+" , help="Use only genes with normalized coverage >Value1 or <Value2 in at least one sample. If \"NA\" no filter is applied " , default="NA" )
-parser$add_argument("--heatmapQuantileSaturation" , type="character" , nargs="+" , help="Provide two numbers. Saturate the matrix color for values < num1 and > num2 these quantiles (e.g. 0.02 0.98). Affects the plotting of the gene CNV vs samples heatmap. DEPENDENCY --heatmapType [scaled|log10] [default %(default)s]" , default="NA" )
-parser$add_argument("--clusteringMethod"  , type="character" , help="Clustering method for heatmaps. (ward.D2, ward, single, complete, average, mcquitty, median, centroid) [default %(default)s]" , default="complete")
-parser$add_argument("--cutree_cnv" , type="integer" , help="number of clusters the genes are divided into, based on the hierarchical clustering [default %(default)s]" , default=1)
-parser$add_argument("--cutree_samp" , type="integer" , help="number of clusters the samples are divided into, based on the hierarchical clustering [default %(default)s]" , default=1)
-parser$add_argument("--show_geneNames"  , action="store_true" , help="show gene names in the heatmap [default %(default)s]" , default=FALSE)
-parser$add_argument("--show_sampNames"  , action="store_true" , help="show sample names in the heatmap [default %(default)s]" , default=FALSE)
-parser$add_argument("--heatmapType" , help="gene CNV vs samples heatmap can be of one of these types: scaled, log10, minSubtractedAndSaturated, saturated" , default="scaled" )
-parser$add_argument("--doNotClusterSamples"  , action="store_false" , help="heatmap columns will report the samples in the same order as in --samplesList [default %(default)s]" , default=TRUE)
-parser$add_argument("--kmeansCenters" , type="character" , help="NETWORK: use k-means instead of mclust to define clusters. Define the number of centers [default %(default)s]" , default="NA")
-parser$add_argument("--MCLinflation" , type="character" , help="NETWORK: use MCL instead of mclust to define clusters. Define the inflation parameter. Increasing the value will increase cluster granularity [default %(default)s]" , default="NA")
-parser$add_argument("--MCLexpansion" , type="integer" , help="NETWORK: MCL expansion parameter. (dependency --MCLinflation) [default %(default)s]" , default=2)
-parser$add_argument("--clMaxSDdist" , type="character"  , help="NETWORK FILTER: CNV with distance from the cluster centroid > clMaxSDdist standard deviations from the mean distance are removed from the cluster. Set a very high number or Inf to remove this filter. Set 2 for a reasonable filter    [default %(default)s]" , default="Inf")
+parser$add_argument("--heatmapType" , help="Gene CNV vs samples heatmap type [scaled|log10|minSubtractedAndSaturated|saturated]" , default="scaled" )
+parser$add_argument("--heatmapQuantileSaturation" , type="double" , nargs="+" , help="Provide two numbers. Saturate the colors of the gene CNV vs samples heatmap for quantiles < num1 or > num2 (e.g. 0.02 0.98). DEPENDENCY --heatmapType [scaled|log10] [default %(default)s]" , default=c(0,1))
+parser$add_argument("--doNotClusterSamples"  , action="store_false" , help="Do not cluster heatmap columns. Show the samples in the same order as in --samplesList [default %(default)s]" , default=TRUE)
+parser$add_argument("--clusteringMethod" , help="Heatmaps clustering method [ward.D2|ward|single|complete| average|mcquitty|median|centroid) [default %(default)s]" , default="complete")
+parser$add_argument("--cutree_cnv" , type="integer" , help="Based on the hierarchical clustering, divide the genes in this number of clusters [default %(default)s]" , default=1)
+parser$add_argument("--cutree_samp" , type="integer" , help="Based on the hierarchical clustering, divide the samples in this number of clusters  [default %(default)s]" , default=1)
+parser$add_argument("--show_geneNames"  , action="store_true" , help="Show gene names in the heatmaps [default %(default)s]" , default=FALSE)
+parser$add_argument("--show_sampNames"  , action="store_true" , help="Show sample names in the heatmaps [default %(default)s]" , default=FALSE)
+parser$add_argument("--kmeansClusters" , help="NETWORK. Use this number of k-means clusters for network clustering. If \"NA\" use mclust [default %(default)s]" , default="NA")
+parser$add_argument("--MCLinflation" , help="NETWORK. Use this inflation MCL value for network clustering. Higher inflation values result in increased cluster granularity. If \"NA\" use mclust [default %(default)s]" , default="NA")
+parser$add_argument("--MCLexpansion" , type="integer" , help="NETWORK. MCL expansion value. DEPENDENCY --MCLinflation not \"NA\" [default %(default)s]" , default=2)
+parser$add_argument("--clMaxSDdist" , type="character", help="NETWORK. Gene CNVs with distance from the cluster centroid > --clMaxSDdist standard deviations from the mean distance are removed from the cluster. High values make this filter unffective. Set 2 for a reasonable filter    [default %(default)s]" , default="Inf")
 parser$add_argument("--clMinSize"   , type="integer" , help="NETWORK FILTER: CNV clusters with less than clMinSize members are removed  [default %(default)s]" , default=2)
 parser$add_argument("--edgesMeanCorFilter" , action="store_true" , help="NETWORK: flag. edges below the mean CNV correlation are removed. [default %(default)s]" , default=FALSE)
 parser$add_argument("--edgesPvalueFilter"  , type="double" , help="NETWORK: edges below this adjusted pvalue threshold (e.g. 0.01) will be filtered.  [default %(default)s]" , default="0.1")
-#parser$add_argument("--DEVELOP_ONLY"  , action="store_true" , help="DEVELOPER ONLY OPTION. DO NOT USE [default %(default)s]" , default=FALSE)
-parser$add_argument("--debug"  , action="store_true" , help="dump session and quit [default %(default)s]" , default=FALSE)
+parser$add_argument("--debug"  , action="store_true" , help="Dump session and quit [default %(default)s]" , default=FALSE)
 
 args <- parser$parse_args()
 #patch NA
@@ -359,7 +358,6 @@ for (feat in sampFeats){
 }
 
 pdf(paste0(outName,".CNV.pdf"))
-if (is.na(heatmapQuantileSaturation[1])){ heatmapQuantileSaturation = c(0 , 1) }
 zlim = function (mx,quantLims){
   quants <- quantile(mx,probs=c(quantLims))
   mx[mx < quants[1]] =  quants[1]
@@ -456,15 +454,15 @@ write.xlsx(file=paste0(outName,".CNV.xlsx") , x=list(sampleInfo=sampInfo , cnvIn
 ###############################
 ###############################
 #setup
-if (! is.na(MCLinflation) && ! is.na(kmeansCenters)){
+if (! is.na(MCLinflation) && ! is.na(kmeansClusters)){
   stop("ERROR. you must chose either kmeans or MCL for network clustering")
   quit(save = "no", status = 1, runLast = FALSE)  
 }
 if (! is.na(MCLinflation)) {
   MCLinflation <- as.integer(MCLinflation)
 } 
-if (! is.na(kmeansCenters)) {
-  kmeansCenters <- as.integer(kmeansCenters)
+if (! is.na(kmeansClusters)) {
+  kmeansClusters <- as.integer(kmeansClusters)
 } 
 if(clMaxSDdist == "Inf") {
   clMaxSDdist <- Inf
@@ -515,13 +513,13 @@ filterDistantCNVs <- function(mat,classification) {
 #1) cluster of absolute CNV correlations
 absCmr       <- abs(cmr)
 classification <- NULL
-if (is.na(kmeansCenters) && is.na(MCLinflation)) {
+if (is.na(kmeansClusters) && is.na(MCLinflation)) {
   set.seed(123)
   mc_absCmr      <- Mclust(absCmr)
   classification <- mc_absCmr$classification
-} else if (! is.na(kmeansCenters)) {
+} else if (! is.na(kmeansClusters)) {
   set.seed(123)
-  classification <- kmeans(as.matrix(absCmr),centers=kmeansCenters)$cluster
+  classification <- kmeans(as.matrix(absCmr),centers=kmeansClusters)$cluster
 } else {
   set.seed(123)
   classification <- mcl(absCmr,addLoops=F,inflation=MCLinflation,expansion=MCLexpansion)$Cluster
