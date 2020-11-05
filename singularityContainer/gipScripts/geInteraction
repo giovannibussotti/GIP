@@ -44,9 +44,9 @@ parser$add_argument("--kmeansClusters" , help="NETWORK. Use this number of k-mea
 parser$add_argument("--MCLinflation" , help="NETWORK. Use this inflation MCL value for network clustering. Higher inflation values result in increased cluster granularity. If \"NA\" use mclust [default %(default)s]" , default="NA")
 parser$add_argument("--MCLexpansion" , type="integer" , help="NETWORK. MCL expansion value. DEPENDENCY --MCLinflation not \"NA\" [default %(default)s]" , default=2)
 parser$add_argument("--clMaxSDdist" , type="character", help="NETWORK. Gene CNVs with distance from the cluster centroid > --clMaxSDdist standard deviations from the mean distance are removed from the cluster. High values make this filter unffective. Set 2 for a reasonable filter    [default %(default)s]" , default="Inf")
-parser$add_argument("--clMinSize"   , type="integer" , help="NETWORK FILTER: CNV clusters with less than clMinSize members are removed  [default %(default)s]" , default=2)
-parser$add_argument("--edgesMeanCorFilter" , action="store_true" , help="NETWORK: flag. edges below the mean CNV correlation are removed. [default %(default)s]" , default=FALSE)
-parser$add_argument("--edgesPvalueFilter"  , type="double" , help="NETWORK: edges below this adjusted pvalue threshold (e.g. 0.01) will be filtered.  [default %(default)s]" , default="0.1")
+parser$add_argument("--clMinSize"   , type="integer" , help="NETWORK. Min number of members in a cluster [default %(default)s]" , default=2)
+parser$add_argument("--edgesMeanCorFilter" , action="store_true" , help="NETWORK. Remove edges representing CNV correlation scores lower than the mean absolute CNV correlation [default %(default)s]" , default=FALSE)
+parser$add_argument("--edgesPvalueFilter"  , type="double" , help="NETWORK. Remove edges with adjusted pvalue below this threshold  [default %(default)s]" , default="0.1")
 parser$add_argument("--debug"  , action="store_true" , help="Dump session and quit [default %(default)s]" , default=FALSE)
 
 args <- parser$parse_args()
@@ -558,7 +558,7 @@ if (edgesMeanCorFilter) {
   cut.off <- mean(edges$weight) 
   net <- delete_edges(net, E(net)[weight<cut.off])
 } 
-net <- delete_edges(net, E(net)[pvalue>edgesPvalueFilter])
+net <- delete_edges(net, E(net)[pvalue>=edgesPvalueFilter])
 #map vertices to clusters
 V(net)$color <- clColMap [ match( vertices[V(net),"cl"] , clColMap$cl ) , "col" ]
 # Compute node degrees (#links) and use that to set node size (saturating at 3 to avoid enormous nodes)
