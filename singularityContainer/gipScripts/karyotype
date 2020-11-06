@@ -17,7 +17,7 @@ parser <- ArgumentParser(description="Compare chromosome sequencing coverage dis
 parser$add_argument("--samples" , nargs="+", required=TRUE, help="Sample names. It determines the plotting order [required]" )
 parser$add_argument("--gipOut"  , required=TRUE , help="GIP output directory [required]")
 parser$add_argument("--outName" , help="Output name. [default %(default)s]" , default="NA")
-parser$add_argument("--MAPQ" , type="integer" , help="bin MAPQ filter [default %(default)s]" , default=0)
+parser$add_argument("--minMAPQ" , type="integer" , help="Remove bins with MAPQ < --minMAPQ [default %(default)s]" , default=0)
 parser$add_argument("--chrs"    , nargs="+" , help="Chromosomes to use. If \"NA\" it uses the same chromsomes as GIP [default %(default)s]" , default="NA")
 parser$add_argument("--ylim" , nargs="+" , type="double" , help="Min and max plot y-axis limits [default %(default)s]" , default=c(0,10))
 parser$add_argument("--makeQqplots" , action="store_true" , help="Computes Q-Q plots for all chromosomes in all samples combinations" , default=FALSE)

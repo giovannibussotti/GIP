@@ -2,17 +2,6 @@
 karyotype
 #########
 
-Purpose
--------
-
-The ``karyotype`` module aims at comparing the chromosome sequencing coverage distributions of multiple samples. This module is useful when trying to detect chromosome ploidy differences in different isolates.
-
-Algorithm
----------
-
-For each sample the module loads the GIP files with the bin sequencing coverage (.covPerBin.gz files) and normalizes the meancoverage values by the median coverage of all bins. The bin scores are then converted to *somy scores* which are then used for producing plots and statistics.
-
-
 Options
 -------
 
@@ -24,6 +13,8 @@ Options
 |\-\-gipOut         |GIP output directory [**required**]                               |[char]          |
 +-------------------+------------------------------------------------------------------+----------------+
 |\-\-outName        |Output name [default NA]                                          |[char]          |
++-------------------+------------------------------------------------------------------+----------------+
+|\-\-minMAPQ        |Remove bins with MAPQ < --MAPQ [default 0]                        |[int]           |
 +-------------------+------------------------------------------------------------------+----------------+
 |\-\-chrs           |Chromosomes to use. If "NA" it uses the same chromsomes as GIP    |[char ...]      |
 |                   |                                                                  |                |
@@ -54,6 +45,11 @@ Options
 +-------------------+------------------------------------------------------------------+----------------+
 
 
+Description
+-----------
+
+| The ``karyotype`` module aims at comparing the chromosome sequencing coverage distributions of multiple samples. This module is useful when trying to detect chromosome ploidy differences in different isolates.
+| For each sample the module loads the GIP files with the bin sequencing coverage (.covPerBin.gz files) and normalizes the meancoverage values by the median coverage of all bins. The bin scores are then converted to *somy scores* which are then used for producing plots and statistics.
 
 The ``--disomicChr`` option is useful to recenter somy scores on a user defined disomic chromosome.
 Under the assumption that most of the genome is disomic, the somy score is simply calculated multiplying by two the bin scores.
@@ -62,8 +58,6 @@ In this case the somy score distribution of a given disomic chromosome may not b
 To address this problem the user can perform a first run of ``giptools karyotype``  to identify a chromosome whose median coverage is as close as possible to a value of 2, and that it is stable across the samples set. In a second run of ``giptools karyotype`` the user can then specify the chromsome name with the ``--disomicChr`` option.
 By doing that the somy scores will be calculated by dividing the bins coverage scores by the median score of the chromosome deemed to be disomic and then multiplied by 2.
 To compare coverage distribution shapes the script can optionally generate Q-Q plots (slow), comparing the quantiles of the two bins distributions. If the dots (quantiles) are on the diagonal, then their distributions have the same shape.
-
-
 
 
 Output
