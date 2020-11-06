@@ -20,7 +20,8 @@ Options
 +-------------------+------------------------------------------------------------------+----------------+
 |Option             |Description                                                       |Argument        |
 +===================+==================================================================+================+
-|\-\-samples        |Sample names. It determines the plotting order [**required**]     |[char ...]      |        +-------------------+------------------------------------------------------------------+----------------+
+|\-\-samples        |Sample names. It determines the plotting order [**required**]     |[char ...]      |
++-------------------+------------------------------------------------------------------+----------------+
 |\-\-gipOut         |GIP output directory [**required**]                               |[char]          |
 +-------------------+------------------------------------------------------------------+----------------+
 |\-\-outName        |Output name [default NA]                                          |[char]          |
@@ -33,15 +34,15 @@ Options
 +-------------------+------------------------------------------------------------------+----------------+
 |\-\-highLowRatio   |Provide 2 numbers. Genes with ratio scores > num1                 |[double,double] |
 |                   |                                                                  |                |
-|                   | or < num2 will be colored differently [default (1.5 , 0.5)]      |                |
+|                   |or < num2 will be colored differently [default (1.5 , 0.5)]       |                |
 +-------------------+------------------------------------------------------------------+----------------+
 |\-\-pseudocount    |Normalized mean coverage pseudo count value preventing            |[double]        |
 |                   |                                                                  |                |
-|                   |  infinite (1/0) and NaN (0/0) ratio values [default 0.1]         |                |
+|                   |infinite (1/0) and NaN (0/0) ratio values [default 0.1]           |                |
 +-------------------+------------------------------------------------------------------+----------------+
 |\-\-plot1_ylim     |Plot1 visualization threshold. Gene ratio values greather         |[double]        |
 |                   |                                                                  |                | 
-|                   | than this threshold are shown as --ylim  [default 5]             |                |
+|                   |than this threshold are shown as --ylim  [default 5]              |                |
 +-------------------+------------------------------------------------------------------+----------------+
 |\-\-plot3_min      |Plot3 visualization threshold. Min normalized gene coverage       |[double]        |
 |                   |                                                                  |                |
