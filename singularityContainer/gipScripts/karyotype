@@ -150,7 +150,7 @@ suppressPackageStartupMessages(library("gtools"))
 suppressPackageStartupMessages(library("ggridges"))
 suppressPackageStartupMessages(library("openxlsx"))
 options(datatable.fread.input.cmd.message=FALSE)
-if(debug){save.session("session_DEBUG_karyotype");quit()}
+if(debug){library("session"); save.session("session_DEBUG_karyotype");quit()}
 
 #setup
 outDir <- paste0(gipOut,"/sampleComparison/")
