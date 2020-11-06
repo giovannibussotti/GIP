@@ -38,9 +38,6 @@ Options
 +-----------------------+--------------------------------------------------------------+----------------+
 |\-\-minMAPQ            |Remove genes with MAPQ < --MAPQ [default 0]                   |[int]           |
 +-----------------------+--------------------------------------------------------------+----------------+
-
-
-+-----------------------+--------------------------------------------------------------+----------------+
 |\-\-minDelta           |Min normalized coverage delta between samples [default 1]     |[int]           |
 +-----------------------+--------------------------------------------------------------+----------------+
 |\-\-minMaxCov          |Use only genes with normalized coverage >Value1 or <Value2    |[num num]       |
@@ -49,86 +46,94 @@ Options
 |                       |                                                              |                |
 |                       |If \"NA\" no filter is applied [default NA]                   |                |
 +-----------------------+--------------------------------------------------------------+----------------+
-|\-\-heatmapType        |Gene CNV vs samples heatmap type [default scaled]              [scaled|log10
-                       
-                                                                                        |minSubtractedAndSaturated|
-               
-                                                                                        saturated]
-+-----------------------------+--------------------------------------------------------------+----------------+
-|\-\-heatmapQuantileSaturation|Provide two numbers. Saturate the colors of the gene CNV       [double double]
-               
-                                vs samples heatmap for quantiles < num1 or > num2
-
-                                DEPENDENCY \-\-heatmapType \"scaled\" or \"log10\""  
-
-                                [default 0 1] 
+|\-\-heatmapType        |Gene normalized coverage value transformation used            |[scaled | log10 |
+|                       |                                                              |                |
+|                       |for the CNV vs samples heatmap.  [default scaled]             |saturated |     |
+|                       |                                                              |                |
+|                       |                                                              |flatten]        |
 +-----------------------+--------------------------------------------------------------+----------------+
-|\-\-doNotClusterSamples |Do not cluster heatmap columns. 
-
-                         Show the samples in the same order as in \-\-samplesList 
+|\-\-covSaturation      |Gene normalized coverage saturation value. DEPENDENCY         |[int]           |
+|                       |                                                              |                |
+|                       |\-\-heatmapType \"saturated\" or \"flatten\" [default 3]      |                |
 +-----------------------+--------------------------------------------------------------+----------------+
-|\-\-clusteringMethod     Heatmaps clustering method [default complete]                  [ward.D2|ward|
-
-                                                                                        single|complete| 
-
-                                                                                        average|mcquitty|
-
-                                                                                        median|centroid]
+|\-\-quantileSaturation |Provide two numbers. Saturate the colors of the gene CNV      |[double double] |
+|                       |                                                              |                |
+|                       |vs samples heatmap for quantiles < num1 or > num2             |                |
+|                       |                                                              |                |
+|                       |DEPENDENCY \-\-heatmapType \"scaled\" or \"log10\""           |                |
+|                       |                                                              |                |
+|                       |[default 0 1]                                                 |                |
 +-----------------------+--------------------------------------------------------------+----------------+
-|\-\cutree_cnv           Based on the hierarchical clustering,                          [int]
-
-                         divide the genes in this number of clusters [default 1] 
+|\-\-doNotClusterSamples|Do not cluster heatmap columns.                               |                |
+|                       |                                                              |                |
+|                       |Show the samples in the same order as in \-\-samplesList      |                |
 +-----------------------+--------------------------------------------------------------+----------------+
-|\-\-cutree_samp         Based on the hierarchical clustering, divide the samples       [int]
-
-                         in this number of clusters [default 1] 
+|\-\-clusteringMethod   |Heatmaps clustering method [default complete]                 |[ward.D2|ward   |
+|                       |                                                              |                |
+|                       |                                                              |single|complete | 
+|                       |                                                              |                |
+|                       |                                                              |average|mcquitty|
+|                       |                                                              |                |
+|                       |                                                              |median|centroid]|
 +-----------------------+--------------------------------------------------------------+----------------+
-|\-\-show_geneNames      Show gene names in the heatmaps
+|\-\cutree_cnv          |Based on the hierarchical clustering,                         |[int]           |
+|                       |                                                              |                |
+|                       |divide the genes in this number of clusters [default 1]       |                |
 +-----------------------+--------------------------------------------------------------+----------------+
-|\-\-show_sampNames      Show sample names in the heatmaps
+|\-\-cutree_samp        |Based on the hierarchical clustering, divide the samples      |[int]           |
+|                       |                                                              |                |
+|                       |in this number of clusters [default 1]                        |                |
 +-----------------------+--------------------------------------------------------------+----------------+
-|\-\-kmeansClusters      NETWORK. Use this number of k-means clusters for               [int]
-
-                         network clustering. If \"NA\" use mclust [default NA] 
+|\-\-show_geneNames     |Show gene names in the heatmaps                               |                |
 +-----------------------+--------------------------------------------------------------+----------------+
-|\-\-MCLinflation        NETWORK. Use this inflation MCL value for network clustering.  [int]
-
-                         Higher inflation values result in increased 
-
-                         cluster granularity. If \"NA\" use mclust  [default NA] 
+|\-\-show_sampNames     |Show sample names in the heatmaps                             |                |
 +-----------------------+--------------------------------------------------------------+----------------+
-|\-\-MCLexpansion        NETWORK. MCL expansion value.                                  [int]
-
-                         DEPENDENCY \-\-MCLinflation not \"NA\" [default 2] 
+|\-\-kmeansClusters     |NETWORK. Use this number of k-means clusters for              |[int]           |
+|                       |                                                              |                |
+|                       |network clustering. If \"NA\" use mclust [default NA]         |                |
 +-----------------------+--------------------------------------------------------------+----------------+
-|\-\-clMaxSDdist         NETWORK. Gene CNVs with distance from the cluster              [double] 
-
-                        centroid > \-\-clMaxSDdist standard deviations from the 
-
-                        mean distance are removed from the cluster. High values make 
-
-                        this filter unffective. [default Inf] 
+|\-\-MCLinflation       |NETWORK. Use this inflation MCL value for network clustering. |[int]           |
+|                       |                                                              |                |
+|                       |Higher inflation values result in increased                   |                |
+|                       |                                                              |                |
+|                       | cluster granularity. If \"NA\" use mclust  [default NA]      |                |
 +-----------------------+--------------------------------------------------------------+----------------+
-|\-\-clMinSize"          NETWORK. Min number of members in a cluster [default 2]        [int]
+|\-\-MCLexpansion       |NETWORK. MCL expansion value.                                 |[int]           |
+|                       |                                                              |                |
+|                       |DEPENDENCY \-\-MCLinflation not \"NA\" [default 2]            |                |
 +-----------------------+--------------------------------------------------------------+----------------+
-|\-\-edgesMeanCorFilter  NETWORK. Remove edges representing CNV correlation scores 
-
-                         lower than the mean absolute CNV correlation  
+|\-\-clMaxSDdist        |NETWORK. Gene CNVs with distance from the cluster             |[double]        | 
+|                       |                                                              |                |
+|                       |centroid > \-\-clMaxSDdist standard deviations from the       |                |
+|                       |                                                              |                |
+|                       |mean distance are removed from the cluster. High values make  |                |
+|                       |                                                              |                |
+|                       |this filter unffective. [default Inf]                         |                |
 +-----------------------+--------------------------------------------------------------+----------------+
-|\-\-edgesPvalueFilter   NETWORK. Remove edges with adjusted pvalue                     [double]
-
-                         below this threshold  [default 0.1]  
+|\-\-clMinSize"         |NETWORK. Min number of members in a cluster [default 2]       |[int]           |
 +-----------------------+--------------------------------------------------------------+----------------+
-
-
-
+|\-\-edgesMeanCorFilter |NETWORK. Remove edges representing CNV correlation scores     |                |
+|                       |                                                              |                |
+|                       |lower than the mean absolute CNV correlation                  |                |
++-----------------------+--------------------------------------------------------------+----------------+
+|\-\-edgesPvalueFilter  |NETWORK. Remove edges with adjusted pvalue                    |[double]        |
+|                       |                                                              |                |
+|                       |below this threshold  [default 0.1]                           |                |
 +-----------------------+--------------------------------------------------------------+----------------+  
 |\-\-debug              |Dump session and quit                                         |                |
 +-----------------------+--------------------------------------------------------------+----------------+
 |\-h, \-\-help          |Show help message                                             |                |
 +-----------------------+--------------------------------------------------------------+----------------+
 
-TO ADD
+
+
+heatmapType
+If \"scaled\" values are first centered                                                                           
+subtracting the mean gene normalized coverage across samples, then scaled dividing by the standard deviation. If \"log10\"  
+values are log10 transformed. If \"saturated\" values are     
+saturated at \-\-covSaturation. If \"flatten\" values are     
+first subracted by the min gene normalized coverage across    
+samples, then saturated at \-\-covSaturation
 
 
 

@@ -6,7 +6,7 @@
 #minMAPQ=50
 #minDelta=1
 #minMaxCov=NA
-#heatmapQuantileSaturation=NA
+#quantileSaturation=NA
 #clusteringMethod="complete"
 #cutree_cnv=3
 #cutree_samp=4
@@ -32,8 +32,9 @@ parser$add_argument("--chrs"    , nargs="+" , help="Chromosomes to use. If \"NA\
 parser$add_argument("--minMAPQ" , type="integer" , help="Remove genes with MAPQ < --minMAPQ [default %(default)s]", default=0 )
 parser$add_argument("--minDelta" , type="integer" , help="Min normalized coverage delta between samples [default %(default)s]" , default=1)
 parser$add_argument("--minMaxCov" , type="character" , nargs="+" , help="Use only genes with normalized coverage >Value1 or <Value2 in at least one sample. If \"NA\" no filter is applied " , default="NA" )
-parser$add_argument("--heatmapType" , help="Gene CNV vs samples heatmap type [scaled|log10|minSubtractedAndSaturated|saturated]" , default="scaled" )
-parser$add_argument("--heatmapQuantileSaturation" , type="double" , nargs="+" , help="Provide two numbers. Saturate the colors of the gene CNV vs samples heatmap for quantiles < num1 or > num2 (e.g. 0.02 0.98). DEPENDENCY --heatmapType [scaled|log10] [default %(default)s]" , default=c(0,1))
+parser$add_argument("--heatmapType" , help="Gene normalized coverage value transformation used for the CNVs vs samples heatmap. [scaled|log10|saturated|flatten]" , default="scaled" )
+parser$add_argument("--covSaturation" , type="double" , help="Gene normalized coverage saturation value. DEPENDENCY --heatmapType \"saturated\" or \"flatten\"  [default %(default)s]" , default=3)
+parser$add_argument("--quantileSaturation" , type="double" , nargs="+" , help="Provide two numbers. Saturate the colors of the gene CNVs vs samples heatmap for quantiles < num1 or > num2. DEPENDENCY --heatmapType [scaled|log10] [default %(default)s]" , default=c(0,1))
 parser$add_argument("--doNotClusterSamples"  , action="store_false" , help="Do not cluster heatmap columns. Show the samples in the same order as in --samplesList [default %(default)s]" , default=TRUE)
 parser$add_argument("--clusteringMethod" , help="Heatmaps clustering method [ward.D2|ward|single|complete|average|mcquitty|median|centroid] [default %(default)s]" , default="complete")
 parser$add_argument("--cutree_cnv" , type="integer" , help="Based on the hierarchical clustering, divide the genes in this number of clusters [default %(default)s]" , default=1)
@@ -368,18 +369,18 @@ palette <- c()
 pheInMr <- NULL
 if (heatmapType == "scaled"){
   palette <-  colorRampPalette(c("red","green"))(n = 299)
-  pheInMr <- zlim(t(scale(t(mr),center=T,scale=T)),heatmapQuantileSaturation)
+  pheInMr <- zlim(t(scale(t(mr),center=T,scale=T)),quantileSaturation)
 } else if (heatmapType == "log10"){
   palette <-  colorRampPalette(c("red","green"))(n = 299)
-  pheInMr <- zlim(log10(mr+0.1),heatmapQuantileSaturation)
-} else if (heatmapType == "minSubtractedAndSaturated"){
+  pheInMr <- zlim(log10(mr+0.1),quantileSaturation)
+} else if (heatmapType == "flatten"){
   palette <- colorRampPalette(c("black", "white","blue","red"))(n = 299)
   pheInMr  <- mr - apply(mr,1,min)
-  pheInMr[pheInMr > 3] = 3
+  pheInMr[pheInMr > covSaturation] = covSaturation
 } else if (heatmapType == "saturated"){
   palette <- colorRampPalette(c("black", "white","blue","red"))(n = 299)
   pheInMr <-  mr
-  pheInMr[pheInMr > 3] = 3
+  pheInMr[pheInMr > covSaturation] = covSaturation
 } else {
   stop("ERROR. heatmapType not recognized")
   quit(save = "no", status = 1, runLast = FALSE) 
