@@ -170,7 +170,7 @@ The results of GIP are summarized in a <em>report</em> page providing sequencing
 <p>Look how easy it is to use.
 Run GIP on a large set of input WGS experiments (e.g. 200 samples)</p>
 <blockquote>
-<div><p><code class="docutils literal notranslate"><span class="pre">nextflow</span> <span class="pre">gip</span> <span class="pre">--genome</span> <span class="pre">data/fasta.file</span> <span class="pre">--annotation</span> <span class="pre">data/gtf.file</span> <span class="pre">--index</span> <span class="pre">input.tsv</span> <span class="pre">-c</span> <span class="pre">gip.config</span></code></p>
+<div><p><code class="docutils literal notranslate"><span class="pre">gip</span> <span class="pre">--genome</span> <span class="pre">fasta.file</span> <span class="pre">--annotation</span> <span class="pre">gtf.file</span> <span class="pre">--index</span> <span class="pre">fastqs.tsv</span> <span class="pre">-c</span> <span class="pre">gip.config</span></code></p>
 </div></blockquote>
 <p>Compare gene CNVs in 3 specific isolates</p>
 <blockquote>
@@ -211,9 +211,12 @@ Run GIP on a large set of input WGS experiments (e.g. 200 samples)</p>
 <div><p><code class="docutils literal notranslate"><span class="pre">singularity</span> <span class="pre">pull</span> <span class="pre">command...</span></code></p>
 </div></blockquote>
 </li>
-<li><p>Move <strong>giptools</strong> to /usr/local/bin/. If the user does not have permission on this folder can keep giptools in any other location, and just update the “container” parameter in the gip.config: <code class="docutils literal notranslate"><span class="pre">container='/Absolute/Path/To/giptools'</span></code></p></li>
+<li><p>Move <strong>giptools</strong> to /usr/local/bin/. If the user does not have permission on the folder she/he can keep giptools in any other location, and just update the “container” parameter in the gip.config: <code class="docutils literal notranslate"><span class="pre">container='/Path/To/giptools'</span></code></p></li>
 </ol>
-<p>Done!</p>
+<div class="line-block">
+<div class="line">Done!</div>
+<div class="line">To make GIP available anywhere, the user can place <strong>gip</strong> in a directory that is in PATH.</div>
+</div>
 </div>
 <div class="section" id="contribute">
 <h2>Contribute<a class="headerlink" href="#contribute" title="Permalink to this headline">¶</a></h2>

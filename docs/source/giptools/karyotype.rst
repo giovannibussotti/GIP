@@ -19,8 +19,7 @@ Options
 +-------------------+------------------------------------------------------------------+----------------+
 |Option             |Description                                                       |Argument        |
 +===================+==================================================================+================+
-|\-\-samples        |Sample names. It determines the plotting order [**required**]     |[char ...]      | |                   |                                                                  |                |    
-+-------------------+------------------------------------------------------------------+----------------+
+|\-\-samples        |Sample names. It determines the plotting order [**required**]     |[char ...]      |        +-------------------+------------------------------------------------------------------+----------------+
 |\-\-gipOut         |GIP output directory [**required**]                               |[char]          |
 +-------------------+------------------------------------------------------------------+----------------+
 |\-\-outName        |Output name [default NA]                                          |[char]          |
@@ -69,6 +68,7 @@ Output
 ------
 
 | To test whether the chromosome coverage varies in different conditions the ``karyotype`` module performs the Wilcoxon, Kolmogorov-Smirnov and AOV tests on the somy score distributions for each comparison and returns one table for each test.
+
 #it also return the difference between the median downsampled somy score for each chromosome and for each comparison
 
 

@@ -136,7 +136,7 @@ Measure genomic bin sequencing coverage
 6. Estimates the mean MAPQ score for each bin  
 
 | Please note that it is possible to obtain genomic bins with 0 mean coverage, but MAPQ greather than 0. This is the case in genomic depletions where very few reads map to the bin with a certain MAPQ score greather than 0. 
-| The GC-content correction is enabled setting the parameter ``CGcorrect = true``and is meant to limit potential sequencing biases during DNA amplification. Given the distribution of the normalized bin mean coverage scores and their GC-content, GIP fits a loess regression using using a 5 folds cross validation to explore the loess *span* parameter (which relates with the fraction of points used to fit the local regressions, and influence the model smoothness).
+| The GC-content correction is enabled setting the parameter ``CGcorrect = true`` and is meant to limit potential sequencing biases during DNA amplification. Given the distribution of the normalized bin mean coverage scores and their GC-content, GIP fits a loess regression using using a 5 folds cross validation to explore the loess *span* parameter (which relates with the fraction of points used to fit the local regressions, and influence the model smoothness).
 | Then GIP corrects the original bin coverage by subtracting the values on the loess model, and adding back the difference between the median coverage of all bin before and after subtraction (i.e. recentering the median of the bin coverage scores to 1). Genomic bins that after correction have negative coverage are reported with a 0 value.
 
 

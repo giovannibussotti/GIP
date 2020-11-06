@@ -27,7 +27,7 @@ GIP also enables **giptools**, a tool-suite allowing to  **detect**, **compare**
 Look how easy it is to use.
 Run GIP on a large set of input WGS experiments (e.g. 200 samples)
 
-  ``nextflow gip --genome data/fasta.file --annotation data/gtf.file --index input.tsv -c gip.config``
+  ``gip --genome fasta.file --annotation gtf.file --index fastqs.tsv -c gip.config``
 
   
 Compare gene CNVs in 3 specific isolates
@@ -78,10 +78,11 @@ Installation
 
     ``singularity pull command...``
 
-3) Move **giptools** to /usr/local/bin/. If the user does not have permission on this folder can keep giptools in any other location, and just update the "container" parameter in the gip.config: ``container='/Absolute/Path/To/giptools'``
+3) Move **giptools** to /usr/local/bin/. If the user does not have permission on the folder she/he can keep giptools in any other location, and just update the "container" parameter in the gip.config: ``container='/Path/To/giptools'``
 
-Done!
-    
+| Done!
+| To make GIP available anywhere, the user can place **gip** in a directory that is in PATH.
+  
     
 Contribute
 ----------
