@@ -96,7 +96,7 @@ Options
 |                       |                                                              |                |
 |                       |Higher inflation values result in increased                   |                |
 |                       |                                                              |                |
-|                       | cluster granularity. If \"NA\" use mclust  [default NA]      |                |
+|                       |cluster granularity. If \"NA\" use mclust  [default NA]       |                |
 +-----------------------+--------------------------------------------------------------+----------------+
 |\-\-MCLexpansion       |NETWORK. MCL expansion value.                                 |[int]           |
 |                       |                                                              |                |

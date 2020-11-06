@@ -6,11 +6,11 @@
 
 suppressPackageStartupMessages(library("argparse"))
 parser <- ArgumentParser(description="Compare samples genomic distance")
-parser$add_argument("--samples" , nargs="+", required=TRUE, help="Sample names [default %(default)s]" )
-parser$add_argument("--gipOut"  , required=TRUE , help="GIP output directory [default %(default)s]" , default="NA")
+parser$add_argument("--samples" , nargs="+", required=TRUE, help="Sample names [required]" )
+parser$add_argument("--gipOut"  , required=TRUE , help="GIP output directory [required]" )
 parser$add_argument("--outName" , help="Output name [default %(default)s]" , default="NA")
-parser$add_argument("--contextGenomes" , help="two columns (Tab-separated) file listing additional genomes. Syntax: genomeName<Tab>genomeFilePath [default %(default)s]" , default="NA")
-parser$add_argument("--debug"  , action="store_true" , help="dump session and quit [default %(default)s]" , default=FALSE)
+parser$add_argument("--contextGenomes" , help="Two columns TSV file listing additional genomes. Syntax: name<Tab>filePath [default %(default)s]" , default="NA")
+parser$add_argument("--debug"  , action="store_true" , help="Dump session and quit [default %(default)s]" , default=FALSE)
 args <- parser$parse_args()
 
 #patch NA
