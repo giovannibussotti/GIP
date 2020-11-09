@@ -95,7 +95,7 @@ repeatLibrary        = file(params.repeatLibrary)
 Channel
     .fromPath(params.index)
     .splitCsv(header:true , sep:'\t')
-    .map{ row-> tuple(row.sampleId, file(row.read1), file(row.read2)) }
+    .map{ row-> tuple(row.sampleId, row.read1, row.read2) }
     .set { ch1  }
 
 //config file variables
@@ -185,7 +185,7 @@ process map {
   tag { "${sampleId}" }
  
   input:
-  tuple val(sampleId) , file(read1) , file(read2) from ch1
+  tuple val(sampleId) , val(read1) , val(read2) from ch1
   set file(fa) , file(fai) , file(dict) , file(size) from genome_ch1  
   file(db) from bwaDb_ch1
 
