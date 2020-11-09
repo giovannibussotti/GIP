@@ -14,8 +14,8 @@
 
 suppressPackageStartupMessages(library("argparse"))
 parser <- ArgumentParser(description="Compare chromosome sequencing coverage distributions")
-parser$add_argument("--samples" , nargs="+", required=TRUE, help="Sample names. It determines the plotting order [required]" )
-parser$add_argument("--gipOut"  , required=TRUE , help="GIP output directory [required]")
+parser$add_argument("--samples" , nargs="+", help="Sample names. It determines the plotting order. If \"NA\" all samples are used" , default="NA")
+parser$add_argument("--gipOut"  , help="GIP output directory. If \"NA\" the directory \"./gipOut\" is used" , default="NA")
 parser$add_argument("--outName" , help="Output name. [default %(default)s]" , default="NA")
 parser$add_argument("--minMAPQ" , type="integer" , help="Remove bins with MAPQ < --minMAPQ [default %(default)s]" , default=0)
 parser$add_argument("--chrs"    , nargs="+" , help="Chromosomes to use. If \"NA\" it uses the same chromsomes as GIP [default %(default)s]" , default="NA")
@@ -64,7 +64,14 @@ KSTest <- function (contrasts){
       #select the score for each chr in the two samples
       a <- subset(allSamples[[x[1]]], allSamples[[x[1]]]$chromosome == chr)$score
       b <- subset(allSamples[[x[2]]], allSamples[[x[2]]]$chromosome == chr)$score
-      chrPvalK <- ks.test(a,b)$p.value
+      #the ties warning is suppressed
+      chrPvalK <- withCallingHandlers({
+                  ks.test(a,b)$p.value
+                }, warning=function(w) {
+                 if( any( grepl( "p-value will be approximate in the presence of ties", w) ) ){
+                    invokeRestart("muffleWarning")
+                }
+      })
       contrastPvalsKS     <- c(contrastPvalsKS     , chrPvalK)
     }
     #combine contrast KS pvals
@@ -153,6 +160,16 @@ options(datatable.fread.input.cmd.message=FALSE)
 if(debug){library("session"); save.session("session_DEBUG_karyotype");quit()}
 
 #setup
+if (is.na(gipOut)){
+  gipOut <- "./gipOut"
+}
+if(! dir.exists(gipOut)){
+  stop("ERROR. gipOut directory does not exists")
+  quit(save = "no", status = 1, runLast = FALSE)
+}
+if (is.na(samples[1])) {
+  samples <- dir(paste0(gipOut,"/samples"))
+}  
 outDir <- paste0(gipOut,"/sampleComparison/")
 system(paste0("mkdir -p ", outDir))
 if (is.na(outName)){
@@ -168,8 +185,8 @@ if (is.na (chrs[1])){
 }
 #sanity check
 if (!is.na(disomicChr) & ! (disomicChr %in% chrs)) {
-    stop("ERROR. disomicChr needs to be included in --chrs")
-    quit(save = "no", status = 1, runLast = FALSE)  
+  stop("ERROR. disomicChr needs to be included in --chrs")
+  quit(save = "no", status = 1, runLast = FALSE)  
 }
 
 #read .covPerBin files in a list
