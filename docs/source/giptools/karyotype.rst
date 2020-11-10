@@ -8,9 +8,13 @@ Options
 +-------------------+------------------------------------------------------------------+----------------+
 |Option             |Description                                                       |Argument        |
 +===================+==================================================================+================+
-|\-\-samples        |Sample names. It determines the plotting order [**required**]     |[char ...]      |
+|\-\-samples        |Sample names. It determines the plotting order                    |[char ...]      |
+|                   |                                                                  |                |
+|                   |If "NA" all samples are used [default NA]                         |                |
 +-------------------+------------------------------------------------------------------+----------------+
-|\-\-gipOut         |GIP output directory [**required**]                               |[char]          |
+|\-\-gipOut         |GIP output directory. If "NA" the directory "./gipOut" is used    |[char]          |
+|                   |                                                                  |                |
+|                   |[default NA]                                                      |                |
 +-------------------+------------------------------------------------------------------+----------------+
 |\-\-outName        |Output name [default NA]                                          |[char]          |
 +-------------------+------------------------------------------------------------------+----------------+

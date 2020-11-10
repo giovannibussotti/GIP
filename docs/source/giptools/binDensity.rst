@@ -1,17 +1,6 @@
 ##########
 binDensity
-##########
-
-Purpose
--------
-The ``binDensity`` module aims at visualizing the normalized bin sequencing coverage of multiple samples using a smoothed color density representation.
-
-
-Algorithm
----------
-
-The module loads for all samples the GIP files with the bin sequencing coverage values (.covPerBin.gz files) and generates a smoothed color density scatterplot showing the genomic position (x-axis) and the log10 normalized coverage values (y-axis). 
-
+########## 
 
 Options
 -------
@@ -19,9 +8,13 @@ Options
 +-----------------------+--------------------------------------------------------------+----------------+
 |Option                 |Description                                                   |Argument        |
 +=======================+==============================================================+================+
-|\-\-samplesList        |File listing in one column the samples to use [**required**]  |[char ...]      |     
+|\-\-samplesList        |File listing in one column the samples to use.                |[char ...]      |
+|                       |                                                              |                |
+|                       |If "NA" all samples are used. [default NA]                    |                |
 +-----------------------+--------------------------------------------------------------+----------------+
-|\-\-gipOut             |GIP output directory [**required**]                           |[char]          |
+|\-\-gipOut             |GIP output directory.                                         |[char]          |
+|                       |                                                              |                |
+|                       |If "NA" the directory "./gipOut" is used [default NA]         |                |
 +-----------------------+--------------------------------------------------------------+----------------+
 |\-\-outName            |Output name [default NA]                                      |[char]          |
 +-----------------------+--------------------------------------------------------------+----------------+
@@ -62,7 +55,10 @@ Options
 |\-h, \-\-help          |Show help message                                             |                |
 +-----------------------+--------------------------------------------------------------+----------------+
 
-
+Description
+-----------
+| The ``binDensity`` module aims at visualizing the normalized bin sequencing coverage of multiple samples using a smoothed color density representation.
+| The module loads for all samples the GIP files with the bin sequencing coverage values (.covPerBin.gz files) and generates a smoothed color density scatterplot showing the genomic position (x-axis) and the log10 normalized coverage values (y-axis).
 
 
 Output

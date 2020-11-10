@@ -2,15 +2,6 @@
 ternary
 #######
 
-Purpose
--------
-The ``ternary`` module aims at comparing the gene sequencing coverage of 3 samples to identify gene CNVs.
-
-
-Algorithm
----------
-
-The module loads for the three samples the GIP files with the gene sequencing coverage values (.covPerGe.gz files) and generates a ternary diagram of the normalized coverage values. In this representation, the values coverage values in the 3 samples sum to a constant represented for convenience as 100%. Additionally, the module generates a 3D-scatterplot demonstrating the normalized gene coverage in the 3 samples.
 
 Options
 -------
@@ -20,7 +11,9 @@ Options
 +=======================+==============================================================+================+
 |\-\-samples            |Sample names. It determines the plotting order [**required**] |[char ...]      |     
 +-----------------------+--------------------------------------------------------------+----------------+
-|\-\-gipOut             |GIP output directory [**required**]                           |[char]          |
+|\-\-gipOut             |GIP output directory.                                         |[char]          |
+|                       |                                                              |                |
+|                       |If "NA" the directory "./gipOut" is used [default NA]         |                |
 +-----------------------+--------------------------------------------------------------+----------------+
 |\-\-outName            |Output name [default NA]                                      |[char]          |
 +-----------------------+--------------------------------------------------------------+----------------+
@@ -65,7 +58,10 @@ Options
 
 
 
-
+Description
+-----------
+| The ``ternary`` module aims at comparing the gene sequencing coverage of 3 samples to identify gene CNVs.
+| The module loads for the three samples the GIP files with the gene sequencing coverage values (.covPerGe.gz files) and generates a ternary diagram of the normalized coverage values. In this representation, the values coverage values in the 3 samples sum to a constant represented for convenience as 100%. Additionally, the module generates a 3D-scatterplot demonstrating the normalized gene coverage in the 3 samples.
 
 Output
 ------

@@ -9,7 +9,7 @@
 
 suppressPackageStartupMessages(library("argparse"))
 parser <- ArgumentParser(description="Compare SNVs in multiple samples")
-parser$add_argument("--samples" , nargs="+", help="Sample names. It determines the plotting order. If \"NA\" all samples are used" , default="NA")
+parser$add_argument("--samples" , nargs="+", help="Sample names (max 7). It determines the plotting order. If \"NA\" all samples are used" , default="NA")
 parser$add_argument("--gipOut"  , help="GIP output directory. If \"NA\" the directory \"./gipOut\" is used" , default="NA")
 parser$add_argument("--outName" , help="Output name [default %(default)s]" , default="NA")
 parser$add_argument("--chrs"    , nargs="+" , help="Chromosomes to use. If \"NA\" it uses the same chromsomes as GIP [default %(default)s]" , default="NA")
@@ -41,6 +41,10 @@ if(! dir.exists(gipOut)){
 if (is.na(samples[1])) {
   samples <- dir(paste0(gipOut,"/samples"))
 } 
+if (length(samples >7)){
+  stop("ERROR. Specify max 7 samples")
+  quit(save = "no", status = 1, runLast = FALSE)
+}
 outDir <- paste0(gipOut,"/sampleComparison/")
 system(paste0("mkdir -p ", outDir))
 if (is.na(outName)){

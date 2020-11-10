@@ -2,16 +2,6 @@
 SNV
 ###
 
-Purpose
--------
-The ``SNV`` module aims at comparing the SNV in terms of number, position and frequency for a samples set.
-
-
-Algorithm
----------
-
-For each sample the module loads the GIP files with the filtered SNVs data (singleVariants.df.gz files) and generates multiple plots overlaying in different colors the SNVs sets. 
-
 
 Options
 -------
@@ -19,9 +9,13 @@ Options
 +-----------------------+--------------------------------------------------------------+----------------+
 |Option                 |Description                                                   |Argument        |
 +=======================+==============================================================+================+
-|\-\-samples            |Sample names. It determines the plotting order [**required**] |[char ...]      |     
+|\-\-samples            |Sample names (max 7). It determines the plotting order.       |[char ...]      |
+|                       |                                                              |                |
+|                       |If "NA" all samples are used [default NA]                     |                |
 +-----------------------+--------------------------------------------------------------+----------------+
-|\-\-gipOut             |GIP output directory [**required**]                           |[char]          |
+|\-\-gipOut             |GIP output directory.                                         |[char]          |
+|                       |                                                              |                |
+|                       |If "NA" the directory "./gipOut" is used [default NA]         |                |
 +-----------------------+--------------------------------------------------------------+----------------+
 |\-\-outName            |Output name [default NA]                                      |[char]          |
 +-----------------------+--------------------------------------------------------------+----------------+
@@ -39,6 +33,12 @@ Options
 +-----------------------+--------------------------------------------------------------+----------------+
 |\-h, \-\-help          |Show help message                                             |                |
 +-----------------------+--------------------------------------------------------------+----------------+
+
+Description
+-----------
+| The ``SNV`` module aims at comparing the SNV in terms of number, position and frequency for a samples set.
+| For each sample the module loads the GIP files with the filtered SNVs data (singleVariants.df.gz files) and generates multiple plots overlaying in different colors the SNVs sets. 
+
 
 
 

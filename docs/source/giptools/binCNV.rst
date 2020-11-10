@@ -2,17 +2,6 @@
 binCNV
 ######
 
-Purpose
--------
-The ``binCNV`` module aims at comparing the bin sequencing coverage of 2 samples. This module is useful to identify intra-chromosomal CNV regions between 2 isolates.
-
-
-Algorithm
----------
-
-For each sample the module loads the GIP files with the bin sequencing coverage (.covPerBin.gz files) and calculates the ratio of the normalized coverage value between corresponding bins. 
-
-
 Options
 -------
 
@@ -21,7 +10,9 @@ Options
 +===================+==================================================================+================+
 |\-\-samples        |Sample names. It determines the plotting order [**required**]     |[char ...]      |
 +-------------------+------------------------------------------------------------------+----------------+ 
-|\-\-gipOut         |GIP output directory [**required**]                               |[char]          |
+|\-\-gipOut         |GIP output directory. If "NA" the directory "./gipOut" is used    |[char]          |
+|                   |                                                                  |                |
+|                   |[default NA]                                                      |                |
 +-------------------+------------------------------------------------------------------+----------------+
 |\-\-outName        |Output name [default NA]                                          |[char]          |
 +-------------------+------------------------------------------------------------------+----------------+
@@ -48,7 +39,10 @@ Options
 |\-h, \-\-help      |Show help message                                                 |                |
 +-------------------+------------------------------------------------------------------+----------------+
 
-
+Description
+-----------
+| The ``binCNV`` module aims at comparing the bin sequencing coverage of 2 samples. This module is useful to identify intra-chromosomal CNV regions between 2 isolates.
+| For each sample the module loads the GIP files with the bin sequencing coverage (.covPerBin.gz files) and calculates the ratio of the normalized coverage value between corresponding bins. 
 
 Output
 ------

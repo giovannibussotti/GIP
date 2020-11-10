@@ -1,18 +1,6 @@
 #####
 geCNV
-#####
-
-
-Purpose
--------
-The ``geCNV`` module aims at comparing the gene sequencing coverage of 2 samples to identify gene CNVs.
-
-
-Algorithm
----------
-
-The module loads for the two samples the GIP files with the gene sequencing coverage values (.covPerGe.gz files) and calculates for each gene the ratio of the normalized coverage values. 
-
+##### 
 
 Options
 -------
@@ -22,7 +10,9 @@ Options
 +===================+==================================================================+================+
 |\-\-samples        |Sample names. It determines the plotting order [**required**]     |[char ...]      |
 +-------------------+------------------------------------------------------------------+----------------+
-|\-\-gipOut         |GIP output directory [**required**]                               |[char]          |
+|\-\-gipOut         |GIP output directory. If "NA" the directory "./gipOut" is used    |[char]          |
+|                   |                                                                  |                |
+|                   |[default NA]                                                      |                |
 +-------------------+------------------------------------------------------------------+----------------+
 |\-\-outName        |Output name [default NA]                                          |[char]          |
 +-------------------+------------------------------------------------------------------+----------------+
@@ -70,6 +60,11 @@ Options
 +-------------------+------------------------------------------------------------------+----------------+
 
 
+
+Description
+-----------
+| The ``geCNV`` module aims at comparing the gene sequencing coverage of 2 samples to identify gene CNVs.
+| The module loads for the two samples the GIP files with the gene sequencing coverage values (.covPerGe.gz files) and calculates for each gene the ratio of the normalized coverage values.v
 
 
 Output

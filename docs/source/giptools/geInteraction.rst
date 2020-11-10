@@ -2,18 +2,6 @@
 geInteraction
 #############
 
-Purpose
--------
-The ``geInteraction`` module aims at detecting CNV genes across multiple samples and identifying gene interactions using a correlation-based network approach.
-
-
-Algorithm
----------
-
-The module loads the GIP files with the gene sequencing coverage values (.covPerGe.gz files) of all samples, then selects CNV genes. These are defined as the genes with a normalized coverage variation within the sample set greather than --minDelta. Next it builds a network and evaluates clusters based on the correlation computed between all CNV gene pairs. 
-  
-
-
 Options
 -------
 
@@ -28,7 +16,9 @@ Options
 |                       |                                                              |                |
 |                       |to the additional fields [**required**]                       |                |
 +-----------------------+--------------------------------------------------------------+----------------+
-|\-\-gipOut             |GIP output directory [**required**]                           |[char]          |
+|\-\-gipOut             |GIP output directory.                                         |[char]          |
+|                       |                                                              |                |
+|                       |If "NA" the directory "./gipOut" is used                      |                |
 +-----------------------+--------------------------------------------------------------+----------------+
 |\-\-outName            |Output name [default NA]                                      |[char]          |
 +-----------------------+--------------------------------------------------------------+----------------+
@@ -126,14 +116,12 @@ Options
 +-----------------------+--------------------------------------------------------------+----------------+
 
 
+Description
+-----------
+| The ``geInteraction`` module aims at detecting CNV genes across multiple samples and identifying gene interactions using a correlation-based network approach.
+| The module loads the GIP files with the gene sequencing coverage values (.covPerGe.gz files) of all samples, then selects CNV genes. These are defined as the genes with a normalized coverage variation within the sample set greather than --minDelta. Next it builds a network and evaluates clusters based on the correlation computed between all CNV gene pairs.
 
-heatmapType
-If \"scaled\" values are first centered                                                                           
-subtracting the mean gene normalized coverage across samples, then scaled dividing by the standard deviation. If \"log10\"  
-values are log10 transformed. If \"saturated\" values are     
-saturated at \-\-covSaturation. If \"flatten\" values are     
-first subracted by the min gene normalized coverage across    
-samples, then saturated at \-\-covSaturation
+| The heatmapType parameter has 4 options. If \"scaled\" values are first centered subtracting the mean gene normalized coverage across samples, then scaled dividing by the standard deviation. If \"log10\" values are log10 transformed. If \"saturated\" values are saturated at \-\-covSaturation. If \"flatten\" values are first subracted by the min gene normalized coverage across samples, then saturated at \-\-covSaturation.
 
 
 
