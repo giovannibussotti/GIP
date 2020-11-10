@@ -17,7 +17,7 @@
 suppressPackageStartupMessages(library("argparse"))
 parser <- ArgumentParser(description="Compare gene sequencing coverage in 2 samples")
 parser$add_argument("--samples" , nargs="+", required=TRUE, help="Sample names. It determines the plotting order [required]" )
-parser$add_argument("--gipOut"  , required=TRUE , help="GIP output directory [required]")
+parser$add_argument("--gipOut"  , help="GIP output directory. If \"NA\" the directory \"./gipOut\" is used" , default="NA")
 parser$add_argument("--outName" , help="Output name [default %(default)s]" , default="NA")
 parser$add_argument("--chrs"    , nargs="+" , help="Chromosomes to use. If \"NA\" it uses the same chromsomes as GIP [default %(default)s]" , default="NA")
 parser$add_argument("--MAPQ"  , type="integer" , help="Label genes with MAPQ < --MAPQ [default %(default)s]" , default=0)
@@ -43,6 +43,13 @@ if(debug){save.session("session_DEBUG_geCNV");quit()}
 
 
 #setup
+if (is.na(gipOut)){
+  gipOut <- "./gipOut"
+}
+if(! dir.exists(gipOut)){
+  stop("ERROR. gipOut directory does not exists")
+  quit(save = "no", status = 1, runLast = FALSE)
+}
 outDir <- paste0(gipOut,"/sampleComparison/")
 system(paste0("mkdir -p ", outDir))
 if (is.na(outName)){

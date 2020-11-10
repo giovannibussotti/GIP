@@ -6,8 +6,8 @@
 
 suppressPackageStartupMessages(library("argparse"))
 parser <- ArgumentParser(description="Compare samples genomic distance")
-parser$add_argument("--samples" , nargs="+", required=TRUE, help="Sample names [required]" )
-parser$add_argument("--gipOut"  , required=TRUE , help="GIP output directory [required]" )
+parser$add_argument("--samples" , nargs="+", help="Sample names. It determines the plotting order. If \"NA\" all samples are used" , default="NA")
+parser$add_argument("--gipOut"  , help="GIP output directory. If \"NA\" the directory \"./gipOut\" is used" , default="NA")
 parser$add_argument("--outName" , help="Output name [default %(default)s]" , default="NA")
 parser$add_argument("--contextGenomes" , help="Two columns TSV file listing additional genomes. Syntax: name<Tab>filePath [default %(default)s]" , default="NA")
 parser$add_argument("--debug"  , action="store_true" , help="Dump session and quit [default %(default)s]" , default=FALSE)
@@ -26,6 +26,16 @@ options(datatable.fread.input.cmd.message=FALSE)
 if(debug){library(session);save.session("session_DEBUG_genomeDistance");quit()}
 
 #setup
+if (is.na(gipOut)){
+  gipOut <- "./gipOut"
+}
+if(! dir.exists(gipOut)){
+  stop("ERROR. gipOut directory does not exists")
+  quit(save = "no", status = 1, runLast = FALSE)
+}
+if (is.na(samples[1])) {
+  samples <- dir(paste0(gipOut,"/samples"))
+} 
 outDir <- paste0(gipOut,"/sampleComparison/")
 system(paste0("mkdir -p ", outDir))
 if (is.na(outName)){

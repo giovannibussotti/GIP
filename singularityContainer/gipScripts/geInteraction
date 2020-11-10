@@ -26,7 +26,7 @@
 suppressPackageStartupMessages(library("argparse"))
 parser <- ArgumentParser(description="Detect CNV genes across multiple samples and produce correlation-based networks")
 parser$add_argument("--samplesList" , nargs="+", required=TRUE, help="File with a column named \"sample\" listing samples names. Additional TSV columns will be used to annotate the output figures. \"field\"_COLOR columns are used to map colors to the additional fields [required]" )
-parser$add_argument("--gipOut"  , required=TRUE , help="GIP output directory")
+parser$add_argument("--gipOut"  , help="GIP output directory. If \"NA\" the directory \"./gipOut\" is used" , default="NA")
 parser$add_argument("--outName" , help="Output name [default %(default)s]" , default="NA")
 parser$add_argument("--chrs"    , nargs="+" , help="Chromosomes to use. If \"NA\" it uses the same chromsomes as GIP [default %(default)s]" , default="NA")
 parser$add_argument("--minMAPQ" , type="integer" , help="Remove genes with MAPQ < --minMAPQ [default %(default)s]", default=0 )
@@ -57,7 +57,7 @@ for (n in names(args)){
 }
 for (n in names(args)){assign(n,args[[n]]) }
 
-suppressPackageStartupMessages(library ("gplots"))
+suppressPackageStartupMessages(library("gplots"))
 suppressPackageStartupMessages(library("FactoMineR"))
 suppressPackageStartupMessages(library("RColorBrewer"))
 suppressPackageStartupMessages(library("data.table"))
@@ -72,6 +72,13 @@ suppressPackageStartupMessages(library("pheatmap"))
 if(debug){library(session);save.session("session_DEBUG_interaction");quit()}
 
 #setup
+if (is.na(gipOut)){
+  gipOut <- "./gipOut"
+}
+if(! dir.exists(gipOut)){
+  stop("ERROR. gipOut directory does not exists")
+  quit(save = "no", status = 1, runLast = FALSE)
+}
 outDir <- paste0(gipOut,"/sampleComparison/")
 system(paste0("mkdir -p ", outDir))
 if (is.na(outName)){

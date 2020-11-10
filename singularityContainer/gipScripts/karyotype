@@ -1,16 +1,3 @@
-#First generate genome coverage files (.covPerBin) 
-#Then given a list of gzipped .covPerBin files (--file), convert the bin scores to somy scores which will be used for the boxplots and statistics
-
-#The somy score is defined as the downsampled score (e.g. bin score) divided by the median downsampled score of a chromosome deemed to be disomic and multiplied by 2
-#If no disomic chromosome is deemed, the somy score is just the downsampled score multiplied by 2
-#To assess what chromosome is disomic you can do a dry run of the script and pick a chromsome that has median cenetered on 2 and does not vary much across the various samples
-
-#To test whether the chromosome coverage varies in different conditions the script runs Wilcoxon, Kolmogorov-Smirnov and AOV tests for each comparison and returns one table for each test.
-#it also return the difference between the median  somy score for each chromosome and for each comparison
-
-#To compare coverage distribution shapes the script generates qqplots, comparing the quantiles of the two downsampled distributions. If the dots (quantiles) are on the diagonal, then they distributions have the same shape.
-
-#WARNING: since the coverage vectors of a chromosome in two conditions have the same length, in fact the qqplots is equivalent to sort the two vectors and plot one against the other. So the coordinates x,y of the points are the coverage score in the two conditions (you have as many quantiles as nucleotides, not a fixed quantile interval, like the 25%)
 
 suppressPackageStartupMessages(library("argparse"))
 parser <- ArgumentParser(description="Compare chromosome sequencing coverage distributions")
