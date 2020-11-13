@@ -181,10 +181,10 @@ allSamples <- list()
 for (i in 1:length(samples)){
     n = samples[i]
     fName = paste0(gipOut,"/samples/",n,"/",n,".covPerBin.gz")
-    allSamples[[n]]    <- fread(cmd=paste("gunzip -c", fName),colClasses=list(character=1))
+    allSamples[[n]]    <- fread(cmd=paste("gunzip -c", fName),colClasses=list(character=1),data.table=FALSE)
     medFile = paste0(gipOut,"/samples/",n,"/",n,".karyotype.medianCoverage")
     medianCoverageOfAllBins <- read.table(medFile)$V1
-    allSamples[[n]] <- allSamples[[n]][ allSamples[[n]]$MAPQ >= MAPQ , ]
+    allSamples[[n]] <- allSamples[[n]][ allSamples[[n]]$MAPQ >= minMAPQ , ]
     allSamples[[n]][,c("end","normalizedMeanCoverage","MAPQ")] <- list(NULL)
     names(allSamples[[n]]) <- c("chromosome","position","score") 
     allSamples[[n]]$score <- allSamples[[n]]$score / medianCoverageOfAllBins
@@ -192,7 +192,7 @@ for (i in 1:length(samples)){
     allSamples[[n]]$sample <- n
     #convert score to somy score
     if(!is.na(disomicChr)){
-        normFact  <-  median(allSamples[[n]][ allSamples[[n]]$chromosome == disomicChr ,"score"])
+        normFact  <-  median(allSamples[[n]][ allSamples[[n]]$chromosome == disomicChr ,]$score)
         allSamples[[n]]$score <- allSamples[[n]]$score / normFact
     }
     allSamples[[n]]$score <- allSamples[[n]]$score * 2
