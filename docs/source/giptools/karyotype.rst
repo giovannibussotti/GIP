@@ -61,20 +61,58 @@ However, depending on the biological system under investigation, many/most chrom
 In this case the somy score distribution of a given disomic chromosome may not be exactly centered on 2, and different samples may give slightly shifted readout for the same disomic chromosome.
 To address this problem the user can perform a first run of ``giptools karyotype``  to identify a chromosome whose median coverage is as close as possible to a value of 2, and that it is stable across the samples set. In a second run of ``giptools karyotype`` the user can then specify the chromsome name with the ``--disomicChr`` option.
 By doing that the somy scores will be calculated by dividing the bins coverage scores by the median score of the chromosome deemed to be disomic and then multiplied by 2.
+
 To compare coverage distribution shapes the script can optionally generate Q-Q plots (slow), comparing the quantiles of the two bins distributions. If the dots (quantiles) are on the diagonal, then their distributions have the same shape.
-
-
-Output
-------
-
-| To test whether the chromosome coverage varies in different conditions the ``karyotype`` module performs the Wilcoxon, Kolmogorov-Smirnov and AOV tests on the somy score distributions for each comparison and returns one table for each test.
-
-#it also return the difference between the median downsampled somy score for each chromosome and for each comparison
-
-
-
 
 
 Example
 -------
+
+| From the GIP worked example folder execute
+
+| ``giptools karyotype``
+
+| This will generate the karyotype output files in the **gipOut/sampleComparison** folder. A second run of this module can be performed to adjust the visualization parameters (e.g. reducing the range on the y-axis) and normalize by the LinJ36 disomic chromosome:
+
+| ``giptools karyotype  --ylim 0 6 --disomicChr LinJ36``
+ 
+
+Output
+------
+
+| The otput consists in two files: 
+
+* A .pdf file including two plots
+* An .xlsx files with 5 data sheets
+
+ 
+The two plots represent the chromosome somy scores as boxplots and density distributions. 
+The example produces the following plots:
+
+.. figure:: ../_static/karyotype1.png
+      :width: 100 %
+
+.. figure:: ../_static/karyotype2.png
+      :width: 100 %
+ 
+
+The ``karyotype`` module performs the Wilcoxon, Kolmogorov-Smirnov and AOV tests on the somy score distributions to test the significance of chromosome coverage variations in the different samples. The output statistics are reported in the .xlsx file which includes the following data sheets:
+  
+* Wilcoxon tes p-value scores
+* Kolmogorov-Smirnov (KS) test p-value scores
+* One way ANOVA test (AOV) p-value scores
+* Difference between the normalized median chromosome coverage scores
+* Normalized median chromosome coverage scores
+
+
+
+
+
+
+
+
+
+
+
+
 
