@@ -39,6 +39,14 @@ Options
 |                       |                                                              |                |
 |                       | DEPENDENCY \-\-showDensity. [default black gray]             |                |
 +-----------------------+--------------------------------------------------------------+----------------+
+|\-\-showQuantile       |In density plot show genes/clusters over this                 |[double]        | 
+|                       |                                                              |                |
+|                       |quantile cut-off. DEPENDENCY --showDensity [default 0.99]     |                |
++-----------------------+--------------------------------------------------------------+----------------+
+|\-\-densityBins        |Density bins value. If \"NA\" it is set to half the dataset   |[int]           | 
+|                       |                                                              |                |
+|                       |size. DEPENDENCY --showDensity [default NA]                   |                |
++-----------------------+--------------------------------------------------------------+----------------+
 |\-\-plot3dMaxCOV       | 3-D scatteplot visualization threshold.                      |[double]        |
 |                       |                                                              |                |
 |                       | Gene/cluster coverage values greather than this threshold    |                |
