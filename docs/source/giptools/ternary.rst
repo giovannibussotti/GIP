@@ -31,21 +31,25 @@ Options
 +-----------------------+--------------------------------------------------------------+----------------+
 |\-\-highLowDeltaColor  | Colors for high and low delta.                               |[char char]     |
 |                       |                                                              |                |
-|                       | DEPENDENCY \-\-colorByDelta  [default black green]           |                |
+|                       | DEPENDENCY \-\-colorByDelta  [default darkgreen black]       |                |
 +-----------------------+--------------------------------------------------------------+----------------+
-|\-\-showDensity        | Show density area                                            |                |
+|\-\-showDensity        | Show log 10 scaled density area                              |                |
 +-----------------------+--------------------------------------------------------------+----------------+
 |\-\-highLowDensityColor| Colors for high and low density                              |[char char]     |
 |                       |                                                              |                |
-|                       | DEPENDENCY \-\-showDensity. [default black gray]             |                |
+|                       | DEPENDENCY \-\-showDensity. [default black deepskyblue]      |                |
 +-----------------------+--------------------------------------------------------------+----------------+
 |\-\-showQuantile       |In density plot show genes/clusters over this                 |[double]        | 
 |                       |                                                              |                |
 |                       |quantile cut-off. DEPENDENCY --showDensity [default 0.99]     |                |
 +-----------------------+--------------------------------------------------------------+----------------+
-|\-\-densityBins        |Density bins value. If \"NA\" it is set to half the dataset   |[int]           | 
+|\-\-densityN           |Number of grid points in each direction                       |[int]           | 
 |                       |                                                              |                |
-|                       |size. DEPENDENCY --showDensity [default NA]                   |                |
+|                       |DEPENDENCY --showDensity [default 200]                        |                |
++-----------------------+--------------------------------------------------------------+----------------+
+|\-\-densityBins        |Number bins over which to calculate intervals                 |[int]           | 
+|                       |                                                              |                |
+|                       |DEPENDENCY --showDensity [default 8000]                       |                |
 +-----------------------+--------------------------------------------------------------+----------------+
 |\-\-plot3dMaxCOV       | 3-D scatteplot visualization threshold.                      |[double]        |
 |                       |                                                              |                |
@@ -70,6 +74,7 @@ Description
 -----------
 | The ``ternary`` module aims at comparing the gene sequencing coverage of 3 samples to identify gene CNVs.
 | The module loads for the three samples the GIP files with the gene sequencing coverage values (.covPerGe.gz files) and generates a ternary diagram of the normalized coverage values. In this representation, the values coverage values in the 3 samples sum to a constant represented for convenience as 100%. Additionally, the module generates a 3D-scatterplot demonstrating the normalized gene coverage in the 3 samples.
+ 
 
 Output
 ------
