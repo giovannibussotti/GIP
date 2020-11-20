@@ -28,7 +28,17 @@ Options
 |                       |If \"NA\" the value is automatically attributed [default NA]  |                |
 +-----------------------+--------------------------------------------------------------+----------------+
 |\-\-minVRF             |Discard SNVs with frequency < --minVRF [default 0]            |[double]        |
-+-----------------------+--------------------------------------------------------------+----------------+  
++-----------------------+--------------------------------------------------------------+----------------+
+|\-\-showCoverage       |Overlay sequencing coverage                                   |                |
++-----------------------+--------------------------------------------------------------+----------------+
+|\-\-smoothingFactor    |Merge and average the normalized coverage of this number      |[double]        |
+|                       |                                                              |                |
+|                       |of adjacent bins. DEPENDENCY --showCoverage [default 30]      |                |
++-----------------------+--------------------------------------------------------------+----------------+
+|\-\-maxCov             |Normalized coverage values > \-\-maxCov are shown             |[double]        |
+|                       |                                                              |                |
+|                       |as \-\-maxCov. DEPENDENCY --showCoverage [default 5]          |                |
++-----------------------+--------------------------------------------------------------+----------------+
 |\-\-debug              |Dump session and quit                                         |                |
 +-----------------------+--------------------------------------------------------------+----------------+
 |\-h, \-\-help          |Show help message                                             |                |
