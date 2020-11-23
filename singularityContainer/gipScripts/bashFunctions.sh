@@ -304,7 +304,7 @@ function covPerBin {
   bedtools bamtobed -split -i $BAM | sort -k1,1 -k2,2n -T $TMP/_sort1 > $BED
   bedtools makewindows -g $CHRSIZE -w $BINSIZE | sort -k1,1 -k2,2n -T $TMP/_sort2 > $TMP/windows
   bedtools map -a $TMP/windows -b $BED -c 5 -o mean -null 0 > $TMP/meanMapq
-  bedtools coverage -d -a $TMP/windows -b $BED > $TMP/winCov
+  bedtools coverage -sorted -d -a $TMP/windows -b $BED > $TMP/winCov
   echo -e "chromosome\tstart\tend\tmeanCoverage" > $TMP/covPerBinNotNorm
   awk '{i=$1"\t"1+$2"\t"$3; count[i]++; sum[i]+=$5;} END{ for(i in count) {m = sum[i]/count[i]; print i "\t" m}}  ' $TMP/winCov  | sort -k1,1 -k2,2n -T $TMP/_sort3 >> $TMP/covPerBinNotNorm
   #normalize
