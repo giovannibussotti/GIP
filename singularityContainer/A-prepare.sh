@@ -7,7 +7,7 @@
 SAMTOOLSv=1.8
 BWAv=0.7.17
 htslibv=1.8
-bedtoolsv=2.25.0
+bedtoolsv=2.29.2
 picardv=2.18.9
 python3v=3.7.0
 Rv=3.6.0
@@ -43,8 +43,9 @@ tar -xjf htslib-${htslibv}.tar.bz2
 mv htslib-${htslibv} htslib
 
 #bedtools
-wget https://github.com/arq5x/bedtools2/releases/download/v${bedtoolsv}/bedtools-${bedtoolsv}.tar.gz
-tar -zxvf bedtools-${bedtoolsv}.tar.gz
+wget https://github.com/arq5x/bedtools2/releases/download/v${bedtoolsv}/bedtools.static.binary
+mv bedtools.static.binary bedtools
+chmod a+x bedtools
 
 #picard
 wget https://github.com/broadinstitute/picard/releases/download/${picardv}/picard.jar
@@ -147,7 +148,7 @@ tar -xzf DataSet2Unix64.tar.gz
 mv redUnix64/Red .
 
 #CLEAN
-rm -rf Python-${python3v}.tgz _tmp htslib-${htslibv}.tar.bz2 samtools-${SAMTOOLSv}.tar.bz2 bwa-${BWAv}.tar.bz2 bedtools-${bedtoolsv}.tar.gz R-${Rv}.tar.gz RepeatMasker-${RepeatMaskerv}.tar.gz v${LGERTv}.tar.gz rmblast-${RMBlastv}+-x64-linux.tar.gz clinEff V${cdhitv}.tar.gz circos-${circosv}.tgz redUnix64/ DataSet2Unix64.tar.gz
+rm -rf Python-${python3v}.tgz _tmp htslib-${htslibv}.tar.bz2 samtools-${SAMTOOLSv}.tar.bz2 bwa-${BWAv}.tar.bz2 R-${Rv}.tar.gz RepeatMasker-${RepeatMaskerv}.tar.gz v${LGERTv}.tar.gz rmblast-${RMBlastv}+-x64-linux.tar.gz clinEff V${cdhitv}.tar.gz circos-${circosv}.tgz redUnix64/ DataSet2Unix64.tar.gz
 
 #compress
 mkdir -p packages

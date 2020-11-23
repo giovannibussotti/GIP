@@ -24,11 +24,11 @@ From: ubuntu:xenial
   cd /opt
   tar -xzf packages.tar.gz
   cd packages
-  mv bedtools2/ bwa/ htslib/ samtools/ freebayes/ Python3/ R vcftools/ rmblast/ RepeatMasker snpEff circos/ MUMmer/ cdhit/ miniCRAN/ installRpkgs.R Rpkgs.tsv  /opt/
+  mv bwa/ htslib/ samtools/ freebayes/ Python3/ R vcftools/ rmblast/ RepeatMasker snpEff circos/ MUMmer/ cdhit/ miniCRAN/ installRpkgs.R Rpkgs.tsv  /opt/
   mv /opt/gipScripts/snpEff.configTemplate /opt/
-  mv picard.jar delly bedGraphToBigWig trf409.linux64 Red /bin/
+  mv bedtools picard.jar delly bedGraphToBigWig trf409.linux64 Red /bin/
   cd ..
-  rm -rf packages
+  rm -rf packages packages.tar.gz
 
   #dirs to mount with singularity -B to for data access in the container 
   mkdir /fq
@@ -61,10 +61,6 @@ From: ubuntu:xenial
   #htslib (tabix)
   cd /opt/htslib
   ./configure && make && make install
- 
-  #bedtools
-  cd /opt/bedtools2
-  make install
 
   #gipScripts/
   mv /opt/gipScripts/* /bin/
