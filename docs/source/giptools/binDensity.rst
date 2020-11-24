@@ -32,17 +32,17 @@ Options
 |                       |                                                              |                |
 |                       |values > num1 or < num2 will be labeled. [default 1.5 0.5]    |                |
 +-----------------------+--------------------------------------------------------------+----------------+
-|\-\-bandwidth          |Smoothing bandwidth value.                                    |[double]        |
+|\-\-bandwidth          |Smoothing bandwidth value.                                    |[double double] |
 |                       |                                                              |                |
 |                       |Provide two numbers to enforce different bandwidths           |                |
 |                       |                                                              |                |
-|                       |on the x and y axes respectively [default 0.01]               |                |
+|                       |on the x and y axes respectively [default 10000 0.01]         |                |
 +-----------------------+--------------------------------------------------------------+----------------+
-|\-\-nbin               |Number of equally spaced grid points for                      |[int]           |
+|\-\-nbin               |Number of equally spaced grid points for                      |[int int]       |
 |                       |                                                              |                |
 |                       |the density estimation. Provide two numbers to use different  |                |
 |                       |                                                              |                |
-|                       |numbers for the x and y axes respectively [default 400]       |                |
+|                       |numbers for the x and y axes respectively [default 1000]      |                |
 +-----------------------+--------------------------------------------------------------+----------------+
 |\-\-showSubset         |Show a random subset of genomic bins with normalized coverage |[int]           |
 |                       |                                                              |                |

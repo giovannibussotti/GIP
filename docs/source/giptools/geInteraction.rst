@@ -78,6 +78,18 @@ Options
 +-----------------------+--------------------------------------------------------------+----------------+
 |\-\-show_sampNames     |Show sample names in the heatmaps                             |                |
 +-----------------------+--------------------------------------------------------------+----------------+
+|\-\-cnvPlotDim         |CNVs vs samples heatmap file height and                       |[double double] |
+|                       |                                                              |                |
+|                       |width values [default 11 6]                                   |                |
++-----------------------+--------------------------------------------------------------+----------------+
+|\-\-corPlotDim         |CNVs vs CNVs heatmap file height and                          |[double double] |
+|                       |                                                              |                |
+|                       |width values [default 11 11]                                  |                |
++-----------------------+--------------------------------------------------------------+----------------+
+|\-\-lolPlotDim         |Lollipop plot file height and                                 |[double double] | 
+|                       |                                                              |                |
+|                       |width values [default 7 4]                                    |                |
++-----------------------+--------------------------------------------------------------+----------------+
 |\-\-kmeansClusters     |NETWORK. Use this number of k-means clusters for              |[int]           |
 |                       |                                                              |                |
 |                       |network clustering. If \"NA\" use mclust [default NA]         |                |
