@@ -7,7 +7,6 @@
 
 13) produce consensus sequences for the new repetitive elements identified in your paper, add the SIDER element or whatever element publicly available from NCBI Nuleotides (probably they all are available from there,, i.e. the TATE elements..) and generate a file that can be used as a library for repeatmasker and distributed with the pipeline
 
-10) upgrade mummer3 to mummer4
 
 9) Test it on mac!
 
