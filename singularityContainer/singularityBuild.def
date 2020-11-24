@@ -24,7 +24,7 @@ From: ubuntu:xenial
   cd /opt
   tar -xzf packages.tar.gz
   cd packages
-  mv bwa/ htslib/ samtools/ freebayes/ Python3/ R vcftools/ rmblast/ RepeatMasker snpEff circos/ MUMmer/ cdhit/ miniCRAN/ installRpkgs.R Rpkgs.tsv  /opt/
+  mv bwa/ htslib/ samtools/ freebayes/ Python3/ R vcftools/ rmblast/ RepeatMasker snpEff circos/ mummer/ cdhit/ miniCRAN/ installRpkgs.R Rpkgs.tsv  /opt/
   mv /opt/gipScripts/snpEff.configTemplate /opt/
   mv bedtools picard.jar delly bedGraphToBigWig trf409.linux64 Red /bin/
   cd ..
@@ -111,8 +111,8 @@ From: ubuntu:xenial
   cpan Text::Format  
 
   #MUMmer
-  cd /opt/MUMmer
-  make check
+  cd /opt/mummer/
+  make
   make install
 
   #snpEff does not need installation, just do: java -jar snpEff.jar

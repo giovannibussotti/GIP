@@ -3,7 +3,7 @@
 #I am unpacking the packages without version number, so that if we change the tool version I just need to change this script, but not the singularity definition file
 #The main output is the packages.tar.gz file that is loaded by the singularity definition file
 
-#IMPORTANT!!! GenomeAnalysisTK.jar, MUMmer and trf409.linux64 must be manually downloaded/provided 
+#IMPORTANT!!! trf409.linux64 must be manually downloaded/provided 
 SAMTOOLSv=1.8
 BWAv=0.7.17
 htslibv=1.8
@@ -17,7 +17,7 @@ RMBlastv=2.10.0
 freebayesv=1.3.2
 cdhitv=4.8.1
 circosv=0.69-9
-
+mummerv=4.0.0rc1
 
 #create the output dir
 mkdir -p files/
@@ -59,21 +59,6 @@ mv Python-${python3v} Python3
 wget http://cran.rstudio.com/src/base/R-3/R-${Rv}.tar.gz
 tar -xvf R-${Rv}.tar.gz
 mv R-${Rv} R
-
-#GATK
-#The newest GATK 4 does not use indelrealigner, so we need to stick to version 3
-#But installing from source does not work
-#wget https://github.com/broadgsa/gatk-protected/archive/3.5.tar.gz ; tar -xzf 3.5.tar.gz ; cd gatk-3.5
-#Cloning the git repository and then using ant for the installation installation does not work
-#git clone https://github.com/Frogee/gatk-protected.git ; cd gatk-protected ; ant
-#copying the GenomeAnalysisTK.jar compiled binary does not work (you cannot wget directly the URL)
-#So I copied GenomeAnalysisTK.jar to the shiny VM of the HUB with scp: http://www.hypexr.org/linux_scp_help.php
-#To copy the file to the remote shiny VM
-#scp GenomeAnalysisTK-3.6-0-g89b7209.tar.bz2 gbussotti@shiny01.hosting.pasteur.fr:/home/gbussotti/tools/
-#Copy the file from the remoty shiny VM to the local container (works but you have to add the password)
-#scp gbussotti@shiny01.hosting.pasteur.fr:/home/gbussotti/tools/GenomeAnalysisTK.jar .
-#or you can get it from the pasteur FTP (but you have to re-upload the file every 40 days)  
-#wget http://dl.pasteur.fr/fop/KFC7iGSz/GenomeAnalysisTK.jar
 
 #freebayes the old version 1.0.1 installed in the cluster works. The static precompiled binaries work in the ubuntu machine but not in the centos 6 cluster (kernel too old). To make it work just compile it yoursef from source in the container as usual
 git clone --recursive git://github.com/ekg/freebayes.git
@@ -130,7 +115,10 @@ mv rmblast-${RMBlastv} rmblast
 #cmake ..
 #make
 
-#MUMmer (version MUMmer3.23.tar.gz, manual download from https://sourceforge.net/projects/mummer/files/latest/download)
+#MUMmer 
+wget https://github.com/mummer4/mummer/releases/download/v4.0.0rc1/mummer-${mummerv}.tar.gz
+tar -xzf mummer-${mummerv}.tar.gz
+mv mummer-${mummerv} mummer
 
 #cd-hit
 wget https://github.com/weizhongli/cdhit/archive/V${cdhitv}.tar.gz
@@ -148,7 +136,7 @@ tar -xzf DataSet2Unix64.tar.gz
 mv redUnix64/Red .
 
 #CLEAN
-rm -rf Python-${python3v}.tgz _tmp htslib-${htslibv}.tar.bz2 samtools-${SAMTOOLSv}.tar.bz2 bwa-${BWAv}.tar.bz2 R-${Rv}.tar.gz RepeatMasker-${RepeatMaskerv}.tar.gz v${LGERTv}.tar.gz rmblast-${RMBlastv}+-x64-linux.tar.gz clinEff V${cdhitv}.tar.gz circos-${circosv}.tgz redUnix64/ DataSet2Unix64.tar.gz
+rm -rf mummer-${mummerv}.tar.gz Python-${python3v}.tgz _tmp htslib-${htslibv}.tar.bz2 samtools-${SAMTOOLSv}.tar.bz2 bwa-${BWAv}.tar.bz2 R-${Rv}.tar.gz RepeatMasker-${RepeatMaskerv}.tar.gz v${LGERTv}.tar.gz rmblast-${RMBlastv}+-x64-linux.tar.gz clinEff V${cdhitv}.tar.gz circos-${circosv}.tgz redUnix64/ DataSet2Unix64.tar.gz
 
 #compress
 mkdir -p packages
