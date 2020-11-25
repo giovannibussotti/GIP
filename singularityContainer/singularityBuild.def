@@ -131,6 +131,8 @@ From: ubuntu:xenial
   #clean
   apt-get clean
   apt-get autoremove
+  rm -rf /opt/installRpkgs.R /opt/miniCRAN/ /opt/Rpkgs.tsv  
+  rm -rf /opt/bwa /opt/R /opt/mummer/ /opt/vcftools /opt/Python3 /opt/htslib /opt/freebayes /opt/samtools
  
 %runscript
  #INPUT=$1
