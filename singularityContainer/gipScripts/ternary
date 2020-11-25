@@ -19,13 +19,16 @@ parser$add_argument("--outName" , help="Output name [default %(default)s]" , def
 parser$add_argument("--chrs"    , nargs="+" , help="Chromosomes to use. If \"NA\" it uses the same chromsomes as GIP [default %(default)s]" , default="NA")
 parser$add_argument("--MAPQ"  , type="integer" , help="Label genes with MAPQ < --MAPQ [default %(default)s]" , default=0)
 parser$add_argument("--pseudocount" , type="double" , help="Normalized mean coverage pseudocount value (for plots only) [default %(default)s]" , default=0.1)
-parser$add_argument("--colorByDelta" , action="store_true" , help="Color genes by increasing delta [default %(default)s]", default=FALSE)
-parser$add_argument("--highLowDeltaColor" , nargs="+", help="Colors for high and low delta. DEPENDENCY --colorByDelta [default %(default)s]", default=c("black","green"))
-parser$add_argument("--showDensity"  , action="store_true" , help="Show density area [default %(default)s]", default=FALSE)
-parser$add_argument("--highLowDensityColor" , nargs="+", help="Colors for high and low density. DEPENDENCY --showDensity. [default %(default)s]", default=c("black","gray"))
+parser$add_argument("--colorByDelta" , action="store_true" , help="Color genes by increasing delta", default=FALSE)
+parser$add_argument("--highLowDeltaColor" , nargs="+", help="Colors for high and low delta. DEPENDENCY --colorByDelta [default %(default)s]", default=c("dark green","black"))
+parser$add_argument("--showDensity"  , action="store_true" , help="Show log 10 scaled density area", default=FALSE)
+parser$add_argument("--highLowDensityColor" , nargs="+", help="Colors for high and low density. DEPENDENCY --showDensity [default %(default)s]", default=c("black","deepskyblue"))
+parser$add_argument("--showQuantile" , type="double" , help="In density plot show genes/clusters over this quantile cut-off. DEPENDENCY --showDensity [default %(default)s]" , default=0.99)
+parser$add_argument("--densityN"   , type="integer" , help="Number of grid points in each direction. DEPENDENCY --showDensity [default %(default)s]" , default=200)
+parser$add_argument("--densityBins" , type="integer" , help="Number bins over which to calculate intervals. DEPENDENCY --showDensity [default %(default)s]" , default=8000)
 parser$add_argument("--plot3dMaxCOV" , type="double" , help="3-D scatteplot visualization threshold. Gene/cluster coverage values greather than this threshold are shown as --plot3dMaxCOV [default %(default)s]" , default=3)
 parser$add_argument("--plot3dMaxFC"  , type="double" , help="3-D scatteplot visualization threshold. Gene/cluster coverage fold change values greather than this threshold are shown as --plot3dMaxFC [default %(default)s]" , default=3)
-parser$add_argument("--debug"  , action="store_true" , help="Dump session and quit [default %(default)s]" , default=FALSE)
+parser$add_argument("--debug"  , action="store_true" , help="Dump session and quit" , default=FALSE)
 args <- parser$parse_args()
 #patch NA
 for (n in names(args)){if(args[[n]][1] == "NA"){args[[n]] <- NA}  }
@@ -69,13 +72,13 @@ genes[[s1]] <- read.delim(paste0(gipOut,"/samples/",s1,"/",s1,".covPerGe.gz") , 
 genes[[s2]] <- read.delim(paste0(gipOut,"/samples/",s2,"/",s2,".covPerGe.gz") , header=T,stringsAsFactors=F,row.names=1)
 genes[[s3]] <- read.delim(paste0(gipOut,"/samples/",s3,"/",s3,".covPerGe.gz") , header=T,stringsAsFactors=F,row.names=1)
 geFunDf <- read.delim(paste0(gipOut,"/genome/geneFunction.tsv") , sep="\t", stringsAsFactors = F, header=F ,col.names=c("geId","geneFunction"))
-repeats <- tryCatch(read.table(paste0(gipOut,"/genome/repeatMasker/genome.out.gff") , sep="\t", stringsAsFactors = F, header=F )[,c(1,4,5)] ,error=function(cond){message(cond);return(NULL)})
-gaps    <- tryCatch(read.table(paste0(gipOut,"/genome/genome.gaps.gz") , sep="\t", stringsAsFactors = F, header=F),error=function(cond){message(cond);return(NULL)}) 
+repeats <- tryCatch(read.table(paste0(gipOut,"/genome/repeats/genome.out.gff") , sep="\t", stringsAsFactors = F, header=F )[,c(1,4,5)] ,error=function(cond){return(NULL)}) #message(cond);
+gaps    <- tryCatch(read.table(paste0(gipOut,"/genome/genome.gaps.gz") , sep="\t", stringsAsFactors = F, header=F),error=function(cond){return(NULL)})  #message(cond);
 clstr <- list()
-clstr[[s1]] <- tryCatch(read.delim(paste0(gipOut,"/covPerClstr/",s1,".covPerClstr.gz") , header=T,stringsAsFactors=F,row.names=1),error=function(cond){message(cond);return(NULL)})
-clstr[[s2]] <- tryCatch(read.delim(paste0(gipOut,"/covPerClstr/",s2,".covPerClstr.gz") , header=T,stringsAsFactors=F,row.names=1),error=function(cond){message(cond);return(NULL)})
-clstr[[s3]] <- tryCatch(read.delim(paste0(gipOut,"/covPerClstr/",s3,".covPerClstr.gz") , header=T,stringsAsFactors=F,row.names=1),error=function(cond){message(cond);return(NULL)})
-clstrFun <- tryCatch(read.delim(paste0(gipOut,"/covPerClstr/clstrAnnFormat2.tsv") , header=F,stringsAsFactors=F,col.names=c("geId","clstrFunction","clstrId")),error=function(cond){message(cond);return(NULL)})
+clstr[[s1]] <- tryCatch(read.delim(paste0(gipOut,"/covPerClstr/",s1,".covPerClstr.gz") , header=T,stringsAsFactors=F,row.names=1),error=function(cond){return(NULL)}) #message(cond);
+clstr[[s2]] <- tryCatch(read.delim(paste0(gipOut,"/covPerClstr/",s2,".covPerClstr.gz") , header=T,stringsAsFactors=F,row.names=1),error=function(cond){return(NULL)}) #message(cond);
+clstr[[s3]] <- tryCatch(read.delim(paste0(gipOut,"/covPerClstr/",s3,".covPerClstr.gz") , header=T,stringsAsFactors=F,row.names=1),error=function(cond){return(NULL)}) #message(cond);
+clstrFun <- tryCatch(read.delim(paste0(gipOut,"/covPerClstr/clstrAnnFormat2.tsv") , header=F,stringsAsFactors=F,col.names=c("geId","clstrFunction","clstrId")),error=function(cond){return(NULL)}) #message(cond);
 
 #MAKE DF
 makeDf <- function(List){
@@ -89,7 +92,7 @@ makeDf <- function(List){
   covS2 = List[[s2]][ids,"normalizedMeanCoverage"] + pseudocount ,
   covS3 = List[[s3]][ids,"normalizedMeanCoverage"] + pseudocount ,
   color = "black" ,
-  type = "normal" ,
+  type = "gene" ,
   MAPQ  = pmin(List[[s1]][ids,"MAPQ"] , List[[s2]][ids,"MAPQ"], List[[s3]][ids,"MAPQ"]) , 
   stringsAsFactors=FALSE)
  row.names(d)=ids
@@ -101,7 +104,7 @@ makeDf <- function(List){
  #label low MAPQ
  d$color[d$MAPQ < MAPQ] = "gray"
  d$type[d$MAPQ < MAPQ] = "lowMAPQ"
- d$type <- factor(d$type,levels=c("normal","lowMAPQ"))
+ d$type <- factor(d$type,levels=c("gene","lowMAPQ"))
  return(d)
 }
 df <- makeDf(genes)
@@ -110,22 +113,34 @@ if(! is.null (clstr)) {
   dfCl$type <- "cluster"
   dfCl$color  <- "red"
   df <- rbind(df,dfCl)
-  df$type <- factor(df$type,levels=c("normal","lowMAPQ","cluster"))
+  df$type <- factor(df$type,levels=c("gene","lowMAPQ","cluster"))
 }
+
+
 
 #PLOT
 #triangle
 pdf(paste0(outName,".pdf"))
 p <- ggtern(data = df, aes(covS1,covS2,covS3)) 
 if (showDensity) {
- p <- p + stat_density_tern(geom='polygon' , n=200 , bins=10 , aes(fill=..level.. , alpha=..level..) , bdl = 0.001, bdl.val = 0) + scale_fill_gradient(low = highLowDensityColor[2],high = highLowDensityColor[1])   + geom_point(aes(colour=type)) + scale_color_manual(values=c(normal="black", cluster="red", lowMAPQ="gray")) + guides(alpha = "none") #+ guides(color = "none", fill = "none")
+ #select best delta
+ qThresh <- quantile(df$delta,probs=showQuantile)
+ qDfSel <- df[df$delta > qThresh,]
+ p <- p + stat_density_tern(geom='polygon' , aes(fill=log10(..level..),  alpha=log10(..level..)),
+ 	  bins=densityBins , n=densityN , base='identity') 
+ p <- p + scale_fill_gradient(low = highLowDensityColor[2],high = highLowDensityColor[1], name="Log10 density level")  
+ p <- p + geom_point(aes(colour=type),alpha=1 , data=qDfSel) + scale_color_manual(values=c(gene="black", cluster="red", lowMAPQ="dark gray"), name="Type") 
+ p <- p + guides(alpha = "none") 
 } else if(colorByDelta){
-  p <- p + geom_point(aes(color=delta,alpha=delta,shape=type,size=foldChange)) + scale_colour_gradient(low = highLowDeltaColor[2],high = highLowDeltaColor[1])
+  p <- p + geom_point(aes(color=delta,alpha=delta,shape=type , size=foldChange)) 
+  p <- p+ scale_colour_gradient(low = highLowDeltaColor[2],high = highLowDeltaColor[1])
 } else {
-  p <- p  + geom_point(aes(colour=type,size=foldChange)) + scale_color_manual(values=c(normal="black", cluster="red", lowMAPQ="gray")) + guides(alpha = "none")
+  p <- p + geom_point(aes(colour=type,size=foldChange),alpha=.5) 
+  p <- p + scale_color_manual(values=c(gene="dark green", cluster="dark red", lowMAPQ="dark gray"), name="Type") 
 }
 p <- p + theme_rgbw() + labs(x=s1,y=s2,z=s3) 
 print(p)
+
 #scatter 3D
 scatter3DwithSmallDots <- function(x, y, z , key , ..., colvar = z) {
   # Add small dots on basal plane and on the depth plane
@@ -150,7 +165,7 @@ maxCov <- max(c(df3d$covS1,df3d$covS2,df3d$covS3))
 minCov <- min(c(df3d$covS1,df3d$covS2,df3d$covS3))
 df3d <- split(df3d,f=df3d$type)
 #plot
-scatter3DwithSmallDots(x=df3d[["normal"]][,"covS1"], y=df3d[["normal"]][,"covS2"], z=df3d[["normal"]][,"covS3"] , key=TRUE , pch = 19, cex = 1 ,  bty = "b2"  , ticktype = "detailed" , phi = 0 , xlab = s1 , ylab=s2,zlab=s3 , clab = c("fold change") , colvar=df3d[["normal"]]$foldChange)
+scatter3DwithSmallDots(x=df3d[["gene"]][,"covS1"], y=df3d[["gene"]][,"covS2"], z=df3d[["gene"]][,"covS3"] , key=TRUE , pch = 19, cex = 1 ,  bty = "b2"  , ticktype = "detailed" , phi = 0 , xlab = s1 , ylab=s2,zlab=s3 , clab = c("fold change") , colvar=df3d[["gene"]]$foldChange)
 if(length(df3d[["cluster"]][,1]) > 0){
   scatter3DwithSmallDots(x=df3d[["cluster"]][,"covS1"], y=df3d[["cluster"]][,"covS2"], z=df3d[["cluster"]][,"covS3"] , key=FALSE , add=TRUE, pch = 15, cex = 1 ,  bty = "b2"  , ticktype = "detailed" , phi = 0 , xlab = s1 , ylab=s2,zlab=s3 , clab = c("fold change") , colvar=df3d[["cluster"]]$foldChange)
 }

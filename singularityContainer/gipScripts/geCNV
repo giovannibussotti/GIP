@@ -7,11 +7,11 @@
 #highLowRatio=c(1.5,0.5)
 #pseudocount=0.1
 #debug=FALSE
-#plot1_ylim=5
-#plot3_min=0
-#plot3_max=100
-#plot24_min=-1
-#plot24_max=3
+#overview_ylim=5
+#multi_min=0
+#multi_max=100
+#multiLog_min=-1
+#multiLog_max=3
 #scaleFree="yes"
 
 suppressPackageStartupMessages(library("argparse"))
@@ -23,13 +23,13 @@ parser$add_argument("--chrs"    , nargs="+" , help="Chromosomes to use. If \"NA\
 parser$add_argument("--MAPQ"  , type="integer" , help="Label genes with MAPQ < --MAPQ [default %(default)s]" , default=0)
 parser$add_argument("--highLowRatio" , nargs="+" , type="double" , help="Provide 2 numbers. Genes with ratio scores > num1 or < num2 will be colored differently" , default= c(1.5,0.5) )
 parser$add_argument("--pseudocount" , type="double" , help="Normalized mean coverage pseudocount value preventing infinite (1/0) and NaN (0/0) ratio values [default %(default)s]" , default=0.1)
-parser$add_argument("--plot1_ylim" , type="double" , help="Plot1 visualization threshold. Gene ratio values greather than this threshold are shown as --ylim [default %(default)s]" , default=5)
-parser$add_argument("--plot3_min"  , type="double" , help="Plot3 visualization threshold. Min normalized gene coverage. DEPENDENCY:--scaleFree no [default %(default)s]" , default=0)
-parser$add_argument("--plot3_max"  , type="double" , help="Plot3 visualization threshold. Max normalized gene coverage. DEPENDENCY:--scaleFree no [default %(default)s]" , default=100)
-parser$add_argument("--plot24_min" , type="double" , help="Plots 2 and 4 visualization threshold. Min normalized gene coverage (log10 scale). DEPENDENCY:--scaleFree no [default %(default)s]" , default=-1)
-parser$add_argument("--plot24_max" , type="double" , help="Plots 2 and 4 visualization threshold. Max normalized gene coverage (log10 scale). DEPENDENCY:--scaleFree no [default %(default)s]" , default=3)
-parser$add_argument("--scaleFree"  , help="Graphical parameter plots 3 and 4. Set scale free axes [yes|no] [default %(default)s]" , default="yes")
-parser$add_argument("--debug"  , action="store_true" , help="Dump session and quit [default %(default)s]" , default=FALSE)
+parser$add_argument("--overview_ylim" , type="double" , help="Overview plot visualization threshold. Ratio values greather than this threshold are shown as --ylim [default %(default)s]" , default=3)
+parser$add_argument("--scaleFree"  , help="Graphical parameter multi-panel plots. Set scale free axes [yes|no] [default %(default)s]" , default="yes")
+parser$add_argument("--multi_min"  , type="double" , help="Multi-panel plot 1 visualization threshold. Min normalized gene coverage. DEPENDENCY:--scaleFree no [default %(default)s]" , default=0)
+parser$add_argument("--multi_max"  , type="double" , help="Multi-panel plot 1 visualization threshold. Max normalized gene coverage. DEPENDENCY:--scaleFree no [default %(default)s]" , default=5)
+parser$add_argument("--multiLog_min" , type="double" , help="Multi-panel plot 2 visualization threshold. Min normalized gene coverage (log10 scale). DEPENDENCY:--scaleFree no [default %(default)s]" , default=-1)
+parser$add_argument("--multiLog_max" , type="double" , help="Multi-panel plot 2 visualization threshold. Max normalized gene coverage (log10 scale). DEPENDENCY:--scaleFree no [default %(default)s]" , default=3)
+parser$add_argument("--debug"  , action="store_true" , help="Dump session and quit" , default=FALSE)
 args <- parser$parse_args()
 #patch NA
 for (n in names(args)){if(args[[n]][1] == "NA"){args[[n]] <- NA}  }
@@ -71,12 +71,12 @@ allSamples <- list()
 allSamples[[s1]] <- read.delim(paste0(gipOut,"/samples/",s1,"/",s1,".covPerGe.gz") , header=T,stringsAsFactors=F,row.names=1)
 allSamples[[s2]] <- read.delim(paste0(gipOut,"/samples/",s2,"/",s2,".covPerGe.gz") , header=T,stringsAsFactors=F,row.names=1)
 geFunDf <- read.delim(paste0(gipOut,"/genome/geneFunction.tsv") , sep="\t", stringsAsFactors = F, header=F ,col.names=c("geId","geneFunction"))
-repeats <- tryCatch(read.table(paste0(gipOut,"/genome/repeatMasker/genome.out.gff") , sep="\t", stringsAsFactors = F, header=F )[,c(1,4,5)] ,error=function(cond){message(cond);return(NULL)})
-gaps    <- tryCatch(read.table(paste0(gipOut,"/genome/genome.gaps.gz") , sep="\t", stringsAsFactors = F, header=F),error=function(cond){message(cond);return(NULL)}) 
+repeats <- tryCatch(read.table(paste0(gipOut,"/genome/repeats/genome.out.gff") , sep="\t", stringsAsFactors = F, header=F )[,c(1,4,5)] ,error=function(cond){return(NULL)}) #message(cond);
+gaps    <- tryCatch(read.table(paste0(gipOut,"/genome/genome.gaps.gz") , sep="\t", stringsAsFactors = F, header=F),error=function(cond){return(NULL)}) #message(cond);
 clstr <- list()
-clstr[[s1]] <- tryCatch(read.delim(paste0(gipOut,"/covPerClstr/",s1,".covPerClstr.gz") , header=T,stringsAsFactors=F,row.names=1),error=function(cond){message(cond);return(NULL)})
-clstr[[s2]] <- tryCatch(read.delim(paste0(gipOut,"/covPerClstr/",s2,".covPerClstr.gz") , header=T,stringsAsFactors=F,row.names=1),error=function(cond){message(cond);return(NULL)})
-clstrFun <- tryCatch(read.delim(paste0(gipOut,"/covPerClstr/clstrAnnFormat2.tsv") , header=F,stringsAsFactors=F,col.names=c("geId","clstrFunction","clstrId")),error=function(cond){message(cond);return(NULL)})
+clstr[[s1]] <- tryCatch(read.delim(paste0(gipOut,"/covPerClstr/",s1,".covPerClstr.gz") , header=T,stringsAsFactors=F,row.names=1),error=function(cond){return(NULL)}) #message(cond);
+clstr[[s2]] <- tryCatch(read.delim(paste0(gipOut,"/covPerClstr/",s2,".covPerClstr.gz") , header=T,stringsAsFactors=F,row.names=1),error=function(cond){return(NULL)}) #message(cond);
+clstrFun <- tryCatch(read.delim(paste0(gipOut,"/covPerClstr/clstrAnnFormat2.tsv") , header=F,stringsAsFactors=F,col.names=c("geId","clstrFunction","clstrId")),error=function(cond){return(NULL)}) #message(cond);
 
 
 #MAKE DF
@@ -116,46 +116,123 @@ df   <- makeDf(allSamples)
 dfCl <- tryCatch(makeDf(clstr),error=function(cond){message(cond);return(NULL)})
 
 #PLOT
-pdf(paste0(outName,".pdf"))
-#PLOT1: cloud plot (all genes)
-dfSaturatedRatio = df
-dfSaturatedRatio$ratio[dfSaturatedRatio$ratio >= plot1_ylim] = plot1_ylim
-plot(dfSaturatedRatio$ratio , pch=19, ylim=c(0,plot1_ylim) , col=dfSaturatedRatio$color , ylab=paste0("sequencing coverage ratio ",s2,"/",s1) , xlab="gene index")
-legend(fill=c("orange","blue","black","gray"),x="topleft",legend=c(paste(s2,"amplified") , paste(s2,"depleted"),"background","lowMAPQ") , cex=0.7 )
-abline(h=c(highLowRatio[1],highLowRatio[2]),col="grey",lty=2)
-abline(h=c(1),col="black",lty=1)
-#PLOT2: scatter plot (all genes, log transformed) (genes with log10 > threshold are not shown)
-plot(x=df$log10covS1 , y=df$log10covS2,col=df$color,pch=19 , xlab=paste("log10 coverage",s1,"genes") , ylab=paste("log10 coverage",s2,"genes") , xlim=c(plot24_min,plot24_max) , ylim=c(plot24_min,plot24_max) )
-abline(0,1 , lty=2,col="gray") 
-grid()
-legend(fill=c("orange","blue","black","gray"),x="topleft",legend=c(paste(s2,"amplified") , paste(s2,"depleted") ,"background","lowMAPQ") , cex=0.7 )
-#PLOT3: one scatterplot per chromosme (genes with coverage > plot3_max are excluded, and do not contribute to the legend colorbar)
+theme_gip <- function(){     
+    theme_bw() %+replace%    
+    theme(axis.text.x  = element_text(angle = 90), 
+      axis.text.y  = element_text(size = 14) , 
+      axis.title   = element_text(size=14,face="bold"),
+      legend.title = element_text(face = "bold", size = 14),
+      legend.text  = element_text(size = 12))
+}
 cols=c("background" = "black","amplified" = "#E69F00","depleted" = "#56B4E9" , "lowMAPQ" = "gray")
-scatterplotNormal <- ggplot(df, aes(x=covS1, y=covS2)) + geom_abline(intercept=0,slope=1,size=0.3,colour="red", linetype="solid") + geom_point(size=1,aes(colour=status)) + scale_color_manual(values=cols) + xlab(paste("coverage",s1)) + ylab(paste("coverage",s2)) + theme_bw() + theme(legend.title=element_blank() , legend.text = element_text(size = 8), legend.position="bottom" , axis.text.x = element_text(angle = 90, hjust = 1) , panel.grid.major = element_line(size=0.6,colour="gray") ) 
-if(scaleFree == "yes"){scatterplotNormal <- scatterplotNormal + facet_wrap(~ chromosome , scales="free") } else {scatterplotNormal <- scatterplotNormal + facet_wrap(~ chromosome) + ylim(plot3_min,plot3_max) + xlim(plot3_min,plot3_max)}
-print(scatterplotNormal)
-#PLOT4: one scatterplot per chromosme (log transformed) (genes with log10 coverage > plot4_max are not shown, and do not contribute to the legend colorbar)
-scatterplotLogged <- ggplot(df, aes(x=log10covS1, y=log10covS2))  + geom_abline(intercept=0,slope=1,size=0.3,colour="red", linetype="solid") + geom_point(size=1,aes(colour=status)) + scale_color_manual(values=cols) + xlab(paste("log10 coverage",s1)) + ylab(paste("log10 coverage",s2)) + theme_bw()  +  theme(legend.title=element_blank() , legend.text = element_text(size = 8), legend.position="bottom" , axis.text.x = element_text(angle = 90, hjust = 1), panel.grid.major = element_line(size=0.6,colour="gray") )
-if(scaleFree == "yes"){ scatterplotLogged <- scatterplotLogged + facet_wrap(~ chromosome , scales="free") } else {scatterplotLogged <- scatterplotLogged + facet_wrap(~ chromosome) + ylim(plot24_min,plot24_max) + xlim(plot24_min,plot24_max)}
-print(scatterplotLogged)
-#PLOT5: cloud plot with gene clstr (lowMAPQ is meaningless for clstrs)
+pdf(paste0(outName,".overview.pdf"))
+#PLOT1: cloud plot (all genes)
+df$saturatedRatio <- df$ratio
+df$saturatedRatio[df$saturatedRatio >= overview_ylim] = overview_ylim
+df$index <- 1:length(df[,1])
+p <- ggplot(df, aes(x=index, y=saturatedRatio)) 
+p <- p + geom_segment(aes(x = 0, y = highLowRatio[1], xend = max(index), yend = highLowRatio[1]), linetype="dashed", color = "red", size=.3)
+p <- p + geom_segment(aes(x = 0, y = highLowRatio[2], xend = max(index), yend = highLowRatio[2]), linetype="dashed", color = "red", size=.3)
+p <- p + geom_point(size=1.5,aes(colour=status),alpha=.6) + scale_color_manual(values=cols ,name="copy number") 
+p <- p + xlab("gene index") + ylab(paste0("sequencing coverage ratio ",s2,"/",s1)) 
+p <- p + coord_cartesian(ylim =c(0,overview_ylim)) + scale_x_continuous(labels = function(x) format(x, scientific = FALSE , big.mark = " ")) + theme_gip()
+p <- p + theme_gip()
+print(p)
+df[,c("saturatedRatio","index")] <- list(NULL)
+#PLOT2: cloud plot with gene clstr (lowMAPQ is meaningless for clstrs)
 if( ! is.null(dfCl) ) {
-  dfClSaturatedRatio = dfCl
-  dfClSaturatedRatio$ratio[dfClSaturatedRatio$ratio >= plot1_ylim] = plot1_ylim
-  plot(dfClSaturatedRatio$ratio , pch=1, ylim=c(0,plot1_ylim) , col=dfClSaturatedRatio$color , ylab=paste0("sequencing coverage ratio ",s2,"/",s1) , xlab="gene cluster index")
-  legend(fill=c("orange","blue","black"),x="topleft",legend=c(paste(s2,"amplified") , paste(s2,"depleted"),"background") , cex=0.7 )
-  abline(h=c(highLowRatio[1],highLowRatio[2]),col="grey",lty=2)
-  abline(h=c(1),col="black",lty=1)
-#PLOT6: scatter plot (all clstrs, log transformed) (clstrs with log10 > threshold are not shown) (lowMAPQ is meaningless for clstrs)
-  plot(x=dfCl$log10covS1 , y=dfCl$log10covS2,col=dfCl$color,pch=1 , xlab=paste("log10 coverage",s1,"gene clusters") , ylab=paste("log10 coverage",s2,"gene clusters") , xlim=c(plot24_min,plot24_max) , ylim=c(plot24_min,plot24_max) )
-  abline(0,1 , lty=2,col="gray") 
-  grid()
-  legend(fill=c("orange","blue","black"),x="topleft",legend=c(paste(s2,"amplified") , paste(s2,"depleted") ,"background") , cex=0.7 )
-  #genes belonging to clstrs may be on multiple chromosomes
-  #thus it is not possile to show for the clstrs the equivalent of PLOT3 and PLOT4
-
+  dfCl$saturatedRatio <- dfCl$ratio
+  dfCl$saturatedRatio[dfCl$saturatedRatio >= overview_ylim] = overview_ylim
+  dfCl$index <- 1:length(dfCl[,1])
+  p <- ggplot(dfCl, aes(x=index, y=saturatedRatio)) 
+  p <- p + geom_segment(aes(x = 0, y = highLowRatio[1], xend = max(index), yend = highLowRatio[1]), linetype="dashed", color = "red", size=.3)
+  p <- p + geom_segment(aes(x = 0, y = highLowRatio[2], xend = max(index), yend = highLowRatio[2]), linetype="dashed", color = "red", size=.3)
+  p <- p + geom_point(size=2,aes(colour=status),alpha=.7,shape=18) + scale_color_manual(values=cols ,name="copy number") 
+  p <- p + xlab("gene cluster index") + ylab(paste0("sequencing coverage ratio ",s2,"/",s1)) 
+  p <- p + coord_cartesian(ylim =c(0,overview_ylim)) + scale_x_continuous(labels = function(x) format(x, scientific = FALSE , big.mark = " ")) + theme_gip()
+  p <- p + theme_gip()
+  print(p)
+  dfCl[,c("saturatedRatio","index")] <- list(NULL)
 }
 invisible(dev.off())
+
+pdf(paste0(outName,".scatter.pdf"))
+#PLOT3: scatter plot (all genes, log transformed)
+p <- ggplot(df, aes(x=log10covS1, y=log10covS2)) + geom_abline(intercept=0,slope=1,size=0.3,colour="red", linetype="solid")
+p <- p + geom_point(size=1.5,aes(colour=status),alpha=.6) + scale_color_manual(values=cols ,name="copy number") 
+p <- p + xlab(paste("log10 coverage",s1,"genes")) + ylab(paste("log10 coverage",s2,"genes"))
+p <- p + theme_gip() +   theme(axis.text.x  = element_text(angle = 0 , size = 14) , legend.position="bottom")
+print(p)
+if( ! is.null(dfCl) ) {
+#PLOT4: scatter plot (all clstrs, log transformed) (clstrs with log10 > threshold are not shown) (lowMAPQ is meaningless for clstrs)
+  p <- ggplot(dfCl, aes(x=log10covS1, y=log10covS2)) + geom_abline(intercept=0,slope=1,size=0.3,colour="red", linetype="solid")
+  p <- p + geom_point(size=2,aes(colour=status),alpha=.7,shape=18) + scale_color_manual(values=cols ,name="copy number") 
+  p <- p + xlab(paste("log10 coverage",s1,"gene clusters")) + ylab(paste("log10 coverage",s2,"gene clusters"))
+  p <- p + theme_gip() + theme(axis.text.x  = element_text(angle = 0 , size = 14) , legend.position="bottom")
+  print(p)
+  #genes belonging to clstrs may be on multiple chromosomes
+  #thus it is not possile to show for the clstrs the equivalent of PLOT5 and PLOT6
+}
+invisible(dev.off())
+
+pdf(paste0(outName,".multiPanel.pdf"),height=10, width=10)
+#PLOT5: one scatterplot per chromosme (genes with coverage > multi_max are excluded, and do not contribute to the legend colorbar)
+#df with x and y axes range
+chrMax <- sapply(split(df,f=df$chromosome) , function(x) max(c(x$covS1,x$covS2)) )
+axesDf <- data.frame(x = numeric(), y = numeric(), chromosome = character())
+for (chr in chrSize$chr){
+  size <- chrMax[chr] + 1
+  axesDf <- rbind(axesDf, data.frame(x = 0    , y = 0, chromosome = chr))
+  axesDf <- rbind(axesDf, data.frame(x = size , y = size, chromosome = chr))
+}
+axesDf$chromosome <- factor(axesDf$chromosome)
+p <- ggplot(df, aes(x=covS1, y=covS2)) + geom_abline(intercept=0,slope=1,size=0.3,colour="red", linetype="solid") 
+p <- p + geom_point(size=1,aes(colour=status)) + scale_color_manual(values=cols ,name="copy number")
+p <- p + geom_blank(data = axesDf, aes(x = x, y = y)) 
+p <- p + xlab(paste("coverage",s1)) + ylab(paste("coverage",s2)) 
+p <- p + theme_bw() +  theme(axis.text.x  = element_text(angle = 90), 
+      axis.title   = element_text(size=14,face="bold"),
+      legend.title = element_text(face = "bold", size = 14),
+      panel.grid.major = element_line(size=0.6,colour="gray"),
+      legend.position="bottom",
+      legend.text  = element_text(size = 12))
+if(scaleFree == "yes"){
+	p <- p + facet_wrap(~ chromosome , scales="free") 
+} else {
+	p <- p + facet_wrap(~ chromosome) + ylim(multi_min,multi_max) + xlim(multi_min,multi_max)
+}
+print(p)
+
+#PLOT6: one scatterplot per chromosme (log transformed) (genes with log10 coverage > multiLog_max are not shown, and do not contribute to the legend colorbar)
+#df with x and y axes range
+chrRange <- as.data.frame(sapply(split(df,f=df$chromosome) , function(x) range(c(x$log10covS1,x$log10covS2)) ))
+axesDf <- data.frame(x = numeric(), y = numeric(), chromosome = character())
+for (chr in chrSize$chr){
+  space <- (chrRange[2,chr] - chrRange[1,chr]) / 5
+  mi <- chrRange[1,chr] - space
+  ma <- chrRange[2,chr] + space
+  axesDf <- rbind(axesDf, data.frame(x = mi , y = mi, chromosome = chr))
+  axesDf <- rbind(axesDf, data.frame(x = ma , y = ma, chromosome = chr))
+}
+axesDf$chromosome <- factor(axesDf$chromosome)
+p <- ggplot(df, aes(x=log10covS1, y=log10covS2))  + geom_abline(intercept=0,slope=1,size=0.3,colour="red", linetype="solid")
+p <- p + geom_point(size=1,aes(colour=status)) + scale_color_manual(values=cols,name="copy number") 
+p <- p + geom_blank(data = axesDf, aes(x = x, y = y)) 
+p <- p + xlab(paste("log10 coverage",s1)) + ylab(paste("log10 coverage",s2)) 
+p <- p + theme_bw() +  theme(axis.text.x  = element_text(angle = 90), 
+      axis.title   = element_text(size=14,face="bold"),
+      legend.title = element_text(face = "bold", size = 14),
+      panel.grid.major = element_line(size=0.6,colour="gray"),
+      legend.position="bottom",
+      legend.text  = element_text(size = 12))
+if(scaleFree == "yes"){ 
+    p <- p + facet_wrap(~ chromosome , scales="free") 
+} else {
+    p <- p + facet_wrap(~ chromosome)
+}
+print(p)
+invisible(dev.off())
+
 
 #OUTPUT TABLE
 #label overlap with gaps or repeats

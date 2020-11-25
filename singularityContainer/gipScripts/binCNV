@@ -8,7 +8,7 @@ parser$add_argument("--MAPQ"  , type="integer" , help="Label bins with MAPQ < --
 parser$add_argument("--ylim" , type="double" , help="Plot visualization threshold. Bin ratio values greather than this threshold are shown as --ylim [default %(default)s]" , default="3")
 parser$add_argument("--highLowRatio" , nargs="+" , type="double" , help="Provide 2 numbers. Bins with ratio scores > num1 or < num2 will be colored differently [default %(default)s]" , default= c(1.5,0.5) )
 parser$add_argument("--pseudocount" , type="double" , help="Normalized mean coverage pseudocount value preventing infinite (1/0) and NaN (0/0) ratio values [default %(default)s]" , default=0.1)
-parser$add_argument("--debug"  , action="store_true" , help="Dump session and quit [default %(default)s]" , default=FALSE)
+parser$add_argument("--debug"  , action="store_true" , help="Dump session and quit" , default=FALSE)
 args <- parser$parse_args()
 #patch NA
 for (n in names(args)){if(args[[n]][1] == "NA"){args[[n]] <- NA}  }
@@ -98,7 +98,7 @@ rdf$color  <- "black"
 rdf$status <- "background"
 rdf$color[rdf$ratio > highLowRatio[1]]  = "orange"
 rdf$color[rdf$ratio < highLowRatio[2]]  = "blue"
-rdf$status[rdf$ratio > highLowRatio[1]] = "enriched"
+rdf$status[rdf$ratio > highLowRatio[1]] = "amplified"
 rdf$status[rdf$ratio < highLowRatio[2]] = "depleted"
 rdf[rdf$MAPQ < MAPQ , "status"] = "lowMAPQ"
 rdf[rdf$MAPQ < MAPQ , "color"]  = "gray"
@@ -106,18 +106,33 @@ rdf[rdf$MAPQ < MAPQ , "color"]  = "gray"
 ######
 #plot#
 ######
+theme_gip <- function(){     
+    theme_bw() %+replace%    
+    theme(axis.text.x  = element_text(angle = 90), 
+      axis.text.y  = element_text(size = 14) , 
+      axis.title   = element_text(size=14,face="bold"),
+      legend.title = element_text(face = "bold", size = 14),
+      legend.text  = element_text(size = 12))
+}
+
 #all together
-dfAll <- data.frame(chromosome=rdf$chromosome , start=rdf$start , ratio=rdf$ratio , color=rdf$color, stringsAsFactors=F)
-dfAll$ratio[dfAll$ratio > ylim] = ylim
-positionCorrection <- chrSizeCumSum[match(dfAll$chromosome, names(chrSizeCumSum))]
-dfAll$startFixed <- dfAll$start + positionCorrection
-pdf(paste0(outName,".overview.pdf"),height=10, width=20) 
-plot(x=dfAll$startFixed , y=dfAll$ratio , xlab="chromosomes" , ylab="genomic bin sequencing coverage ratio", col=dfAll$color , xaxt = 'n', xaxs="i" , yaxs="i" , font=2 , pch=19)
-segments(x0=0 , y0=1.5 , x1=sum(chrSize$size) , y1=1.5 , lty=3, col='red', lwd=1)
-segments(x0=0 , y0=1   , x1=sum(chrSize$size) , y1=1 , lty=2, col='black', lwd=1)
-segments(x0=0 , y0=0.5 , x1=sum(chrSize$size) , y1=0.5 , lty=3, col='red', lwd=1)
-abline(v=chrSizeCumSum[-1], lty=1, col='gray', lwd=2)
-axis(1, at=chrMids, labels=names(chrMids) , font=2)
+rdf$saturatedRatio <- rdf$ratio
+rdf$saturatedRatio[rdf$saturatedRatio > ylim] = ylim
+positionCorrection <- chrSizeCumSum[match(rdf$chromosome, names(chrSizeCumSum))]
+rdf$startFixed <- rdf$start + positionCorrection
+chrSegments <- data.frame(x=chrSizeCumSum[-1],y=ylim,zero=0)
+pdf(paste0(outName,".overview.pdf") ,height=10, width=20) 
+p <- ggplot(rdf, aes(startFixed,saturatedRatio)) 
+p <- p + geom_segment(aes(x = 0, y = highLowRatio[1], xend = sum(chrSize$size), yend = highLowRatio[1]), linetype="dashed", color = "red", size=.3)
+p <- p + geom_segment(aes(x = 0, y = highLowRatio[2], xend = sum(chrSize$size), yend = highLowRatio[2]), linetype="dashed", color = "red", size=.3)
+p <- p + coord_cartesian(ylim =c(0,ylim)) + xlab("genomic bin position")  
+p <- p + ylab("genomic bin sequencing coverage ratio") 
+p <- p + geom_point(size=1.5,aes(colour=status)) 
+p <- p + scale_colour_manual(values = c("background" = "black","amplified" = "orange","depleted" = "blue","lowMAPQ" = "gray"),name="copy number")
+p <- p + geom_segment(aes(x = x, y = zero, xend = x, yend = y), color = "gray", size=.5, data=chrSegments)
+p <- p + scale_x_continuous(breaks = chrMids) 
+p <- p + theme_gip() + theme(panel.grid.major.x = element_blank())
+print(p)
 invisible(dev.off())
 
 #factorize for ggplot
@@ -128,22 +143,42 @@ pdf(paste0(outName,".byChr.pdf"))
 for (chr in chrs){
   dfChr <- subset(rdf,chromosome == chr)
   dfChr$ratio[dfChr$ratio > ylim]=ylim
-  p <- ggplot(dfChr, aes(binMidPoint,ratio)) + geom_point(colour="grey50", size = 2, alpha = 0.1) + coord_cartesian(ylim =c(0,ylim)) + theme(legend.position="none") + xlab("genomic bin position") + ggtitle(paste("chromosome",chr)) + theme_bw() + ylab("genomic bin sequencing coverage ratio")
-  p <- p + geom_point(size=1.5,alpha = 0.3,aes(colour=status)) + scale_colour_manual(values = c("background" = "black","amplified" = "orange","depleted" = "blue","lowMAPQ" = "gray"),name="copy number")
+  p <- ggplot(dfChr, aes(binMidPoint,ratio)) 
+  p <- p + geom_segment(aes(x = 0, y = highLowRatio[1], xend = chrSize[chrSize$chr == chr,"size"], yend = highLowRatio[1]), linetype="dashed", color = "red", size=.3)
+  p <- p + geom_segment(aes(x = 0, y = highLowRatio[2], xend = chrSize[chrSize$chr == chr,"size"], yend = highLowRatio[2]), linetype="dashed", color = "red", size=.3)
+  p <- p + coord_cartesian(ylim =c(0,ylim),xlim=c(0,chrSize[chrSize$chr == chr,"size"])) + xlab("genomic bin position")
+  p <- p + ggtitle(paste("chromosome",chr)) + ylab("genomic bin sequencing coverage ratio")
+  p <- p + geom_point(size=1.5,alpha = 0.6,aes(colour=status))
+  p <- p + scale_colour_manual(values = c("background" = "black","amplified" = "orange","depleted" = "blue","lowMAPQ" = "gray"),name="copy number")
+  p <- p + scale_x_continuous(labels = function(x) format(x, scientific = FALSE , big.mark = " ")) + theme_gip()
   print(p)
 }
 invisible(dev.off())
 
 #plot faceting
+#df with x and y axes range
+axesDf <- data.frame(x = numeric(), y = numeric(), chromosome = character())
+for (chr in chrSize$chr){
+  size <- chrSize[ match(chr , chrSize$chr) , "size" ]
+  axesDf <- rbind(axesDf, data.frame(x = 0    , y = 0, chromosome = chr))
+  axesDf <- rbind(axesDf, data.frame(x = size , y = ylim, chromosome = chr))
+}
+axesDf$chromosome <- factor(axesDf$chromosome)
 pdf(paste0(outName,".multiPanel.pdf"),height=10, width=20)
-dfFaceting <- rdf
-dfFaceting$ratio[dfFaceting$ratio > ylim]=ylim
-p <- ggplot(dfFaceting, aes(binMidPoint,ratio)) + geom_point(colour="grey50", size = 1, alpha = 0.1) + facet_wrap(~ chromosome,nrow=4,scales="free") + coord_cartesian(ylim =c(0,ylim)) + theme_bw() + theme(axis.text.x = element_text(angle = 90, hjust = 1)) + xlab("genomic bin position") + ylab("genomic bin sequencing coverage ratio") + scale_x_continuous(labels = function(x) format(x, scientific = FALSE))
-p = p + geom_point(size=0.5,alpha=0.5,aes(colour=status)) + scale_colour_manual(values = c("background" = "black","amplified" = "orange","depleted" = "blue","lowMAPQ" = "gray"),name="copy number")
+chrSize$chromosome <- factor(chrSize$chr)
+p <- ggplot(rdf, aes(binMidPoint,saturatedRatio))  
+p <- p + geom_segment(aes(x = 0, y = highLowRatio[1], xend = size, yend = highLowRatio[1]), linetype="dashed", color = "red", size=.3, data=chrSize)
+p <- p + geom_segment(aes(x = 0, y = highLowRatio[2], xend = size, yend = highLowRatio[2]), linetype="dashed", color = "red", size=.3, data=chrSize)
+p <- p + geom_point(size=0.5,alpha=0.5,aes(colour=status)) 
+p <- p + geom_blank(data = axesDf, aes(x = x, y = y))
+p <- p + facet_wrap(~ chromosome,nrow=4,scales="free") + xlab("genomic bin position") 
+p <- p + ylab("genomic bin sequencing coverage ratio") + scale_x_continuous(labels = function(x) format(x, scientific = FALSE , big.mark = " "))
+p <- p + scale_colour_manual(values = c("background" = "black","amplified" = "orange","depleted" = "blue","lowMAPQ" = "gray"),name="copy number")
+p <- p + theme_gip()
 print(p)
 invisible(dev.off())
 
-rdf$binMidPoint <- NULL
+rdf[,c("startFixed" , "saturatedRatio" , "binMidPoint")] <- list(NULL)
 write.xlsx(file=paste0(outName,".xlsx") , x=rdf , asTable=TRUE)
 
 

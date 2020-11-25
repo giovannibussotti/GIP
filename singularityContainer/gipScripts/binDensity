@@ -19,8 +19,8 @@ parser$add_argument("--chrs"    , nargs="+" , help="Chromosomes to use. If \"NA\
 parser$add_argument("--minMAPQ" , type="integer"   , help="Remove bins with MAPQ < --minMAPQ [default %(default)s]", default=0 )
 parser$add_argument("--pseudocount" , type="double" , help="Normalized mean coverage pseudocount value preventing minus infinite values in log10 transformation [default %(default)s]" , default=0.1)
 parser$add_argument("--highLowCovThresh" , nargs="+" , type="double" , help="Provide two numbers. Bins with normalized coverage values > num1 or < num2 will be labeled. [default %(default)s]" , default= c(1.5,0.5) )
-parser$add_argument("--bandwidth" , type="double" , nargs="+" , help="Smoothing bandwidth value. Provide two numbers to enforce different bandwidths on the x and y axes respectively [default %(default)s]" , default=0.01)
-parser$add_argument("--nbin" , type="integer" ,  nargs="+" , help="Number of equally spaced grid points for the density estimation. Provide two numbers to use different numbers for the x and y axes respectively [default %(default)s]" , default=400)
+parser$add_argument("--bandwidth" , type="double" , nargs="+" , help="Smoothing bandwidth value. Provide two numbers to enforce different bandwidths on the x and y axes respectively [default %(default)s]" , default=c(10000  , 0.01))
+parser$add_argument("--nbin" , type="integer" ,  nargs="+" , help="Number of equally spaced grid points for the density estimation. Provide two numbers to use different numbers for the x and y axes respectively [default %(default)s]" , default=1000)
 parser$add_argument("--showSubset" , type="integer" , help="Show a random subset of genomic bins with normalized coverage values above or below --highLowCovThresh. This random subset does not affect the density estimation [default %(default)s]", default=50000)
 parser$add_argument("--debug"  , action="store_true" , help="Dump session and quit [default %(default)s]" , default=FALSE)
 args <- parser$parse_args()
@@ -49,7 +49,7 @@ system(paste0("mkdir -p ", outDir))
 if (is.na(outName)){
   outName <- paste0(outDir,"binDensity")
 }
-if (is.na(samples[1])) {
+if (is.na(samplesList[1])) {
   samples <- dir(paste0(gipOut,"/samples"))
 }  else{ 
   samples <- read.table(samplesList,stringsAsFactors=F)$V1
@@ -109,15 +109,16 @@ fudgeit <- function(){
 }
 
 #plot smooth
-pdf(paste0(outName,".pdf"))
+pdf(paste0(outName,".pdf"),width=18, height=10)
 par(font.axis = 2 , mar = c(5,4,4,5) + .1)
-smoothScatter(x=df$startFixed , y=log10(df$normalizedMeanCoverage) , bandwidth=bandwidth , nbin=nbin , nrpoints=0 , xlab="chromosomes" , ylab="log10 normalized bin coverage",xaxt = 'n' , postPlotHook = fudgeit , xaxs="i" , yaxs="i" , font=2)
+smoothScatter(x=df$startFixed , y=log10(df$normalizedMeanCoverage) , bandwidth=bandwidth , nbin=nbin , nrpoints=0 , xlab="" , ylab="",xaxt = 'n' , postPlotHook = fudgeit , xaxs="i" , yaxs="i" , font=2)
 points(materializedPoints$startFixed, log10(materializedPoints$normalizedMeanCoverage), pch=19, col="black", cex=0.2)
 segments(x0=0 , y0=log10(highLowCovThresh[1]) , x1=sum(chrSize$size) , y1=log10(highLowCovThresh[1]) , lty=3, col='red', lwd=1)
 segments(x0=0 , y0=0 , x1=sum(chrSize$size) , y1=0 , lty=2, col='black', lwd=1)
 segments(x0=0 , y0=log10(highLowCovThresh[2]) , x1=sum(chrSize$size) , y1=log10(highLowCovThresh[2]) , lty=3, col='red', lwd=1)
 abline(v=chrSizeCumSum[-1], lty=1, col='gray', lwd=2)
-axis(1, at=chrMids, labels=names(chrMids) , font=2)
+axis(1, at=chrMids, labels=names(chrMids) , font=2 , las=2)
+mtext(side=2, line=3, "Log10 normalized bin coverage", , font=2, cex=1.2)
 invisible(dev.off())
 
 

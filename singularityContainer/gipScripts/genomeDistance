@@ -10,7 +10,8 @@ parser$add_argument("--samples" , nargs="+", help="Sample names. It determines t
 parser$add_argument("--gipOut"  , help="GIP output directory. If \"NA\" the directory \"./gipOut\" is used" , default="NA")
 parser$add_argument("--outName" , help="Output name [default %(default)s]" , default="NA")
 parser$add_argument("--contextGenomes" , help="Two columns TSV file listing additional genomes. Syntax: name<Tab>filePath [default %(default)s]" , default="NA")
-parser$add_argument("--debug"  , action="store_true" , help="Dump session and quit [default %(default)s]" , default=FALSE)
+parser$add_argument("--threads"  , type="integer" , help="Number of nucmer threads [default %(default)s]" , default=1)
+parser$add_argument("--debug"  , action="store_true" , help="Dump session and quit" , default=FALSE)
 args <- parser$parse_args()
 
 #patch NA
@@ -64,15 +65,18 @@ for (i in 1:nrow(contrasts)){
   dd="._tmp_dnadiff"
   system(paste0("gunzip -c ",f1," > ",u1))
   system(paste0("gunzip -c ",f2," > ",u2))
-  cmd <- paste("/opt/MUMmer/dnadiff -p ", dd , u1 , u2)
-  print(cmd)
-  system(cmd)
+  cmd <- paste("nucmer --mum --forward --threads ", threads ," --delta .nucOut.delta ", u1 , u2)
+  #print(cmd)
+  system(cmd , ignore.stdout=TRUE , ignore.stderr=TRUE)
+  cmd <- paste("dnadiff -d .nucOut.delta -p " , dd)
+  #print(cmd)
+  system(cmd , ignore.stdout=TRUE , ignore.stderr=TRUE)
   ani <- as.numeric(system("grep  AvgIdentity ._tmp_dnadiff.report | head -1 | awk '{print $2}'",intern=T))
   aniMat[s1,s2] = ani
   aniMat[s2,s1] = ani
   aniMat[s1,s1] = 100
   aniMat[s2,s2] = 100
-  system(paste0("rm -rf ", u1 , " " , u2 , " " , dd,".1coords " ,  dd,".delta " , dd,".mdelta " , dd,".rdiff " , dd,".snps " , dd,".1delta " , dd,".mcoords " , dd,".qdiff " , dd,".report " ))
+  system(paste0("rm -rf .nucOut.delta ", u1 , " " , u2 , " " , dd,".1coords " ,  dd,".delta " , dd,".mdelta " , dd,".rdiff " , dd,".snps " , dd,".1delta " , dd,".mcoords " , dd,".qdiff " , dd,".report " ))
 }
 
 pdf(paste0(outName,".pdf"))
@@ -83,7 +87,7 @@ par(lwd=2,font=2, cex=0.9 , mar=c(8,4,4,4))
 plot(hcd,  ylab = "", edgePar = edgePar,horiz=FALSE , cex=0.9 , axes=FALSE) 
 par(cex.axis=1.5)
 axis(2)
-mtext("distance", side = 2, line = 3, outer = FALSE )
+mtext("Distance", side = 2, line = 3, outer = FALSE )
 #pca
 res.pca <- PCA(aniMat, graph=FALSE)
 plot.PCA(res.pca , choix="ind" , habillage="ind")
