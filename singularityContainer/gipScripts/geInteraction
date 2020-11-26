@@ -483,7 +483,7 @@ df <- df[ rownames(mr)[pheRes$tree_row[["order"]]]  ,  c("chr","start","end",col
 df$geneFunction <-  geFunDf[ match(row.names(df) , geFunDf$geId ) , "geneFunction"]
 ##sort as in heatmap2
 #cmr <- cmr[ rownames(cmr)[pheResCor$tree_row[["order"]]]  , colnames(cmr)[pheResCor$tree_col[["order"]]] ]
-write.xlsx(file=paste0(outName,".CNV.xlsx") , x=list(sampleInfo=sampInfo , cnvInfo=cnvInfo , normGeneCoverage=df  , asTable=TRUE)) #, cnvCorrelations=as.data.frame(cmr))
+write.xlsx(file=paste0(outName,".CNV.xlsx") , x=list(sampleInfo=sampInfo , cnvInfo=cnvInfo , normGeneCoverage=df ) , asTable=TRUE) #, cnvCorrelations=as.data.frame(cmr))
 
 
 ###############################
