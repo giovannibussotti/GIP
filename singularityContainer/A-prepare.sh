@@ -18,6 +18,7 @@ freebayesv=1.3.2
 cdhitv=4.8.1
 circosv=0.69-9
 mummerv=4.0.0rc1
+iqtreev=2.1.2
 
 #create the output dir
 mkdir -p files/
@@ -135,8 +136,13 @@ wget http://toolsmith.ens.utulsa.edu/red/data/DataSet2Unix64.tar.gz
 tar -xzf DataSet2Unix64.tar.gz 
 mv redUnix64/Red .
 
+#iqtree
+wget https://github.com/iqtree/iqtree2/releases/download/v${iqtreev}/iqtree-${iqtreev}-Linux.tar.gz
+tar -xzf iqtree-${iqtreev}-Linux.tar.gz
+mv iqtree-${iqtreev}-Linux/bin/iqtree2 .
+
 #CLEAN
-rm -rf mummer-${mummerv}.tar.gz Python-${python3v}.tgz _tmp htslib-${htslibv}.tar.bz2 samtools-${SAMTOOLSv}.tar.bz2 bwa-${BWAv}.tar.bz2 R-${Rv}.tar.gz RepeatMasker-${RepeatMaskerv}.tar.gz v${LGERTv}.tar.gz rmblast-${RMBlastv}+-x64-linux.tar.gz clinEff V${cdhitv}.tar.gz circos-${circosv}.tgz redUnix64/ DataSet2Unix64.tar.gz
+rm -rf iqtree-${iqtreev}-Linux iqtree-${iqtreev}-Linux.tar.gz mummer-${mummerv}.tar.gz Python-${python3v}.tgz _tmp htslib-${htslibv}.tar.bz2 samtools-${SAMTOOLSv}.tar.bz2 bwa-${BWAv}.tar.bz2 R-${Rv}.tar.gz RepeatMasker-${RepeatMaskerv}.tar.gz v${LGERTv}.tar.gz rmblast-${RMBlastv}+-x64-linux.tar.gz clinEff V${cdhitv}.tar.gz circos-${circosv}.tgz redUnix64/ DataSet2Unix64.tar.gz
 
 #compress
 mkdir -p packages

@@ -15,3 +15,4 @@
    binDensity
    geInteraction
    genomeDistance
+   phylogeny

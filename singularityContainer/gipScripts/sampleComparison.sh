@@ -32,6 +32,7 @@ function printHelp {
   echo -e " binDensity      Density plot of bin sequencing coverage of many samples"
   echo -e " geInteraction   Detect CNV genes in many samples and produce correlation-based networks"
   echo -e " genomeDistance  Compare samples genomic distance"
+  echo -e " phylogeny       Extract the SNVs union and infer the phylogenetic tree"
   echo ""
 }
 
@@ -82,6 +83,10 @@ elif [ $MODE == "geInteraction" ]; then
 
 elif [ $MODE == "genomeDistance" ]; then
     CMD="Rscript /bin/genomeDistance $OPTS"
+    #echo executing $CMD
+    $CMD
+elif [ $MODE == "phylogeny" ]; then
+    CMD="Rscript /bin/phylogeny $OPTS"
     #echo executing $CMD
     $CMD
 elif [ $MODE == "-h" ] || [ $MODE == "--help" ]; then

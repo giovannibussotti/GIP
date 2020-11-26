@@ -26,7 +26,7 @@ From: ubuntu:xenial
   cd packages
   mv bwa/ htslib/ samtools/ freebayes/ Python3/ R vcftools/ rmblast/ RepeatMasker snpEff circos/ mummer/ cdhit/ miniCRAN/ installRpkgs.R Rpkgs.tsv  /opt/
   mv /opt/gipScripts/snpEff.configTemplate /opt/
-  mv bedtools picard.jar delly bedGraphToBigWig trf409.linux64 Red /bin/
+  mv iqtree2 bedtools picard.jar delly bedGraphToBigWig trf409.linux64 Red /bin/
   cd ..
   rm -rf packages packages.tar.gz
 
@@ -82,8 +82,13 @@ From: ubuntu:xenial
   ./configure && make && make install
 
   #deeptools
-  pip3 install cython
+  pip3 install cython==0.29.21
   pip3 install deeptools==2.4.2
+
+  #modules for treeToDist
+  pip3 install pandas==1.1.4
+  pip3 install Bio==0.1.4
+
 
   #RepeatMasker
   cd /opt/RepeatMasker
