@@ -222,7 +222,7 @@ if (length(sampFeats) > 0) {
 ###################
 #SUMMARY INFO CNVS#
 ###################
-cnvInfo <- data.frame(geneIds=row.names(df) , chromosome=df$chr , chrColor=cnvChrColors[row.names(df),"chr"] ,stringsAsFactors=F)
+cnvInfo <- data.frame(gene_id=row.names(df) , chromosome=df$chr , chrColor=cnvChrColors[row.names(df),"chr"] ,stringsAsFactors=F)
 row.names(cnvInfo) <- row.names(df)
 
 #add CNV correlation to cnvInfo
@@ -341,11 +341,11 @@ diag(cmr) <- 0
 cnvInfo$mostNegCorrCNVname  <- apply(cmr,1,function(x){mostNegCorr <- names(sort(x)[1])    })
 cnvInfo$mostNegCorrCNVvalue <- apply(cmr,1,function(x){mostNegCorr <- sort(x)[1]    })
 cnvInfo$mostNegCorrCNVadjPval <- cmr_pValMelt[paste0(row.names(cnvInfo),"_",cnvInfo$mostNegCorrCNVname),"pvalue"]
-cnvInfo$mostNegCorrCNVgeneId <-cnvInfo[match(cnvInfo$mostNegCorrCNVname,row.names(cnvInfo)),"geneIds"]
+cnvInfo$mostNegCorrCNVgeneId <-cnvInfo[match(cnvInfo$mostNegCorrCNVname,row.names(cnvInfo)),"gene_id"]
 cnvInfo$mostPosCorrCNVname <- apply(cmr,1,function(x){mostPosCorr <- names(tail(sort(x),n=1))    })
 cnvInfo$mostPosCorrCNVvalue <- apply(cmr,1,function(x){mostPosCorr <- tail(sort(x),n=1)    })
 cnvInfo$mostPosCorrCNVadjPval <- cmr_pValMelt[paste0(row.names(cnvInfo),"_",cnvInfo$mostPosCorrCNVname),"pvalue"]
-cnvInfo$mostPosCorrCNVgeneId <-cnvInfo[match(cnvInfo$mostPosCorrCNVname,row.names(cnvInfo)),"geneIds"]
+cnvInfo$mostPosCorrCNVgeneId <-cnvInfo[match(cnvInfo$mostPosCorrCNVname,row.names(cnvInfo)),"gene_id"]
 cnvInfo$medianCorrCNV <- apply(cmr,1,function(x){round(median(x),3)    })
 diag(cmr)  <- 1
 
@@ -465,7 +465,7 @@ cnvEntropy <- apply(mr,1,function(x){
  counts <- table(cut(x,breaks=bins))
  entropy(counts, unit="log2") 
 })
-cnvInfo$entropy <- cnvEntropy[ match(cnvInfo$geneIds , names(cnvEntropy)) ]
+cnvInfo$entropy <- cnvEntropy[ match(cnvInfo$gene_id , names(cnvEntropy)) ]
 hist(cnvEntropy,breaks=100,col="red",xlab="CNV entropy (bits)",main="")
 invisible(dev.off())
 
@@ -473,9 +473,9 @@ invisible(dev.off())
 branchGoupSamp      <- cutree(pheRes$tree_col, k=cutree_samp)
 sampInfo$branchGroupHeatmap1 <- branchGoupSamp[ match(sampInfo$sample,names(branchGoupSamp)) ]
 branchGoupCnv       <- cutree(pheRes$tree_row, k=cutree_cnv)
-cnvInfo$branchGroupHeatmap1 <- branchGoupCnv[ match(cnvInfo$geneIds,names(branchGoupCnv)) ]
+cnvInfo$branchGroupHeatmap1 <- branchGoupCnv[ match(cnvInfo$gene_id,names(branchGoupCnv)) ]
 branchGoupCnvCor    <- cutree(pheResCor$tree_row, k=cutree_cnv)
-cnvInfo$branchGroupHeatmap2 <- branchGoupCnvCor[ match(cnvInfo$geneIds,names(branchGoupCnvCor)) ]
+cnvInfo$branchGroupHeatmap2 <- branchGoupCnvCor[ match(cnvInfo$gene_id,names(branchGoupCnvCor)) ]
 #sort as in heatmap1
 cnvInfo  <- cnvInfo[ rownames(mr)[pheRes$tree_row[["order"]]] , ]
 sampInfo <- sampInfo[ colnames(mr)[pheRes$tree_col[["order"]]] , ]
@@ -483,7 +483,12 @@ df <- df[ rownames(mr)[pheRes$tree_row[["order"]]]  ,  c("chr","start","end",col
 df$geneFunction <-  geFunDf[ match(row.names(df) , geFunDf$geId ) , "geneFunction"]
 ##sort as in heatmap2
 #cmr <- cmr[ rownames(cmr)[pheResCor$tree_row[["order"]]]  , colnames(cmr)[pheResCor$tree_col[["order"]]] ]
-write.xlsx(file=paste0(outName,".CNV.xlsx") , x=list(sampleInfo=sampInfo , cnvInfo=cnvInfo , normGeneCoverage=df ) , asTable=TRUE) #, cnvCorrelations=as.data.frame(cmr))
+
+df <- cbind(row.names(df) , df)
+names(df)[1] <- "gene_id"
+write.xlsx(file=paste0(outName,".CNV.xlsx") , x=list(sampleInfo=sampInfo , cnvInfo=cnvInfo , normGeneCoverage=df  ) , asTable=TRUE) #, cnvCorrelations=as.data.frame(cmr))
+#save memory
+rm(df , cnvInfo)
 
 
 ###############################
