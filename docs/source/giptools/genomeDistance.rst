@@ -13,11 +13,11 @@ Options
 |                   |                                                   |                |
 |                   |If "NA" all samples are used [default NA]          |                |
 +-------------------+---------------------------------------------------+----------------+
-|\-\-gipOut         |GIP output directory. If "NA" the directory        |[char]          |
-|                   |                                                   |                |
-|                   | "./gipOut" is used [default NA]                   |                |
+|\-\-gipOut         |GIP output director [default gipOut]               |[char]          |
 +-------------------+---------------------------------------------------+----------------+
-|\-\-outName        |Output name [default NA]                           |[char]          |
+|\-\-outName        |Output name                                        |[char]          |
+|                   |                                                   |                |
+|                   |[default gipOut/sampleComparison/genomeDistance]   |                |
 +-------------------+---------------------------------------------------+----------------+
 |\-\-contextGenomes |Two columns TSV file listing additional genomes.   |[char]          |                
 |                   |                                                   |                |

@@ -12,11 +12,9 @@ Options
 |                       |                                                              |                |
 |                       |If "NA" all samples are used. [default NA]                    |                |
 +-----------------------+--------------------------------------------------------------+----------------+
-|\-\-gipOut             |GIP output directory.                                         |[char]          |
-|                       |                                                              |                |
-|                       |If "NA" the directory "./gipOut" is used [default NA]         |                |
+|\-\-gipOut             |GIP output directory [default gipOut]                         |[char]          |
 +-----------------------+--------------------------------------------------------------+----------------+
-|\-\-outName            |Output name [default NA]                                      |[char]          |
+|\-\-outName            |Output name [default gipOut/sampleComparison/binDensity]      |[char]          |
 +-----------------------+--------------------------------------------------------------+----------------+
 |\-\-chrs               |Chromosomes to use. If "NA" it uses the same chromsomes as GIP|[char ...]      |
 |                       |                                                              |                |

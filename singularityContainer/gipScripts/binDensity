@@ -13,8 +13,8 @@
 suppressPackageStartupMessages(library("argparse"))
 parser <- ArgumentParser(description="Density plot of bin sequencing coverage of many samples")
 parser$add_argument("--samplesList" , nargs="+", help="File listing in one column the samples to use. If \"NA\" all samples are used" , default="NA" )
-parser$add_argument("--gipOut"  , help="GIP output directory. If \"NA\" the directory \"./gipOut\" is used" , default="NA")
-parser$add_argument("--outName" , help="Output name [default %(default)s]" , default="NA")
+parser$add_argument("--gipOut"  , help="GIP output directory [default %(default)s]" , default="gipOut")
+parser$add_argument("--outName" , help="Output name [default %(default)s]" , default="gipOut/sampleComparison/binDensity")
 parser$add_argument("--chrs"    , nargs="+" , help="Chromosomes to use. If \"NA\" it uses the same chromsomes as GIP [default %(default)s]" , default="NA")
 parser$add_argument("--minMAPQ" , type="integer"   , help="Remove bins with MAPQ < --minMAPQ [default %(default)s]", default=0 )
 parser$add_argument("--pseudocount" , type="double" , help="Normalized mean coverage pseudocount value preventing minus infinite values in log10 transformation [default %(default)s]" , default=0.1)
@@ -22,7 +22,7 @@ parser$add_argument("--highLowCovThresh" , nargs="+" , type="double" , help="Pro
 parser$add_argument("--bandwidth" , type="double" , nargs="+" , help="Smoothing bandwidth value. Provide two numbers to enforce different bandwidths on the x and y axes respectively [default %(default)s]" , default=c(10000  , 0.01))
 parser$add_argument("--nbin" , type="integer" ,  nargs="+" , help="Number of equally spaced grid points for the density estimation. Provide two numbers to use different numbers for the x and y axes respectively [default %(default)s]" , default=1000)
 parser$add_argument("--showSubset" , type="integer" , help="Show a random subset of genomic bins with normalized coverage values above or below --highLowCovThresh. This random subset does not affect the density estimation [default %(default)s]", default=50000)
-parser$add_argument("--debug"  , action="store_true" , help="Dump session and quit [default %(default)s]" , default=FALSE)
+parser$add_argument("--debug"  , action="store_true" , help="Dump session and quit" , default=FALSE)
 args <- parser$parse_args()
 
 #patch NA
@@ -37,18 +37,12 @@ options(datatable.fread.input.cmd.message=FALSE)
 if(debug){library(session);save.session("session_DEBUG_binDensity");quit()}
 
 #setup
-if (is.na(gipOut)){
-  gipOut <- "./gipOut"
-}
 if(! dir.exists(gipOut)){
   stop("ERROR. gipOut directory does not exists")
   quit(save = "no", status = 1, runLast = FALSE)
 }
 outDir <- paste0(gipOut,"/sampleComparison/")
 system(paste0("mkdir -p ", outDir))
-if (is.na(outName)){
-  outName <- paste0(outDir,"binDensity")
-}
 if (is.na(samplesList[1])) {
   samples <- dir(paste0(gipOut,"/samples"))
 }  else{ 

@@ -10,11 +10,9 @@ Options
 +===================+==================================================================+================+
 |\-\-samples        |Sample names. If \"NA\" all samples are used                      |[char ...]      |
 +-------------------+------------------------------------------------------------------+----------------+ 
-|\-\-gipOut         |GIP output directory. If "NA" the directory "./gipOut" is used    |[char]          |
-|                   |                                                                  |                |
-|                   |[default NA]                                                      |                |
+|\-\-gipOut         |GIP output directory [default gipOut]                             |[char]          |
 +-------------------+------------------------------------------------------------------+----------------+
-|\-\-outName        |Output name [default NA]                                          |[char]          |
+|\-\-outName        |Output name [default gipOut/sampleComparison/phylogeny]           |[char]          |
 +-------------------+------------------------------------------------------------------+----------------+
 |\-\-VRFcutoff      |Provide 2 numbers. For each sample, heterozygous SNVs where       |[double double] |
 |                   |                                                                  |                |

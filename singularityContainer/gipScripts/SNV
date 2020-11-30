@@ -1,17 +1,8 @@
-#samples=c("Dog3","Dog1-P2")
-#gipOut="gipOut"
-#outName=NA
-#chrs=NA
-#debug=FALSE
-#coordCartesianYlim=NA
-#minVRF=0
-
-
 suppressPackageStartupMessages(library("argparse"))
 parser <- ArgumentParser(description="Compare SNVs in multiple samples")
-parser$add_argument("--samples" , nargs="+", help="Sample names (max 7). It determines the plotting order. If \"NA\" all samples are used" , default="NA")
-parser$add_argument("--gipOut"  , help="GIP output directory. If \"NA\" the directory \"./gipOut\" is used" , default="NA")
-parser$add_argument("--outName" , help="Output name [default %(default)s]" , default="NA")
+parser$add_argument("--samples" , nargs="+", help="Sample names. It determines the plotting order. If \"NA\" all samples are used" , default="NA")
+parser$add_argument("--gipOut"  , help="GIP output directory [default %(default)s]" , default="gipOut")
+parser$add_argument("--outName" , help="Output name [default %(default)s]" , default="gipOut/sampleComparison/SNV")
 parser$add_argument("--chrs"    , nargs="+" , help="Chromosomes to use. If \"NA\" it uses the same chromsomes as GIP [default %(default)s]" , default="NA")
 parser$add_argument("--coordCartesianYlim" , help="Max y-axis value for density plots. If \"NA\" the value is automatically attributed [default %(default)s]" , default="NA")
 parser$add_argument("--minVRF" , type="double" , help="Discard SNVs with frequency < --minVRF [default %(default)s]" , default=0)
@@ -34,9 +25,6 @@ options(datatable.fread.input.cmd.message=FALSE)
 if(debug){save.session("session_DEBUG_SNV");quit()}
 
 #setup
-if (is.na(gipOut)){
-  gipOut <- "./gipOut"
-}
 if(! dir.exists(gipOut)){
   stop("ERROR. gipOut directory does not exists")
   quit(save = "no", status = 1, runLast = FALSE)
@@ -46,9 +34,6 @@ if (is.na(samples[1])) {
 } 
 outDir <- paste0(gipOut,"/sampleComparison/")
 system(paste0("mkdir -p ", outDir))
-if (is.na(outName)){
-  outName <- paste0(outDir,"SNV")
-}
 chrSel      <- as.character(read.table(paste0(gipOut,"/samples/",samples[1],"/chrCoverageMedians_",samples[1]),header=T)[,1])
 chrSize     <- read.table(paste0(gipOut,"/genome/genome.chrSize"),sep="\t", stringsAsFactors = F, header=F , col.names=c("chr","size"))
 chrSize$chr <- as.character(chrSize$chr)

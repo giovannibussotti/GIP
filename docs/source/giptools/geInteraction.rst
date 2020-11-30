@@ -16,11 +16,9 @@ Options
 |                       |                                                              |                |
 |                       |to the additional fields [**required**]                       |                |
 +-----------------------+--------------------------------------------------------------+----------------+
-|\-\-gipOut             |GIP output directory.                                         |[char]          |
-|                       |                                                              |                |
-|                       |If "NA" the directory "./gipOut" is used                      |                |
+|\-\-gipOut             |GIP output directory [default gipOut]                         |[char]          |
 +-----------------------+--------------------------------------------------------------+----------------+
-|\-\-outName            |Output name [default NA]                                      |[char]          |
+|\-\-outName            |Output name [default gipOut/sampleComparison/geInteraction]   |[char]          |
 +-----------------------+--------------------------------------------------------------+----------------+
 |\-\-chrs               |Chromosomes to use. If "NA" it uses the same chromsomes as GIP|[char ...]      |
 |                       |                                                              |                |

@@ -2,8 +2,8 @@
 suppressPackageStartupMessages(library("argparse"))
 parser<- ArgumentParser(description= "Extract the SNVs union and infer the phylogenetic tree")
 parser$add_argument("--samples" , nargs="+", help="Sample names. If \"NA\" all samples are used" , default="NA")
-parser$add_argument("--gipOut"  , help="GIP output directory. If \"NA\" the directory \"./gipOut\" is used" , default="NA")
-parser$add_argument("--outName" , help="Output name [default %(default)s]" , default="NA")
+parser$add_argument("--gipOut"  , help="GIP output directory [default %(default)s]" , default="gipOut")
+parser$add_argument("--outName" , help="Output name [default %(default)s]" , default="gipOut/sampleComparison/phylogeny")
 parser$add_argument("--VRFcutoff" , nargs="+" , type="double" , help="Provide 2 numbers. For each sample, heterozygous SNVs where NUM2 <= VRF < NUM are labeled with the IUPAC ambiguous notation. SNVs with VRF < NUM2 are removed [default %(default)s]" , default=c(0.70,0.10))
 parser$add_argument("--regionsGtf"         , help="Select just the SNVs present in regions specified in this GTF file (e.g. genes). If \"NA\" nor region filter is applied [default %(default)s]" , default="NA")
 parser$add_argument("--iqtreeOpts" , help="IQ-tree options [default %(default)s]" , default="-alrt 1000 -bb 1000 -nt 1 -quiet")
@@ -17,9 +17,6 @@ suppressPackageStartupMessages(library("GenomicRanges"))
 if(debug){library(session); save.session("session_phylogeny");quit()}
 
 #setup
-if (is.na(gipOut)){
-  gipOut <- "./gipOut"
-}
 if(! dir.exists(gipOut)){
   stop("ERROR. gipOut directory does not exists")
   quit(save = "no", status = 1, runLast = FALSE)
@@ -29,9 +26,6 @@ if (is.na(samples[1])) {
 } 
 outDir <- paste0(gipOut,"/sampleComparison/")
 system(paste0("mkdir -p ", outDir))
-if (is.na(outName)){
-  outName <- paste0(outDir,"phylogeny")
-}
 ambiguousCode <- data.frame(option1=c("AT","CG","AC","GT","AG","CT") , 
 	                        option2=c("TA","GC","CA","TG","GA","TC") , 
 	                        code=c("W","S","M","K","R","Y") ,stringsAsFactors=F)

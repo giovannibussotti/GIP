@@ -17,8 +17,8 @@
 suppressPackageStartupMessages(library("argparse"))
 parser <- ArgumentParser(description="Compare gene sequencing coverage in 2 samples")
 parser$add_argument("--samples" , nargs="+", required=TRUE, help="Sample names. It determines the plotting order [required]" )
-parser$add_argument("--gipOut"  , help="GIP output directory. If \"NA\" the directory \"./gipOut\" is used" , default="NA")
-parser$add_argument("--outName" , help="Output name [default %(default)s]" , default="NA")
+parser$add_argument("--gipOut"  , help="GIP output directory [default %(default)s]" , default="gipOut")
+parser$add_argument("--outName" , help="Output name [default %(default)s]" , default="gipOut/sampleComparison/geCNV")
 parser$add_argument("--chrs"    , nargs="+" , help="Chromosomes to use. If \"NA\" it uses the same chromsomes as GIP [default %(default)s]" , default="NA")
 parser$add_argument("--MAPQ"  , type="integer" , help="Label genes with MAPQ < --MAPQ [default %(default)s]" , default=0)
 parser$add_argument("--highLowRatio" , nargs="+" , type="double" , help="Provide 2 numbers. Genes with ratio scores > num1 or < num2 will be colored differently" , default= c(1.5,0.5) )
@@ -43,18 +43,12 @@ if(debug){save.session("session_DEBUG_geCNV");quit()}
 
 
 #setup
-if (is.na(gipOut)){
-  gipOut <- "./gipOut"
-}
 if(! dir.exists(gipOut)){
   stop("ERROR. gipOut directory does not exists")
   quit(save = "no", status = 1, runLast = FALSE)
 }
 outDir <- paste0(gipOut,"/sampleComparison/")
 system(paste0("mkdir -p ", outDir))
-if (is.na(outName)){
-  outName <- paste0(outDir,"geCNV")
-}
 s1=samples[1]
 s2=samples[2]
 chrSel      <- as.character(read.table(paste0(gipOut,"/samples/",s1,"/chrCoverageMedians_",s1),header=T)[,1])

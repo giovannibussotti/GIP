@@ -26,8 +26,8 @@
 suppressPackageStartupMessages(library("argparse"))
 parser <- ArgumentParser(description="Detect CNV genes across multiple samples and produce correlation-based networks")
 parser$add_argument("--samplesList" , nargs="+", required=TRUE, help="File with a column named \"sample\" listing samples names. Additional TSV columns will be used to annotate the output figures. \"field\"_COLOR columns are used to map colors to the additional fields [required]" )
-parser$add_argument("--gipOut"  , help="GIP output directory. If \"NA\" the directory \"./gipOut\" is used" , default="NA")
-parser$add_argument("--outName" , help="Output name [default %(default)s]" , default="NA")
+parser$add_argument("--gipOut"  , help="GIP output directory [default %(default)s]" , default="gipOut")
+parser$add_argument("--outName" , help="Output name [default %(default)s]" , default="gipOut/sampleComparison/geInteraction")
 parser$add_argument("--chrs"    , nargs="+" , help="Chromosomes to use. If \"NA\" it uses the same chromsomes as GIP [default %(default)s]" , default="NA")
 parser$add_argument("--minMAPQ" , type="integer" , help="Remove genes with MAPQ < --minMAPQ [default %(default)s]", default=0 )
 parser$add_argument("--minDelta" , type="integer" , help="Min normalized coverage delta between samples [default %(default)s]" , default=1)
@@ -75,18 +75,12 @@ suppressPackageStartupMessages(library("pheatmap"))
 if(debug){library(session);save.session("session_DEBUG_interaction");quit()}
 
 #setup
-if (is.na(gipOut)){
-  gipOut <- "./gipOut"
-}
 if(! dir.exists(gipOut)){
   stop("ERROR. gipOut directory does not exists")
   quit(save = "no", status = 1, runLast = FALSE)
 }
 outDir <- paste0(gipOut,"/sampleComparison/")
 system(paste0("mkdir -p ", outDir))
-if (is.na(outName)){
-  outName <- paste0(outDir,"geInteraction")
-}
 sampInfo <- read.table(samplesList,stringsAsFactors=F,header=T,sep="\t",comment.char = "")
 samples  <- sampInfo$sample
 chrSel      <- as.character(read.table(paste0(gipOut,"/samples/",samples[1],"/chrCoverageMedians_",samples[1]),header=T)[,1])
