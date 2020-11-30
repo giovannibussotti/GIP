@@ -85,10 +85,17 @@ elif [ $MODE == "genomeDistance" ]; then
     CMD="Rscript /bin/genomeDistance $OPTS"
     #echo executing $CMD
     $CMD
+
 elif [ $MODE == "phylogeny" ]; then
     CMD="Rscript /bin/phylogeny $OPTS"
     #echo executing $CMD
     $CMD
+
+elif [ $MODE == "convergentCNV" ]; then
+    CMD="Rscript /bin/convergentCNV $OPTS"
+    #echo executing $CMD
+    $CMD
+
 elif [ $MODE == "-h" ] || [ $MODE == "--help" ]; then
     printHelp
  

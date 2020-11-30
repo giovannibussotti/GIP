@@ -16,3 +16,4 @@
    geInteraction
    genomeDistance
    phylogeny
+   convergentCNV
