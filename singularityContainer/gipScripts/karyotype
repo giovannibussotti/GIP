@@ -2,8 +2,8 @@
 suppressPackageStartupMessages(library("argparse"))
 parser <- ArgumentParser(description="Compare chromosome sequencing coverage distributions")
 parser$add_argument("--samples" , nargs="+", help="Sample names. It determines the plotting order. If \"NA\" all samples are used" , default="NA")
-parser$add_argument("--gipOut"  , help="GIP output directory. If \"NA\" the directory \"./gipOut\" is used" , default="NA")
-parser$add_argument("--outName" , help="Output name. [default %(default)s]" , default="NA")
+parser$add_argument("--gipOut"  , help="GIP output directory [default %(default)s]" , default="gipOut")
+parser$add_argument("--outName" , help="Output name [default %(default)s]" , default="gipOut/sampleComparison/karyotype")
 parser$add_argument("--minMAPQ" , type="integer" , help="Remove bins with MAPQ < --minMAPQ [default %(default)s]" , default=0)
 parser$add_argument("--chrs"    , nargs="+" , help="Chromosomes to use. If \"NA\" it uses the same chromsomes as GIP [default %(default)s]" , default="NA")
 parser$add_argument("--ylim" , nargs="+" , type="double" , help="Min and max plot y-axis limits [default %(default)s]" , default=c(0,10))
@@ -147,9 +147,6 @@ options(datatable.fread.input.cmd.message=FALSE)
 if(debug){library("session"); save.session("session_DEBUG_karyotype");quit()}
 
 #setup
-if (is.na(gipOut)){
-  gipOut <- "./gipOut"
-}
 if(! dir.exists(gipOut)){
   stop("ERROR. gipOut directory does not exists")
   quit(save = "no", status = 1, runLast = FALSE)
@@ -159,9 +156,6 @@ if (is.na(samples[1])) {
 }  
 outDir <- paste0(gipOut,"/sampleComparison/")
 system(paste0("mkdir -p ", outDir))
-if (is.na(outName)){
-  outName <- paste0(outDir,"karyotype")
-}
 if (is.na(ylim[1])){
   ylim = c(0,10)
 } else {

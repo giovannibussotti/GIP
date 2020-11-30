@@ -1,6 +1,6 @@
 
 suppressPackageStartupMessages(library("argparse"))
-parser<- ArgumentParser(description= "Detect convergent CNVs")
+parser<- ArgumentParser(description= "Detect convergent CNV gene amplifications")
 parser$add_argument("--gipOut"  , help="GIP output directory. If \"NA\" the directory \"./gipOut\" is used" , default="NA")
 parser$add_argument("--outName" , help="Output name [default %(default)s]" , default="NA")
 parser$add_argument("--newickTree" , help="Newick tree file produced with the phylogeny module [default %(default)s]" , default="gipOut/sampleComparison/phylogeny.treefile")

@@ -33,6 +33,7 @@ function printHelp {
   echo -e " geInteraction   Detect CNV genes in many samples and produce correlation-based networks"
   echo -e " genomeDistance  Compare samples genomic distance"
   echo -e " phylogeny       Extract the SNVs union and infer the phylogenetic tree"
+  echo -e " convergentCNV   Detect convergent CNV gene amplifications"
   echo ""
 }
 

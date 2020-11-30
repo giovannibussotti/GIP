@@ -12,11 +12,9 @@ Options
 |                   |                                                                  |                |
 |                   |If "NA" all samples are used [default NA]                         |                |
 +-------------------+------------------------------------------------------------------+----------------+
-|\-\-gipOut         |GIP output directory. If "NA" the directory "./gipOut" is used    |[char]          |
-|                   |                                                                  |                |
-|                   |[default NA]                                                      |                |
+|\-\-gipOut         |GIP output directory [default gipOut]                             |[char]          |
 +-------------------+------------------------------------------------------------------+----------------+
-|\-\-outName        |Output name [default NA]                                          |[char]          |
+|\-\-outName        |Output name [default gipOut/sampleComparison/karyotype]           |[char]          |
 +-------------------+------------------------------------------------------------------+----------------+
 |\-\-minMAPQ        |Remove bins with MAPQ < --MAPQ [default 0]                        |[int]           |
 +-------------------+------------------------------------------------------------------+----------------+
