@@ -99,8 +99,14 @@ We have a mailing list located at: GIP@google-groups.com
 License
 -------
 
-The project is licensed under the GPLv3 license.
+GIP and giptools are licensed under a Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International (CC BY-NC-ND 4.0) License. These software are provided without any warranty. Users of GIP and giptools must agree with the terms and conditions of the software licenses included in giptools.
 
+
+.. toctree::
+   :maxdepth: 2
+   :hidden:
+
+   software/index
 
 .. toctree::
    :maxdepth: 2

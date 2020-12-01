@@ -3,7 +3,6 @@
 #I am unpacking the packages without version number, so that if we change the tool version I just need to change this script, but not the singularity definition file
 #The main output is the packages.tar.gz file that is loaded by the singularity definition file
 
-#IMPORTANT!!! trf409.linux64 must be manually downloaded/provided 
 SAMTOOLSv=1.8
 BWAv=0.7.17
 htslibv=1.8
@@ -19,6 +18,7 @@ cdhitv=4.8.1
 circosv=0.69-9
 mummerv=4.0.0rc1
 iqtreev=2.1.2
+trfv=4.09.1
 
 #create the output dir
 mkdir -p files/
@@ -73,18 +73,6 @@ wget http://sourceforge.net/projects/snpeff/files/snpEff_latest_core.zip
 unzip snpEff_latest_core.zip 
 rm -rf snpEff_latest_core.zip
 
-#spades (version 3.13.0) ###NOT USED ANYMORE
-#wget http://cab.spbu.ru/files/release3.13.0/SPAdes-3.13.0-Linux.tar.gz
-#tar -xzf SPAdes-3.13.0-Linux.tar.gz
-#rm -rf SPAdes-3.13.0-Linux.tar.gz
-#mv SPAdes-3.13.0-Linux SPAdes
-
-#trimmomatics ###NOT USED ANYMORE
-#wget http://www.usadellab.org/cms/uploads/supplementary/Trimmomatic/Trimmomatic-0.38.zip
-#unzip Trimmomatic-0.38.zip 
-#mv Trimmomatic-0.38 Trimmomatic
-#rm -rf Trimmomatic-0.38.zip 
-
 #vcftools (Latest commit d0c95c5 on Sep 2, 2018)
 git clone https://github.com/vcftools/vcftools.git
 
@@ -102,19 +90,14 @@ wget http://www.repeatmasker.org/RepeatMasker-${RepeatMaskerv}.tar.gz
 tar -xvf RepeatMasker-${RepeatMaskerv}.tar.gz
 
 #TRF (downloaded manually from http://tandem.bu.edu/trf/trf409.linux64.download.html)
-#no need to download he legacy file. checking with ldd --version I can see that xenial has GLIBC 2.23
+#no need to download he legacy file. checking with ldd --version you can verify that xenial has GLIBC 2.23
+wget https://github.com/Benson-Genomics-Lab/TRF/releases/download/v${trfv}/trf409.linux64
+chmod a+x trf409.linux64
 
 #RMBlast
 wget http://www.repeatmasker.org/rmblast-${RMBlastv}+-x64-linux.tar.gz
 tar -xvf rmblast-${RMBlastv}+-x64-linux.tar.gz
 mv rmblast-${RMBlastv} rmblast
-
-#look4TRs ###NOT USED ANYMORE
-#git clone https://github.com/TulsaBioinformaticsToolsmith/Look4TRs.git
-#mkdir -p Look4TRs/bin
-#cd Look4TRs/bin
-#cmake ..
-#make
 
 #MUMmer 
 wget https://github.com/mummer4/mummer/releases/download/v4.0.0rc1/mummer-${mummerv}.tar.gz

@@ -10,7 +10,7 @@ vcftools	 GNU Lesser General Public License version 3.0 (LGPLv3)	https://vcftool
 deeptools	BSD and MIT	https://github.com/deeptools/deepTools/blob/master/LICENSE.txt
 RepeatMasker	Open Source License v2.1.	http://www.repeatmasker.org/cgi-bin/WEBRepeatMasker https://opensource.org/licenses/osl-2.1.php, I can distribute as long as the copies of Original Work or Derivative Works that You distribute shall be licensed under the Open Software License;
 rmblast	Open Source License v2.1. 	http://www.repeatmasker.org/RMBlast.html https://www.ncbi.nlm.nih.gov/IEB/ToolBox/CPP_DOC/lxr/source/scripts/projects/rmblastn/LICENSE
-*trf409.linux64	GNU Affero General Public License v3.0	https://github.com/Benson-Genomics-Lab/TRF/blob/master/COPYING but the old license is restrictive regarding distribution https://tandem.bu.edu/trf/trf.license.html
+*trf409.linux64	GNU Affero General Public License v3.0	https://github.com/Benson-Genomics-Lab/TRF/blob/master/COPYING but the old license is restrictive regarding distribution https://tandem.bu.edu/trf/trf.license.html ---> now using the 4.09.1 which is free to distribute but you must also include a copy of the source code
 MUMmer	open source	http://mummer.sourceforge.net/
 snpEff.jar	open source (LGPLv3)	https://pcingola.github.io/SnpEff/license/
 cdhit	GPLv2.0	https://github.com/weizhongli/cdhit/blob/master/license.txt
