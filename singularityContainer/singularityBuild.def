@@ -117,6 +117,7 @@ From: ubuntu:xenial
 
   #MUMmer
   cd /opt/mummer/
+  ./configure
   make
   make install
 
