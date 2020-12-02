@@ -37,7 +37,7 @@ Software
 | `Source code <https://www.python.org/ftp/python/3.7.0/Python-3.7.0.tgz>`_
 
 | **vcftools**         
-| Version 0.1.17     
+| Version 0.1.16 github commit d0c95c5      
 | :download:`LICENSE vcftools <LICENSE_vcftools>`
 | `Source code <https://github.com/vcftools/vcftools/archive/d0c95c57bb1408c0355e610b66e39fe2583076a3.zip>`_         
 
@@ -63,37 +63,38 @@ Software
 
 | **mummer**           
 | Version 4.0.0rc1   
-| :download:`LICENSE mummer <LICENSE_mummer>`   
+| :download:`License <LICENSE_mummer>`   
+| :download:`Copyright <COPYRIGHT_mummer>`
 | `Source code <https://github.com/mummer4/mummer/archive/v4.0.0rc1.tar.gz>`_          
 
 | **snpEff**           
 | Version 4.3t       
-| `LGPLv3 <https://pcingola.github.io/SnpEff/license/>`_  
+| `License <https://pcingola.github.io/SnpEff/license/>`_  
 | `Source code <https://github.com/pcingola/SnpEff/archive/v4.3t.tar.gz>`_
 
 | **cdhit**            
 | Version 4.8.1      
-| :download:`LICENSE cdhit <LICENSE_cdhit>`   
+| :download:`License & copyright <LICENSE_cdhit>`   
 | `Source code <https://github.com/weizhongli/cdhit/archive/V4.8.1.tar.gz>`_            
 
 | **R**                
 | Version 3.6.0      
-| :download:`COPYING R <COPYING_R>`                        
+| :download:`License & copyright <COPYING_R>`                        
 | `Source code <https://cran.r-project.org/src/base/R-3/R-3.6.0.tar.gz>`_
 
 | **circos**           
 | Version 0.69-9     
-| :download:`LICENSE circos <LICENSE_circos>`             
+| :download:`License & copyright <LICENSE_circos>`             
 | `Source code <http://circos.ca/distribution/circos-0.69-9.tgz>`_
 
 | **picard**           
 | Version 2.18.9     
-| :download:`LICENSE picard <LICENSE_picard>`             
+| :download:`License & copyright <LICENSE_picard>`             
 | `Source code <https://github.com/broadinstitute/picard/archive/2.18.9.tar.gz>`_
 
 | **delly**            
 | Version 0.6.7      
-| :download:`LICENSE delly <LICENSE_delly>`  
+| :download:`License & copyright <LICENSE_delly>`  
 | `Source code <https://github.com/dellytools/delly/archive/v0.6.7.tar.gz>`_             
 
 | **bedGraphToBigWig** 
@@ -103,8 +104,7 @@ Software
 
 | **Red**              
 | Version 05/22/2015 
-| `LICENSE Red <https://bmcbioinformatics.biomedcentral.com/articles/10.1186/s12859-015-0654-5>`_                                          
-| `Source code <http://toolsmith.ens.utulsa.edu/red/data/DataSet1Src.tar.gz>`_
+| `LICENSE Red <https://bmcbioinformatics.biomedcentral.com/articles/10.1186/s12859-015-0654-5>`_                                     | `Source code <http://toolsmith.ens.utulsa.edu/red/data/DataSet1Src.tar.gz>`_
 
 | **IQ-tree2**         
 | Version 2.1.2      
