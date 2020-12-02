@@ -80,7 +80,9 @@ awk '{if($1 == '$TOTfiles') print $2}' ${outDir}/.lowMapqCount > ${outDir}/.lowM
 for X in `cat ${outDir}/.lowMapqSelected`; do
   grep "gene_id \"$X\"" $geGtf
 done |  perl -ne 'if($_=~/^(\S+)\s+\S+\s+\S+\s+(\S+)\s+(\S+)\s+\S+\s+(\S+)/){$c=$1;$s=$2;$e=$3;$st=$4;if($_=~/gene_id \"([^\"]+)\"/){print "$c\t$s\t$e\t$1\t0\t$st\n";}} ' > ${outDir}/.tmpGeBed
-bedtools getfasta -name -s -fi $genome -bed ${outDir}/.tmpGeBed -fo ${outDir}/.lowMapqSelected.fa
+#getfast -nameOnly bug when run with -s
+#the perl parsing is the patch
+bedtools getfasta -nameOnly -s -fi $genome -bed ${outDir}/.tmpGeBed | perl -ne 'if($_=~/>(\S+)\(.\)$/){print ">$1\n";}else {print}' > ${outDir}/.lowMapqSelected.fa
 
 #clustering
 /opt/cdhit/cd-hit-est -T 1 -s $cdHitLenDiffCutoff -c $cdHitSeqIdCutoff -r 0 -d 0 -g 1 -i ${outDir}/.lowMapqSelected.fa -o ${outDir}/.lowMapqSelected #-uL 0.05 -uS 0.05
