@@ -99,7 +99,7 @@ We have a mailing list located at: GIP@google-groups.com
 License
 -------
 
-GIP and giptools are licensed under a Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International (CC BY-NC-ND 4.0) License. These software are provided without any warranty. Users of GIP and giptools must agree with the terms and conditions of the software licenses included in giptools.
+GIP and giptools modules are licensed under a Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International (CC BY-NC-ND 4.0) License. These software are provided without any warranty. Third parties software and scripts installed in giptools have their own copyright and license. A list is provided in the next page of this documentation. Users of giptools must take notice and agree with the terms and conditions of all third party software.
 
 
 .. toctree::
