@@ -46,5 +46,6 @@ cp ../../docs/source/software/COPYING_* .
 cp ../../docs/source/software/COPYRIGHT_mummer .
 cd ..
 
-
+tar -czf licenses.tar.gz licenses
+rm -rf licenses
 

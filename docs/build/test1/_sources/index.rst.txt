@@ -3,7 +3,7 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
    
-   image:: _static/logo1.jpg
+   image:: _static/logo.jpg
     :width: 120px
     :alt: GIP logo
     :align: center
@@ -12,17 +12,18 @@
 Genome Instability Pipeline
 ===========================
 
-The Genome Instability Pipeline (GIP) will solve your problem of analyzing whole genome sequencing (WGS) data 
-making bioinformatics screenings faster and easier
-GIP allows the batch processing of multiple WGS experiments, including the mapping of short reads, the quantification of chromosomes, genes and genomic bins.
-The results of GIP are summarized in a *report* page providing sequencing experiment and mapping statistics, graphical representations of genomic features quantifications, and excel tables.
+| The Genome Instability Pipeline (GIP) will solve your problem of analyzing whole genome sequencing (WGS) data making bioinformatics screenings faster and easier.
 
-GIP also enables **giptools**, a tool-suite allowing to  **detect**, **compare** and **visualize** 
+| GIP allows the batch processing of multiple WGS experiments, including the mapping of short reads, the quantification of chromosomes, genes and genomic bins.
 
-* aneuploidy changes
-* gene copy number variants (CNVs)
-* single nucleotide variants (SNVs)
-* structural variants (SVs)
+| The results of GIP are summarized in a *report* page providing sequencing experiment and mapping statistics, graphical representations of genomic features quantifications, and excel tables.
+
+GIP also enables **giptools**, a tool-suite allowing to  **Detect**, **Compare** and **Visualize** 
+
+* Aneuploidy changes
+* Gene copy number variants (CNVs)
+* Single nucleotide variants (SNVs)
+* Structural variants (SVs)
 
 Look how easy it is to use.
 Run GIP on a large set of input WGS experiments (e.g. 200 samples)

@@ -11,6 +11,7 @@ From: ubuntu:xenial
 %files
   files/packages.tar.gz /opt
   gipScripts/  /opt 
+  licenses.tar.gz /opt
 
 %environment
   export LC_ALL=C

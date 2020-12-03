@@ -73,12 +73,9 @@ Example
 | This will generate the karyotype output files in the **gipOut/sampleComparison** folder. A second run of this module can be performed to adjust the visualization parameters (e.g. reducing the range on the y-axis) and normalize by the LinJ36 disomic chromosome:
 
 | ``giptools karyotype  --ylim 0 6 --disomicChr LinJ36``
- 
 
-Output
-------
 
-| The otput consists in two files: 
+| The output consists in two files: 
 
 * A .pdf file including two plots
 * An .xlsx files with 5 data sheets
@@ -101,16 +98,6 @@ The ``karyotype`` module performs the Wilcoxon, Kolmogorov-Smirnov and AOV tests
 * One way ANOVA test (AOV) p-value scores
 * Difference between the normalized median chromosome coverage scores
 * Normalized median chromosome coverage scores
-
-
-
-
-
-
-
-
-
-
 
 
 
