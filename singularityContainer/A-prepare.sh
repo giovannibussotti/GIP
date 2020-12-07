@@ -44,9 +44,12 @@ tar -xjf htslib-${htslibv}.tar.bz2
 mv htslib-${htslibv} htslib
 
 #bedtools
-wget https://github.com/arq5x/bedtools2/releases/download/v${bedtoolsv}/bedtools.static.binary
-mv bedtools.static.binary bedtools
-chmod a+x bedtools
+#precompiled binaries give problem on old centos systems
+#wget https://github.com/arq5x/bedtools2/releases/download/v${bedtoolsv}/bedtools.static.binary
+#mv bedtools.static.binary bedtools
+#chmod a+x bedtools
+wget https://github.com/arq5x/bedtools2/releases/download/v${bedtoolsv}/bedtools-${bedtoolsv}.tar.gz
+tar -xzf bedtools-${bedtoolsv}.tar.gz 
 
 #picard
 wget https://github.com/broadinstitute/picard/releases/download/${picardv}/picard.jar
@@ -125,7 +128,7 @@ tar -xzf iqtree-${iqtreev}-Linux.tar.gz
 mv iqtree-${iqtreev}-Linux/bin/iqtree2 .
 
 #CLEAN
-rm -rf iqtree-${iqtreev}-Linux iqtree-${iqtreev}-Linux.tar.gz mummer-${mummerv}.tar.gz Python-${python3v}.tgz _tmp htslib-${htslibv}.tar.bz2 samtools-${SAMTOOLSv}.tar.bz2 bwa-${BWAv}.tar.bz2 R-${Rv}.tar.gz RepeatMasker-${RepeatMaskerv}.tar.gz v${LGERTv}.tar.gz rmblast-${RMBlastv}+-x64-linux.tar.gz clinEff V${cdhitv}.tar.gz circos-${circosv}.tgz redUnix64/ DataSet2Unix64.tar.gz
+rm -rf bedtools-${bedtoolsv}.tar.gz iqtree-${iqtreev}-Linux iqtree-${iqtreev}-Linux.tar.gz mummer-${mummerv}.tar.gz Python-${python3v}.tgz _tmp htslib-${htslibv}.tar.bz2 samtools-${SAMTOOLSv}.tar.bz2 bwa-${BWAv}.tar.bz2 R-${Rv}.tar.gz RepeatMasker-${RepeatMaskerv}.tar.gz v${LGERTv}.tar.gz rmblast-${RMBlastv}+-x64-linux.tar.gz clinEff V${cdhitv}.tar.gz circos-${circosv}.tgz redUnix64/ DataSet2Unix64.tar.gz
 
 #compress
 mkdir -p packages

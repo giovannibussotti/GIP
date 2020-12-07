@@ -25,9 +25,9 @@ From: ubuntu:xenial
   cd /opt
   tar -xzf packages.tar.gz
   cd packages
-  mv bwa/ htslib/ samtools/ freebayes/ Python3/ R vcftools/ rmblast/ RepeatMasker snpEff circos/ mummer/ cdhit/ miniCRAN/ installRpkgs.R Rpkgs.tsv  /opt/
+  mv bedtools2/ bwa/ htslib/ samtools/ freebayes/ Python3/ R vcftools/ rmblast/ RepeatMasker snpEff circos/ mummer/ cdhit/ miniCRAN/ installRpkgs.R Rpkgs.tsv  /opt/
   mv /opt/gipScripts/snpEff.configTemplate /opt/
-  mv iqtree2 bedtools picard.jar delly bedGraphToBigWig trf409.linux64 Red /bin/
+  mv iqtree2 picard.jar delly bedGraphToBigWig trf409.linux64 Red /bin/
   cd ..
   rm -rf packages packages.tar.gz
 
@@ -48,7 +48,12 @@ From: ubuntu:xenial
   #samtools
   cd /opt/samtools
   ./configure && make && make install
-  
+
+  #bedtools
+  cd /opt/bedtools2/
+  make
+  mv bin/bedtools /bin/
+ 
   #freebayes
   cd /opt/freebayes
   make 
@@ -139,7 +144,7 @@ From: ubuntu:xenial
   apt-get clean
   apt-get autoremove
   rm -rf /opt/installRpkgs.R /opt/miniCRAN/ /opt/Rpkgs.tsv  
-  rm -rf /opt/bwa /opt/R /opt/mummer/ /opt/vcftools /opt/Python3 /opt/htslib /opt/freebayes /opt/samtools
+  rm -rf /opt/bedtools2 /opt/bwa /opt/R /opt/mummer/ /opt/vcftools /opt/Python3 /opt/htslib /opt/freebayes /opt/samtools
  
 %runscript
  #INPUT=$1
