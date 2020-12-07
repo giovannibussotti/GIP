@@ -65,13 +65,13 @@ Example
       :width: 100 %
 
 
-| The binCNV.byChr.pdf file contains multiple plots, on for each chromsome separatelly. As an example, the plot produced for chromosome 22 is the following:
+| The **binCNV.byChr.pdf** file contains multiple plots, on for each chromsome separatelly. As an example, the plot produced for chromosome 22 is the following:
 
 .. figure:: ../_static/binCNV_ZK43_LIPA83_chr22.png
       :width: 100 %
 
 
-| The binCNV.xlsx file reports for each genomic bin the genomic coordinates, the computed ratio value and the color used for its representation.
+| The **binCNV.xlsx** file reports for each genomic bin the genomic coordinates, the computed ratio value and the color used for its representation.
 
 
 
