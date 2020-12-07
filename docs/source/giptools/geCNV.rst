@@ -94,7 +94,7 @@ Example
 
 
 
-| The **geCNV.xlsx** file reports for each gene the genomic coordinates, the computed normalized coverage scores, the ratio between the two samples, the overlap of the gene with gap and predicted repetitive elements, and if available the gene function.
+| The **geCNV.xlsx** file reports for each gene the genomic coordinates, the computed normalized coverage scores, the ratio between the two samples, the overlap of the gene with gap and predicted repetitive elements, and if available the gene function. If available, the gene cluster data are reported in a second separate spreadsheet.
 
 
 

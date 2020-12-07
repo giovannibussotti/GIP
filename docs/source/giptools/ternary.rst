@@ -37,7 +37,7 @@ Options
 |                       |                                                              |                |
 |                       | DEPENDENCY \-\-showDensity. [default black deepskyblue]      |                |
 +-----------------------+--------------------------------------------------------------+----------------+
-|\-\-showQuantile       |In density plot show genes/clusters over this                 |[double]        | 
+|\-\-showQuantile       |Show genes/clusters with a delta coverage greater than this   |[double]        | 
 |                       |                                                              |                |
 |                       |quantile cut-off. DEPENDENCY --showDensity [default 0.99]     |                |
 +-----------------------+--------------------------------------------------------------+----------------+
@@ -74,12 +74,47 @@ Description
 | The module loads for the three samples the GIP files with the gene sequencing coverage values (.covPerGe.gz files) and generates a ternary diagram of the normalized coverage values. In this representation, the values coverage values in the 3 samples sum to a constant represented for convenience as 100%. Additionally, the module generates a 3D-scatterplot demonstrating the normalized gene coverage in the 3 samples.
  
 
-Output
-------
-
-
-
-
 
 Example
 -------
+
+| From the GIP worked example folder execute
+
+| ``giptools ternary --samples ZK43 LIPA83 ZK5``
+
+| This will generate the binCNV output files in the **gipOut/sampleComparison** folder.
+| The output consists in two files. 
+
+
+| The **ternary.pdf** file includes a triangular plot showing the relative size of the normalized coverage values of each gene in the three samples. In the default representation genes and gene clusters (if present) are shown in different color, and the size of the dots reflects the fold change between the max and the min normalized coverage in the three samples. The triangular plot for this example is the following:
+
+.. figure:: ../_static/ternary_default_ZK43_LIPA83_ZK5.png
+      :width: 100 %
+
+| The user can customize this plot specifying different colors and different visualization options. For instance, adding the ``--colorByDelta`` option will result in the following plot, in which the delta coverage (defined as the difference between the max and min normalized coverage) is colored in a customizable scale whose intensity reflects the delta coverage size. 
+
+
+.. figure:: ../_static/ternary_delta_ZK43_LIPA83_ZK5.png
+      :width: 100 %
+
+
+| The ``--showDensity`` option will result in a log10 scaled density representation of the genes (and gene clusters if present). 
+| The ``--showQuantile`` option regulates the number of high-delta coverages and gene clusters to be shown together with the density plot. Please note that high copy genes can have high delta coverage values, but still be placed roughly in the middle of the triangular plot. For instance, in this representation a gene present in the three samples in 12, 10 and 10 copies will be more central than a gene with 3, 1 and 1 copies. While the delta value is the same (2), the fold change is very different in the two cases (respectivelly 1.2 and 3). The triangular plot with the density option in this example is the following:
+
+
+.. figure:: ../_static/ternary_density_ZK43_LIPA83_ZK5.png
+      :width: 100 %
+
+| The **ternary.pdf** file includes a second plot representing a 3D-scatterplot showing the normalized coverage values of all genes (dots) in the three samples colored by normalized coverage fold change. To ease the visualization, each dot is projected to the bottom and back planes and represented by a smaller dot. If present, gene clusters are represented by squares. In this example the 3d-plot is the following:
+
+ 
+.. figure:: ../_static/scatter3d_ZK43_LIPA83_ZK5.png
+      :width: 100 %
+
+
+| The **ternary.xlsx** file reports for each gene the genomic coordinates, the computed normalized coverage scores, the delta coverage and fold change values in the three samples, the overlap of the gene with gap and predicted repetitive elements, and if available the gene function. If available, the gene cluster data are reported in a second separate spreadsheet.
+
+
+
+
+
