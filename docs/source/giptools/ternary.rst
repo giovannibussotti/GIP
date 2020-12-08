@@ -82,7 +82,7 @@ Example
 
 | ``giptools ternary --samples ZK43 LIPA83 ZK5``
 
-| This will generate the binCNV output files in the **gipOut/sampleComparison** folder.
+| This will generate the ternary output files in the **gipOut/sampleComparison** folder.
 | The output consists in two files. 
 
 

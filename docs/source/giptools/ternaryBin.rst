@@ -47,12 +47,22 @@ Description
 | The module loads for the three samples the GIP files with the bin sequencing coverage values (.covPerBin.gz files) and generates a ternary diagram of the normalized coverage values. In this representation, the values coverage values in the 3 samples sum to a constant represented for convenience as 100%. Depending on the genome size the number of bins can be very large. To ease plot readability and lower the CPU requirements this module generates a 2D kernel density estimatation of the data, and materializes just a random subset of genomic bins as dots.
 
 
-Output
-------
-
-
 
 Example
 -------
+| From the GIP worked example folder execute
+
+| ``giptools ternaryBin --samples ZK43 LIPA83 ZK28``
+
+| This will generate the ternaryBin output files in the **gipOut/sampleComparison** folder.
+| The user can test different vaules of ``--densityN`` and ``--densityBins`` to adjust the density area representation. For instance adding to the previous example the parameters  ``--densityN 150 --densityBins 3000`` results in the following plot:
+
+
+.. figure:: ../_static/ternaryBin_ZK43_LIPA83_ZK28.png
+      :width: 100 %
+
+| The **ternaryBin.xlsx** file reports for each bin the genomic coordinates, the computed normalized coverage scores, the minimum MAPQ score, the delta coverage and fold change values in the three samples.
+
+
 
 

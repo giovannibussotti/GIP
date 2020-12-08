@@ -72,7 +72,7 @@ Example
 
 | ``giptools geCNV --samples ZK43 LIPA83``
 
-| This will generate the binCNV output files in the **gipOut/sampleComparison** folder.
+| This will generate the geCNV output files in the **gipOut/sampleComparison** folder.
 | The output consists in four files. 
 
 
