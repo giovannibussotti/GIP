@@ -59,13 +59,21 @@ Description
 | The module loads for all samples the GIP files with the bin sequencing coverage values (.covPerBin.gz files) and generates a smoothed color density scatterplot showing the genomic position (x-axis) and the log10 normalized coverage values (y-axis).
 
 
-Output
-------
-
-
-
-
-
 Example
 -------
+| From the GIP worked example folder execute
+
+| ``giptools binDensity``
+
+| This will generate the **gipOut/sampleComparison/binDensity.pdf** output file. For this example the resulting plot is the following:
+
+
+.. figure:: ../_static/binDensity.png
+      :width: 100 %
+
+
+
+
+
+
 
