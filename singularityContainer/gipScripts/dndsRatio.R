@@ -62,7 +62,9 @@ write(file=statFile,append=T, x=paste("tot synonimous variations",table(df$EFFcl
 write(file=statFile,append=T, x=paste("tot non-synonimous variations",table(df$EFFclean %in% nonSynNames)["TRUE"]  ))
 
 df$EFFclean <- NULL
-df$gene_annotation[ df$EFF == "INTERGENIC" ]="NA"
+SNVgenes <-  gsub(x=df$EFF , pattern="^.+\\([^\\|]*\\|[^\\|]*\\|[^\\|]*\\|[^\\|]*\\|[^\\|]*\\|[^\\|]*\\|[^\\|]*\\|([^\\|]*)\\|.+$" , replacement="\\1")
+df$gene_annotation <- annDF[ match(SNVgenes , annDF$id) , "ann" ]
+df$gene_annotation[is.na(df$gene_annotation)] = "NA"
 write.table(file=paste0(ID,"_cleanEFF.tsv"),col.names=T , row.names=F,quote=F,sep="\t",x=df)
 
 out$ratio [ ! is.finite(out$ratio) ] = "infinity"
