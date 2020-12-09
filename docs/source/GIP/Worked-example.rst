@@ -79,24 +79,20 @@ GIP configuration
 -----------------
 
 The user should prepare the index file indicating the sample names and the respective sequencing data files.
-The index is a tab separaated file with the following heading row: sampleId	read1	read2
-Data file should be reported relative to the container mounted directory. 
-So if the /fq giptools access point is used then the reads files should be reported like this: 
-
-``/fq/file.fastq.gz`` 
-
-In this example will use the sample names as reported in `PRJNA607007 <https://www.ncbi.nlm.nih.gov/sra/?term=PRJNA607007>`_.
-At the end the index file should look like :download:`this <../_static/sampleIndexExample.pdf>`.
+The index is a tab separated file with the following heading row: sampleId	read1	read2 
+In this example we will use the sample names as reported in `PRJNA607007 <https://www.ncbi.nlm.nih.gov/sra/?term=PRJNA607007>`_ and the data file paths as they are in the host system.  
+So if the fastq files are stored in the ``/pasteur/data/fq`` the end the index file should look like :download:`this <../_static/sampleIndexExample.pdf>`.
 
 
-Next, should edit the GIP configuration file (i.e. **gip.config**) according to the available computing resources. 
-Assuming that the user copied giptools locally as ``/users/p2p5/gip/giptools``, that the he/she wants to bind the "fastqs" and "data" folders respectively to the /fq and /mnt container folders, that he/she wants to execute GIP on a slurm cluster with special partition and quality of service options ``-p aTeam --qos fast`` while keeping the default for all the rest, the prameters that need to be updated are:
+Next, the user must edit the GIP configuration file (i.e. **gip.config**) according to the available computing resources, and most importantly, binding an up-level directory containing all the data paths. In this example the ``/pasteur`` would be a good choice. 
+Assuming that the user copied giptools locally as ``/pasteur/p2p5/gip/giptools``, and that he/she wants to execute GIP on a slurm cluster with special partition and quality of service options ``-p aTeam --qos fast`` while keeping the default for all the rest, the parameters that need to be updated are:
 
 * ``executor='slurm'``
-* ``container='/users/p2p5/gip/giptools'`` 
+* ``container='/pasteur/p2p5/gip/giptools'`` 
 * ``clusterOptions='-p aTeam --qos fast'``
-* ``runOptions = '--bind absolute/path/to/fastqs:/fq --bind absolute/path/to/data:/mnt'``
+* ``runOptions = '--bind /pasteur'``
 
+The edited configuration file should look like :download:`this <../_static/gip.config.workedExample.pdf>`.
 If instead the user cannot take advantage of a computing cluster, then he/she can run GIP locally by simply specifying ``executor='local'``.
 
 
