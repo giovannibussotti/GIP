@@ -222,6 +222,7 @@ VRFmat <- VRFmat[,c(ncol(VRFmat),1:(ncol(VRFmat)-1)) ]
 for(i in 2:(length(samples)+1)){
   names(VRFmat)[i] <- paste0("frequency_",names(VRFmat)[i])
 }
+VRFmat$gene_annotation[is.na(VRFmat$gene_annotation)] = "NA"
 write.xlsx(file=paste0(outName,".xlsx") , x=VRFmat , asTable=TRUE)
 
 
