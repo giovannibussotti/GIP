@@ -417,7 +417,7 @@ p <- p + geom_segment( aes(x=id, xend=id, y=mostNegCorrCNVvalue, yend=mostPosCor
 p <- p + geom_point( aes(x=id, y=medianCorrCNV),size=0.1,color="black" ) 
 p <- p + geom_point( aes(x=id, y=mostNegCorrCNVvalue, size=mostNegCorrCNVadjPval,color=mostNegCorrCNVvalue ) ) 
 p <- p + geom_point( aes(x=id, y=mostPosCorrCNVvalue,size=mostPosCorrCNVadjPval ,color=mostPosCorrCNVvalue) ) 
-p <- p + coord_flip() + xlab("Gene CNV") +ylab("Correlation") + ylim(-1,1) + theme_light() + labs(size="Adjusted P-value",color="correlation") 
+p <- p + coord_flip() + xlab("Gene CNV") +ylab("Correlation") + ylim(-1,1) + theme_light() + labs(size="Adjusted P-value",color="Correlation") 
 p <- p + scale_color_gradient2(low=palette3[1], high=palette3[100] , mid=palette3[50] ) #+ scale_size_continuous(breaks = c(0 , 0.00001 , 0.01 , 0.5 , 1)) #+ theme(plot.margin = unit(c(1,15,1,1), "cm")) 
 if(! show_geneNames ) {
   p <- p + theme(axis.text.y=element_blank()) 
@@ -465,11 +465,11 @@ invisible(dev.off())
 
 #out table
 branchGoupSamp      <- cutree(pheRes$tree_col, k=cutree_samp)
-sampInfo$branchGroupHeatmap1 <- branchGoupSamp[ match(sampInfo$sample,names(branchGoupSamp)) ]
+sampInfo$branchGroupHeatmapCNV <- branchGoupSamp[ match(sampInfo$sample,names(branchGoupSamp)) ]
 branchGoupCnv       <- cutree(pheRes$tree_row, k=cutree_cnv)
-cnvInfo$branchGroupHeatmap1 <- branchGoupCnv[ match(cnvInfo$gene_id,names(branchGoupCnv)) ]
+cnvInfo$branchGroupHeatmapCNV <- branchGoupCnv[ match(cnvInfo$gene_id,names(branchGoupCnv)) ]
 branchGoupCnvCor    <- cutree(pheResCor$tree_row, k=cutree_cnv)
-cnvInfo$branchGroupHeatmap2 <- branchGoupCnvCor[ match(cnvInfo$gene_id,names(branchGoupCnvCor)) ]
+cnvInfo$branchGroupHeatmapCorr <- branchGoupCnvCor[ match(cnvInfo$gene_id,names(branchGoupCnvCor)) ]
 #sort as in heatmap1
 cnvInfo  <- cnvInfo[ rownames(mr)[pheRes$tree_row[["order"]]] , ]
 sampInfo <- sampInfo[ colnames(mr)[pheRes$tree_col[["order"]]] , ]

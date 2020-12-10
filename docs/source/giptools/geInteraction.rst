@@ -133,46 +133,70 @@ The ``geInteraction`` module aims at detecting CNV genes across multiple samples
 The module loads the GIP files with the gene sequencing coverage values (.covPerGe.gz files) of all samples, then selects CNV genes. These are defined as the genes with a normalized coverage variation within the sample set greater than --minDelta. Next it builds a network and evaluates clusters based on the correlation computed between all CNV gene pairs.
 The heatmapType parameter has 4 options. If \"scaled\" values are first centered subtracting the mean gene normalized coverage across samples, then scaled dividing by the standard deviation. If \"log10\" values are log10 transformed. If \"saturated\" values are saturated at \-\-covSaturation. If \"flatten\" values are first subracted by the min gene normalized coverage across samples, then saturated at \-\-covSaturation. The latter visualization option is useful to appreciate coverage variations of genes that are highly amplified in all samples.
 
-
-
-Output
-------
-
-
-
+The second part of this module is about producing correlation networks.
+First the module computes a all vs all CNV absolute correlation matrix. Then it predicts gene CNV clusters using mclust, MCL or a kmeans approach. Next, the module applies a filtering routine in which the user can remove small clusters or gene CNVs placed at a significant distance from the cluster centroid. To do that, for each cluster the module measures the centroid, the mean euclidian distance and the standard deviation. Cluster members whose distance from the centroid is greater than ``--clMaxSDdist`` standard deviations from the mean are removed.
 
 
 Example
 -------
+| From the GIP worked example folder execute
+
+| ``giptools geInteraction --samplesList samplesMetaData``
+
+| This will generate the geInteraction output files in the **gipOut/sampleComparison** folder.
+| The ``geInteraction`` module requires to specifty the ``--samplesList`` parameter providing a tab separated file where the first column is the list of the sample names to be processed. Optionally columns can be passed with additional sample meta data information (e.g. drug resistance, geographic origin, operator) and the colors to by assigned to each feature. If no color is provided this will be assigned randomly. In this example the sampleMetaData file is :download:`this <../_static/samplesMetaData.pdf>`. The output of this module consists of eight files.
+
+| The **geInteraction.CNV.pdf** file includes a heatmap showing the normalized coverage of the detected CNV genes. The default is scaling the normalized coverage values but other data transformations are possible (see above). The ``--cutree_samp`` and ``--cutree_cnv`` can be used to split the heatmap at the sample (columns) and CNV (rows) levels respectively. 
+| The figure produced in this example is the following:
+
+.. figure:: ../_static/geInteraction.CNV.png
+      :width: 100 %
 
 
-#given a folder with multiple covPerBin.gz or covPerGe.gz or chrStartEndScore.gz this script:
-#1) selects the bins showing high delta coverage (> --minDelta) (and MAPQ > --minMAPQ) (for covPerBin and covPerGe)
-#2) when possible it merges together adjacent bins (with cov > --minDelta) averaging the coverage scores, generating a "CNV" dataset (for covPerBin or chrStartEndScore). CNVs can be filtered by --minCNVLength
-#3) generates several heatmaps: 
-#1 Scaled
-#2 log10 
-#3 for each CNV, the values are subtracted by the minimum coverage and then saturated. The latter is useful to focus on coverage variation. This is valuable because it shows you the coverage folds variation much better in situations where a peak (or gene) is highly amplified in all samples (say normalized coverage of 10) and it is hard to appreciate the variation of just one unit (e.g. 10, 11, 9, 10) because the color is saturated 
-#4 saturated scores and using just a four colors palette
-#5 sort columns (samples) by in a specific order defined in sampleSelection. exclude the other samples. (Optional)
-#6 correlation scores (all CNVs vs all CNVs) 
-#4) a lollipop plot sorted like the all CNVs vs all CNVs correlation heatmap 
-#5) PCA analysis on the CNVs 
-#6) hist of entropy and SD of both the selected CNVs and the entire unfiltered set (coverage saturated) 
-#7) hierachical clustering on the samples eucledian distance estimated on the peaks   
+| The **geInteraction.overview.pdf** file includes multiple plots. The first plot represents the PCA analysis of the samples based on detected gene CNVs. Supplementary plots are produced for each additional meta data field. In these plots the samples are colored by the meta data information. The last plot represents two histograms showing respectivelly the standard deviation and the entropy of the gene CNV normalized coverage. The PCA plot in this example is the following:
 
-#The second part of the script is about NETWORKS
-#-given the all vs all CNV correlation matrix (cmr)
-#-take the absolute value of the correlation to consider equally negative and positive correlations
-#-compute mclust clusters 
-#-remove small clusters and the element from the cluster that are far away from the centroid. To do that, for each cluster it measures the centroid (multi dimentional vector) and measure the mean euclidian distance and the standard deviation. Members with distance > clMaxSDdist standard deviations from the mean are removed
-#-write in a folder the filtered clusters
-#-make a network plot (see https://rstudio-pubs-static.s3.amazonaws.com/337696_c6b008e0766e46bebf1401bea67f7b10.html)
+.. figure:: ../_static/geInteraction.overview.PCA.png
+      :width: 100 %
 
-#The third part of the script regard tries to turn the igraph network into an interactive network with D3
-#example: http://kateto.net/network-visualization
-#The inputs are the standard edges and a nodes data frames, but with a few little twists. 
-#The node IDs in the edges data frame must be integers, and they also have to start from 0. An easy was to get there is to sort the IDs, then transform the character IDs to a factor variable, then transform that to integers (and make sure it starts from zero by subtracting 1).
-#WARNING!!! http://kateto.net/network-visualization is wrong because it converts the source and the target node IDs to integer separatelly. The correct way to do this is implemented in this script. Briefly, 1) sort the edge data frame by IDs in "source"  2) append "source" and "target" together, and assign integer IDs 3) sort the nodes in the nodes dataframe following the same order defined by the node IDS integers
 
-#Rscript  binCoverage2cnvs.R --DIR ../../pipeOut/brazilDeletion/lsdOut/ --minMAPQ 50 --minDelta 1 --outName bin2peakDelta --inFormat covPerBin --filePattern .covPerBin.gz --geBedFile /Volumes/BioIT/Giovanni/datasets/projects/p2p5/Linf.ge.bed 
+| The **geInteraction.corr.pdf** file reports the all vs all gene CNV correlation heatmap. The ``--cutree_cnv`` option can be used to split the CNVs (both on the columns and rows) in different groups. 
+
+.. figure:: ../_static/geInteraction.corr.png
+      :width: 100 %
+
+| The **geInteraction.lolli.pdf** file demonstates for each gene CNV (rows) the most negative correlation (left side, pink), the median correlation (black dot), and the most positive correlation (right side, green) values measured among the gene CNVs. The gene CNV order is the same as the one in the all vs all gene CNV heatmap. 
+
+.. figure:: ../_static/geInteraction.lolli.png
+      :width: 100 %
+
+| The **geInteraction.network.pdf** file reports the gene CNV correlation network, where the nodes represent the genes, the edges the correlation values, and the color of the edges the correlation direction (positive or negative). The nodes are colored according to the predicted clusters. Multiple clustering methods are offered. For instance addind to the command line the option ``--kmeansClusters 3`` returns the following plot:
+
+.. figure:: ../_static/geInteraction.network.png
+      :width: 100 %
+
+| The **geInteraction.network.d3.html** is a D3 interactive vidualization of the network. While the network layout may be slightly different than the static visualization (due to the differences between the tools used to generate the two), the node clusters and the overall shape are the same.
+
+
+| The **geInteraction.CNV.xlsx** includes thee spreadsheets:
+
+1. sampleInfo. This is a copy of the provided sample meta data showinf the features colors and reporting the sample branch group assignment in the **geInteraction.CNV.pdf** heatmap.
+2. cnvInfo. This table includes the relevant statistics measured for the detected gene CNVs, including the most positivelly and negativelly correated genes partners, and the gene CNV branch group assignment in the **geInteraction.CNV.pdf** and **geInteraction.corr.pdf** heatmaps.
+3. normGeneCoverage. This table includes the normalized gene coverage across the samples of interest.
+
+
+| The **geInteraction.network.xlsx** includes a different spreadsheet for each predicted network correlation group. Each of them reports the gene members, their functions (if available) and the all vs all correlation values. The last spreadsheet reports the list of genes filtered from the network (if any).
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
