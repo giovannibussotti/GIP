@@ -20,9 +20,11 @@ Options
 |                   |                                                                  |                |
 |                   |[default gipOut/sampleComparison/geInteraction.CNV.xlsx]          |                |
 +-------------------+------------------------------------------------------------------+----------------+
-|\-\-ampThresh      |Gene amplification threshold [default 1.5]                        |[double]        |
+|\-\-ampThresh      |Gene normalized coverage amplification threshold [default 1.5]    |[double]        |
 +-------------------+------------------------------------------------------------------+----------------+
-|\-\-notAmpThresh   |Threshold to consider a gene not amplified [default 1]            |[double]        |
+|\-\-notAmpThresh   |Gene normalized coverage threshold below which the gene is        |[double]        |
+|                   |                                                                  |                |
+|                   |considered as not amplified [default 1]                           |                |
 +-------------------+------------------------------------------------------------------+----------------+
 |\-\-covSaturation  |Gene normalized coverage saturation value [default 2]             |[double]        |
 +-------------------+------------------------------------------------------------------+----------------+
@@ -67,14 +69,35 @@ Options
 Description
 -----------
 
-Detect convergent CNV gene amplifications
-
-Output
-------
-
-
+The ``convergentCNV`` module is meant to detect convergent CNV gene amplifications. Before running this module the user must first execute the ``geInteraction`` and the ``phylogeny`` modules to predict the CNV genes and samples phylogeny. For each gene CNV the ``convergentCNV`` module identifies the sample pairs (e.g. D and Z) for which the gene is amplified above the normalized coverage threshold (i.e. ``--ampThresh``) and the phylogenetic distance in maximal. Then it evaluates whether there is at least a third sample (e.g. G) not showing the amplification (i.e. normalized coverage < ``--notAmpThresh``) and whose phylogenetic relation is in between the two samples supporting the gene amplification (D and Z). The presence of this intervening sample makes sure that the observed amplification is not explained by a common ancestor. All the geneCNVs fulfilling these sequencing coverage and phylogenetic distance search criteria are selected and used for visualization. 
+Caveat. This module looks for the not-amplified gene just in the samples positioned between the two most distantly related samples showing the amplification (D and Z). Despite unlikely, a given gene CNV could show convergent amplification between samples more closely related and not included in the D to Z range (e.g. A and D) and be left undetected.      
 
 
 
 Example
 -------
+| From the GIP worked example folder execute
+
+| ``giptools convergentCNV``
+
+| This will generate the convergentCNV output files in the **gipOut/sampleComparison** folder.
+| The **convergentCNV.pdf** file show the predicted phylogenetic tree side by side with an heatmap showing the normalized gene coverage of the gene CNVS presenting convergent amplifications.
+| The user can use the ``--treeTip`` parameter to color the tree tips according to a feature provided with the ``--samplesList`` option of the ``geInteraction`` module. For instace running the ``giptools convergentCNV --treeTip origin`` command will result in the following plot:
+
+.. figure:: ../_static/convergentCNV.png
+      :width: 100 %
+
+| Caveat. The time scale on the tree x axis should not be considered when the ``--branchLen`` parameter is equal to none (i.e. a cladogram).  
+
+
+
+
+
+
+
+
+
+
+
+
+

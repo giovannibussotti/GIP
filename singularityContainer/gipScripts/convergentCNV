@@ -4,8 +4,8 @@ parser$add_argument("--gipOut"  , help="GIP output directory [default %(default)
 parser$add_argument("--outName" , help="Output name [default %(default)s]" , default="gipOut/sampleComparison/convergentCNV")
 parser$add_argument("--newickTree" , help="Newick tree file produced with the phylogeny module [default %(default)s]" , default="gipOut/sampleComparison/phylogeny.treefile")
 parser$add_argument("--geCNV"   , help="Gene CNV excel file produced with the geInteraction module [default %(default)s]" , default="gipOut/sampleComparison/geInteraction.CNV.xlsx")
-parser$add_argument("--ampThresh" , type="double" , help="Gene amplification threshold [default %(default)s]" , default=1.5)
-parser$add_argument("--notAmpThresh" , type="double", help="Threshold to consider a gene not amplified [default %(default)s]" , default=1)
+parser$add_argument("--ampThresh" , type="double" , help="Gene normalized coverage amplification threshold [default %(default)s]" , default=1.5)
+parser$add_argument("--notAmpThresh" , type="double", help="Gene normalized coverage threshold below which the gene is considered as not amplified [default %(default)s]" , default=1)
 parser$add_argument("--covSaturation" , type="double" , help="Gene normalized coverage saturation value. [default %(default)s]" , default=2)
 parser$add_argument("--treeTip" , help="Color tree tip by this feature. If \"NA\" tree tips are not colored [default %(default)s]" , default="NA")
 parser$add_argument("--tipLab"  , action="store_true" , help="Show sample names on the tree tips" , default=FALSE)
@@ -157,8 +157,6 @@ suppressMessages(p <- p + scale_fill_gradientn(name="Normalized\ncoverage",
 
 print(p)
 invisible(dev.off())
-
-
 
 
 
