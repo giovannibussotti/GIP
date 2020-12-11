@@ -1,3 +1,5 @@
+18) the container works fine in the old centos 6 cluster with singularity 3.5. In the cluster with the new centos version there is a problem with typeset -fx (i.e. declare the bash function). The problem is related to what is described in this post: https://stackoverflow.com/questions/58317190/automatically-source-configuration-when-running-singularity-container-with-shel
+The solution to make the container work on all systems would be to convert the bash functions into separate independent bash scripts
 
 17) you need to remove the big sample.bed file including all the reads. if you do that you cannot -resume anymore. one solution would be to combine all the processes using the bed file (covPerBin, covPerGe, and delly) but seems unpractical. Test the afterScript process directive to remove this file
 

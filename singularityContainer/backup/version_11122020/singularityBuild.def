@@ -72,7 +72,7 @@ From: ubuntu:xenial
   mv /opt/gipScripts/* /bin/
   # put the containt of your script in a file /.singularity.d/env/91-environment.sh
   # which is automatically source by singularity befor run/shell/exec command
-  #cat /bin/bashFunctions.sh >> $SINGULARITY_ENVIRONMENT
+  cat /bin/bashFunctions.sh >> $SINGULARITY_ENVIRONMENT
   
   #give permissions
   chmod a+x /bin/*

@@ -1,0 +1,79 @@
+#!/bin/bash
+########
+#OUTPUT#
+########
+#.covPerGe file. This format includes both the gene mean coverage and the gene mean coverage normalized by the chromosome median coverage. To estimate the mean coverage the N bases are not considered. 
+#NOTE: genes not on the chromosomes of the chrCoverageMedians file are removed from the output 
+#covPerGe fields:
+  #gene_id: gene identifier
+  #locus: gene chr:start-end      
+  #meanCoverage: Mean nucleotide sequencing coverage of the bases belonging to the gene   
+  #normalizedMeanCoverage: #meanCoverage / chromosome median coverage     
+  #MAPQ: mean MAPQ of the reads mapping to the gene
+  ##WARNING: You can have genes coverage, but still with a MAPQ >0 becaue you can have very few reads mapping in the gene (with a certain MAPQ). Similarly, you can have genes with 0 coverage and 0 MAPQ (so no mapping reads at all)
+
+#######
+#INPUT#
+#######
+#BAM: A genomic-sequencing BAM
+#GENES: A gene gtf annotation file
+#chrCoverageMedians: chromosome median coverage file (chrCoverageMedians file, syntax: chrXX median .* )
+#BED: bed reads file computed by covPerBin
+#TMP: tmp folder name
+#OUT: covPerGe output name
+
+BAM=$1
+GENES=$2
+chrCoverageMedians=$3 
+BED=$4
+TMP=$5
+OUT=$6
+
+mkdir -p $TMP/_sort1 $TMP/_sort2
+cat $GENES | perl -ne '
+if($_=~/gene_id \"([^\"]+)\"/){
+	$ge=$1;
+	if ($_=~/^(\S+)\t\S+\t\S+\t(\S+)\t(\S+)\t/){
+ 		print "$1\t$2\t$3\t$ge\n";
+ 	} else {die "covPerGe cannot parse gtf line $_\n";}
+} ' | sort -k1,1 -k2,2n -T $TMP/_sort1 > $TMP/genes
+bedtools map -a $TMP/genes -b $BED -c 5 -o mean -null 0 > $TMP/meanMapq
+bedtools coverage -d -a $TMP/genes -b $BED > $TMP/geneCov
+echo -e "gene_id\tlocus\tmeanCoverage" > $TMP/covPerGeNotNorm
+awk '{i=$4"\t"$1":"$2"-"$3; count[i]++; sum[i]+=$6;} END{ for(i in count) {m = sum[i]/count[i]; print i "\t" m}}  ' $TMP/geneCov  | sort -k1,1 -k2,2n -T $TMP/_sort2 >> $TMP/covPerGeNotNorm
+#normalize
+covPerGe_normalizedByChrMedianCov $chrCoverageMedians $TMP/covPerGeNotNorm $TMP/covPerGe 
+#add mapq
+perl -e '
+#read mapq
+open(F,"<'$TMP/meanMapq'") or die "covPerGe cannot open meanMapq";
+my %h;
+while(<F>){ 
+  if ($_=~/(\S+)\t(\S+)$/){
+      $h{"$1"} = $2;
+  }
+} 
+close F;
+
+open(O,">'$OUT'") or die "covPerGe cannot open out";
+open(F,"<'$TMP/covPerGe'") or die "covPerGe cannot open covPerGe";
+$header = <F>;
+chomp $header;
+print O $header . "\tMAPQ\n";
+while(<F>){ 
+  if ($_=~/^(\S+)\t(\S+)\t(\S+)\t(\S+)/){
+      $gene_id                = $1;
+      $locus                  = $2;
+      $meanCoverage           = $3;
+      $normalizedMeanCoverage = $4;
+      $mapq  = $h{$gene_id};
+      print O "$gene_id\t$locus\t$meanCoverage\t$normalizedMeanCoverage\t$mapq\n";
+
+  }
+} 
+close F;
+close O;'
+gzip $OUT
+rm -rf $TMP   
+
+

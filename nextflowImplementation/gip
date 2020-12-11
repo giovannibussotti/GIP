@@ -13,7 +13,7 @@ vim: syntax=groovy
 ----------------------------------------------------------------------------------------
 */
 
-version = "1.0.4"
+version = "1.0.5"
 def helpMessage() {
     log.info"""
     =========================================
@@ -235,8 +235,7 @@ process covPerChr {
   set val(sampleId), file(bam) , file(bai), file("chrCoverageMedians_$sampleId") into ( covPerChr2 , covPerChr3, covPerChr4 )
 
   """
-  IFS=' ' read -r -a CHRS <<< "$chromosomes"  
-  chrMedianCoverages $sampleId $size $MAPQ \$CHRS . $gaps
+  chrMedianCoverages $sampleId $size $MAPQ \"$chromosomes\" . $gaps
   """
 }
 

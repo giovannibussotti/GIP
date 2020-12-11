@@ -1,4 +1,10 @@
 ###################
+#v1.0.5- 11122020#
+###################
+- removed bashFunctions.sh. All the bash functions are now independent bash scripts. This change was made to prevent the typeset -fx error when declaring variables in the singularity environment of singularity version 3.6
+
+
+###################
 #v1.0.4- 28102020#
 ###################
 - CG-correction is optional

@@ -1,0 +1,49 @@
+#!/bin/bash
+X=$1
+OUT=$2
+
+perl -e '
+open(F,"<'$X'") or die "opening 1 error in bedForCircos\n";
+$_=<F>;
+my $SV;
+while (<F>){
+    if($_=~/^(\S+)\s+\S+\s+\S+\s+\S+\s+(\S+)\s+\S+\s+(\S+)/){
+        my $locus = $1;
+           $SV    = $2;
+        my $SVid  = $3;
+        push(@{$h{$SVid}},$locus);
+    }
+}
+close F;
+open(O,">'$OUT'") or die "cannot write\n";
+if ($SV ne "TRA"){
+    foreach $SVid (keys %h){
+        my $locus = $h{$SVid}[0];
+        my ($chr,$start,$end);
+        if($locus=~/([^:]+):([^-]+)-([^-]+)/){
+            $chr   = $1;
+            $start = $2;
+            $end   = $3;
+        }
+        print O "chr$chr\t$start\t$end\n";
+    }
+} else {
+    foreach $SVid (keys %h){
+        my $locus1 = $h{$SVid}[0];
+        my $locus2 = $h{$SVid}[1];
+        my ($chr1,$start1,$end1,$chr2,$start2,$end2);
+        if($locus1=~/([^:]+):([^-]+)-([^-]+)/){
+            $chr1   = $1;
+            $start1 = $2;
+            $end1   = $3;
+        }
+        if($locus2=~/([^:]+):([^-]+)-([^-]+)/){
+            $chr2   = $1;
+            $start2 = $2;
+            $end2   = $3;
+        }
+        print O "chr$chr1\t$start1\t$end1\tchr$chr2\t$start2\t$end2\n";
+    }
+}
+close O;'
+
