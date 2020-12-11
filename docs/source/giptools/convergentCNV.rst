@@ -87,8 +87,10 @@ Example
 .. figure:: ../_static/convergentCNV.png
       :width: 100 %
 
-| Caveat. The time scale on the tree x axis should not be considered when the ``--branchLen`` parameter is equal to none (i.e. a cladogram).  
+| Caveat. The time scale on the tree x axis should not be considered when the ``--branchLen`` parameter is equal to "none" (i.e. a cladogram). More in general, the branch length should be taken with caution since the phylogenetic tree is estimated just considering the SNV positions, but not the conserved positions. 
+| The user can remove the x axis labeling by using the ``--hideXlabs``.  
 
+| The **convergentCNV.xlsx** file reports the normalized gene coverage of predicted convergent gene CNVs.
 
 
 
