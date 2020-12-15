@@ -6,11 +6,12 @@
 
 suppressPackageStartupMessages(library("argparse"))
 parser <- ArgumentParser(description="Compare samples genomic distance")
-parser$add_argument("--samples" , nargs="+", help="Sample names. It determines the plotting order. If \"NA\" all samples are used" , default="NA")
+parser$add_argument("--samples" , nargs="+", help="Sample names. If \"NA\" all samples are used" , default="NA")
 parser$add_argument("--gipOut"  , help="GIP output directory [default %(default)s]" , default="gipOut")
 parser$add_argument("--outName" , help="Output name [default %(default)s]" , default="gipOut/sampleComparison/genomeDistance")
 parser$add_argument("--contextGenomes" , help="Two columns TSV file listing additional genomes. Syntax: name<Tab>filePath [default %(default)s]" , default="NA")
 parser$add_argument("--threads"  , type="integer" , help="Number of nucmer threads [default %(default)s]" , default=1)
+parser$add_argument("--customColors", help="Tab separated file listing samples names (1st column) and associated colors (2nd column). The first two columns must be named \"SAMPLE\" and \"COLOR\" [default %(default)s]", default="NA" )
 parser$add_argument("--debug"  , action="store_true" , help="Dump session and quit" , default=FALSE)
 args <- parser$parse_args()
 
@@ -83,7 +84,17 @@ axis(2)
 mtext("Distance", side = 2, line = 3, outer = FALSE )
 #pca
 res.pca <- PCA(aniMat, graph=FALSE)
-plot.PCA(res.pca , choix="ind" , habillage="ind")
+if(! is.na(customColors)){
+  customColDf  <- read.table(customColors,header=T,stringsAsFactors=F,sep="\t" , comment.char = "")
+  if(! all(colnames(aniMat) %in% customColDf$SAMPLE)) {
+    stop(paste("ERROR. some samples are not included in",customColors))
+    quit(save = "no", status = 1, runLast = FALSE)
+  }
+  pal <- customColDf[ match(customColDf$SAMPLE , colnames(aniMat)) , "COLOR"]
+  plot.PCA(res.pca , choix="ind" , habillage="ind" , col.hab=pal)
+} else{
+  plot.PCA(res.pca , choix="ind")
+}
 plot.PCA(res.pca , choix="var")
 invisible(dev.off())
 

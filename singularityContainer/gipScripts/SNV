@@ -9,6 +9,7 @@ parser$add_argument("--minVRF" , type="double" , help="Discard SNVs with frequen
 parser$add_argument("--showCoverage"  , action="store_true" , help="Overlay sequencing coverage" , default=FALSE)
 parser$add_argument("--smoothingFactor" , type="double" , help="Merge and average the normalized coverage of this number of adjacent bins. DEPENDENCY --showCoverage [default %(default)s]" , default=30)
 parser$add_argument("--maxCov" , type="double" , help="Normalized coverage values > --maxCov are shown as --maxCov. DEPENDENCY --showCoverage [default %(default)s]" , default=5)
+parser$add_argument("--customColors", help="Tab separated file listing samples names (1st column) and associated colors (2nd column). The first two columns must be named \"SAMPLE\" and \"COLOR\" [default %(default)s]", default="NA" )
 parser$add_argument("--debug"  , action="store_true" , help="Dump session and quit" , default=FALSE)
 args <- parser$parse_args()
 #patch NA
@@ -104,8 +105,21 @@ theme_gip <- function(){
       legend.title = element_text(face = "bold", size = 14),
       legend.text  = element_text(size = 12))
 }
-pal <- colorRampPalette(brewer.pal(8, "Dark2"))(length(samples))
-names(pal) <- samples
+#color palette
+pal <- NULL
+if(! is.na(customColors)){
+  customColDf  <- read.table(customColors,header=T,stringsAsFactors=F,sep="\t" , comment.char = "")
+  if(! all(samples %in% customColDf$SAMPLE)) {
+    stop(paste("ERROR. some samples are not included in",customColors))
+    quit(save = "no", status = 1, runLast = FALSE)
+  }
+  pal <- customColDf$COLOR
+  names(pal) <- customColDf$SAMPLE
+} else{
+  pal <- colorRampPalette(brewer.pal(8, "Dark2"))(length(samples))
+  names(pal) <- samples
+}
+df$sample <- factor(df$sample,levels=samples)
 pdf(paste0(outName,".density.pdf"),height=10, width=12 )
 #density plots
 p <- ggplot(df, aes(freq, colour = sample)) + geom_density() + theme_bw() + facet_wrap(~chr,scales="free_y") 
@@ -199,11 +213,15 @@ if (length(samples) <=7){
     tagL[[s]] <- snvDf[[s]]$tag
   }
   cols <- c()
-  #if < 3 samples brew.pal does not work and you need to pass colors manually
-  if (length(samples) == 2) {
-    cols = c('#e41a1c' , '#377eb8')
+  if (! is.na(customColors)){
+  	cols <- customColDf[ match(samples , customColDf$SAMPLE) , "COLOR"]
   } else {
-    cols = brewer.pal(length(samples), "Set1")
+    #if < 3 samples brew.pal does not work and you need to pass colors manually
+    if (length(samples) == 2) {
+      cols = c('#1b9e77' , '#d95f02')
+    } else {
+      cols = brewer.pal(length(samples), "Dark2")
+    }
   }
   pdf(paste0(outName,".venn.pdf"))
   venn(tagL , ilabels = TRUE, cexil=1.1 , cexsn = 1.3 , zcolor=cols)
@@ -222,7 +240,6 @@ VRFmat <- VRFmat[,c(ncol(VRFmat),1:(ncol(VRFmat)-1)) ]
 for(i in 2:(length(samples)+1)){
   names(VRFmat)[i] <- paste0("frequency_",names(VRFmat)[i])
 }
-VRFmat$gene_annotation[is.na(VRFmat$gene_annotation)] = "NA"
 write.xlsx(file=paste0(outName,".xlsx") , x=VRFmat , asTable=TRUE)
 
 

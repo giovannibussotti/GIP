@@ -143,6 +143,7 @@ suppressPackageStartupMessages(library("ggplot2"))
 suppressPackageStartupMessages(library("gtools"))
 suppressPackageStartupMessages(library("ggridges"))
 suppressPackageStartupMessages(library("openxlsx"))
+suppressPackageStartupMessages(library("RColorBrewer"))
 options(datatable.fread.input.cmd.message=FALSE)
 if(debug){library("session"); save.session("session_DEBUG_karyotype");quit()}
 
@@ -197,12 +198,19 @@ AllSamplesDf <- do.call(rbind,allSamples)
 AllSamplesDf$sample     <- factor(AllSamplesDf$sample , levels=samples )
 AllSamplesDf$chromosome <- factor(AllSamplesDf$chromosome , levels=chrs)
 
-#customColors
+#color palette
+pal <- NULL
 if(! is.na(customColors)){
-  customColDf  <- read.table(customColors,header=T,stringsAsFactors=F,sep="\t")
-  customColVec <- customColDf$COLOR
-  names(customColVec) <- customColDf$SAMPLE
-  customColVec <- gsub(x=customColVec,pattern="^",replacement="\\#")
+  customColDf  <- read.table(customColors,header=T,stringsAsFactors=F,sep="\t" , comment.char = "")
+  if(! all(samples %in% customColDf$SAMPLE)) {
+    stop(paste("ERROR. some samples are not included in",customColors))
+    quit(save = "no", status = 1, runLast = FALSE)
+  }
+  pal <- customColDf$COLOR
+  names(pal) <- customColDf$SAMPLE
+} else{
+  pal <- colorRampPalette(brewer.pal(8, "Dark2"))(length(samples))
+  names(pal) <- samples
 }
 
 #plot
@@ -221,13 +229,13 @@ if (geom == "violin"){
     p <- p + geom_boxplot(aes(fill = sample) , outlier.shape = NA) 
   }
 }
-p <- p + coord_cartesian(ylim = c(ylim[1],ylim[2]) ) + ylab("somy score") + theme_minimal() + theme(axis.text.x = element_text(angle = 90, hjust = 1) , legend.title = element_text(size=13,face="bold") , axis.title = element_text(size=13,face="bold") , panel.grid.major = element_line(size=1))
-if(! is.na(customColors)){
-  p1 <- p + scale_fill_manual(values=customColVec)
-} else {
-  p1 <- p + scale_fill_brewer(palette="Dark2")
-}
-print(p1)
+p <- p + coord_cartesian(ylim = c(ylim[1],ylim[2]) ) + ylab("somy score") + theme_minimal() 
+p <- p + theme(axis.text.x = element_text(angle = 90, hjust = 1) , 
+               legend.title = element_text(size=13,face="bold") , 
+               axis.title = element_text(size=13,face="bold") , 
+               panel.grid.major = element_line(size=1))
+p <- p + scale_fill_manual(values=pal)
+print(p)
 
 #ridges (pooled data, including all samples)
 suppressMessages(print( ggplot(AllSamplesDf, aes(x = score, y = chromosome, fill = stat(x))) + geom_density_ridges_gradient(scale = 3, rel_min_height = 0.01) +   scale_x_continuous(expand = c(0, 0), limits=c(ylim[1],ylim[2])) +  scale_y_discrete(expand = c(0, 0)) + scale_fill_viridis_c(name = "score", option = "C") + theme_ridges(font_size = 13, grid = TRUE) ))
