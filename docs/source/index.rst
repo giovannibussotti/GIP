@@ -77,6 +77,7 @@ Features
 * Support for multi-copy gene clusters
 * Custom comparison of samples sub-sets
 * Publication quality figures and excel tables
+* Generally applicable both to model and non-model species
 
 Requirements
 ------------
