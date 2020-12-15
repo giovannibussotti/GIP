@@ -11,7 +11,7 @@ parser$add_argument("--gipOut"  , help="GIP output directory [default %(default)
 parser$add_argument("--outName" , help="Output name [default %(default)s]" , default="gipOut/sampleComparison/genomeDistance")
 parser$add_argument("--contextGenomes" , help="Two columns TSV file listing additional genomes. Syntax: name<Tab>filePath [default %(default)s]" , default="NA")
 parser$add_argument("--threads"  , type="integer" , help="Number of nucmer threads [default %(default)s]" , default=1)
-parser$add_argument("--customColors", help="Tab separated file listing samples names (1st column) and associated colors (2nd column). The first two columns must be named \"SAMPLE\" and \"COLOR\" [default %(default)s]", default="NA" )
+parser$add_argument("--customColors", help="TSV file with 2 columns named \"SAMPLE\" and \"COLOR\" indicating the color to be used for each sample. If \"NA\" colors are automatically assigned [default %(default)s]", default="NA" )
 parser$add_argument("--debug"  , action="store_true" , help="Dump session and quit" , default=FALSE)
 args <- parser$parse_args()
 

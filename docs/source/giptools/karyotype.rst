@@ -28,12 +28,11 @@ Options
 +-------------------+------------------------------------------------------------------+----------------+
 |\-\-disomicChr     |Normalize by this chromosome [default NA]                         |[char]          |
 +-------------------+------------------------------------------------------------------+----------------+  
-|\-\-customColors   |Tab-separated file where the first 2 columns are:                 |[char]          |
+|\-\-customColors   |TSV file with 2 columns named "SAMPLE" and "COLOR"                |[char]          |
 |                   |                                                                  |                |
-|                   |  * SAMPLE: samples names                                         |                |
-|                   |  * COLOR:  associated colors                                     |                |
+|                   |indicating the color to be used for each sample                   |                |
 |                   |                                                                  |                |
-|                   |[default NA]                                                      |                |
+|                   |If "NA" colors are automatically assigned [default NA]            |                |
 +-------------------+------------------------------------------------------------------+----------------+  
 |\-\-geom           |Select boxplot or violin [default boxplot]                        |[boxplot|violin]|
 +-------------------+------------------------------------------------------------------+----------------+

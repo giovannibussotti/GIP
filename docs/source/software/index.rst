@@ -104,7 +104,9 @@ Software
 
 | **Red**              
 | Version 05/22/2015 
-| `LICENSE Red <https://bmcbioinformatics.biomedcentral.com/articles/10.1186/s12859-015-0654-5>`_                                     | `Source code <http://toolsmith.ens.utulsa.edu/red/data/DataSet1Src.tar.gz>`_
+| `LICENSE Red <https://bmcbioinformatics.biomedcentral.com/articles/10.1186/s12859-015-0654-5>`_                                     
+| `Source code <http://toolsmith.ens.utulsa.edu/red/data/DataSet1Src.tar.gz>`_
+
 | **IQ-tree2**         
 | Version 2.1.2      
 | `GNU-GPL license <http://www.iqtree.org/about/>`_       

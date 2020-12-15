@@ -9,7 +9,7 @@ parser$add_argument("--chrs"    , nargs="+" , help="Chromosomes to use. If \"NA\
 parser$add_argument("--ylim" , nargs="+" , type="double" , help="Min and max plot y-axis limits [default %(default)s]" , default=c(0,10))
 parser$add_argument("--makeQqplots" , action="store_true" , help="Computes Q-Q plots for all chromosomes in all samples combinations" , default=FALSE)
 parser$add_argument("--disomicChr"  , help="Normalize by this chromosome [default %(default)s]", default="NA" )
-parser$add_argument("--customColors", help="Tab separated file listing samples names (1st column) and associated colors (2nd column). The first two columns must be named \"SAMPLE\" and \"COLOR\" [default %(default)s]", default="NA" )
+parser$add_argument("--customColors", help="TSV file with 2 columns named \"SAMPLE\" and \"COLOR\" indicating the color to be used for each sample. If \"NA\" colors are automatically assigned [default %(default)s]", default="NA" )
 parser$add_argument("--geom" , help="Select boxplot or violin [default %(default)s]" , default="boxplot")
 parser$add_argument("--pooled" , action="store_true" , help="Pool all samples together (i.e. one box per chromosome representing the coverage values of all samples)" , default=FALSE)
 parser$add_argument("--debug"  , action="store_true" , help="Dump session and quit" , default=FALSE)

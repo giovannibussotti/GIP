@@ -26,19 +26,41 @@ GIP also enables **giptools**, a tool-suite allowing to  **Detect**, **Compare**
 * Structural variants (SVs)
 
 Look how easy it is to use.
+
 Run GIP on a large set of input WGS experiments (e.g. 200 samples)
 
   ``gip --genome fasta.file --annotation gtf.file --index fastqs.tsv -c gip.config``
 
-  
-Compare gene CNVs in 3 specific isolates
 
-  ``giptools ternary --gipOut gipOutDir --samples Lmj_A445 Lmj_1948 Ltr_16``
+Compare the genomic bin CNVs in 2 specific isolates
+
+  ``giptools binCNV --samples ZK43 LIPA83``
 
 
-.. figure:: _static/triangle1.png
-    :align: center
-    :width: 500px
+.. figure:: _static/binCNV.multiPanel.png
+      :width: 100 % 
+
+
+
+Visualize SNV frequency together with sequencing depth in 3 isolates 
+
+  ``giptools SNV --samples LIPA83 ZK28 ZK5 --showCoverage``
+
+
+.. figure:: _static/SNV.byChr_chr8.png
+      :width: 100 % 
+
+
+
+
+.. Compare gene CNVs in 3 specific isolates
+
+..   ``giptools ternary --gipOut gipOutDir --samples Lmj_A445 Lmj_1948 Ltr_16``
+
+
+.. .. figure:: _static/triangle1.png
+..    :align: center
+..    :width: 500px
 
 
 

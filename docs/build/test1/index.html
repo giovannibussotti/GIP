@@ -66,12 +66,19 @@ Run GIP on a large set of input WGS experiments (e.g. 200 samples)</p>
 <blockquote>
 <div><p><code class="docutils literal notranslate"><span class="pre">gip</span> <span class="pre">--genome</span> <span class="pre">fasta.file</span> <span class="pre">--annotation</span> <span class="pre">gtf.file</span> <span class="pre">--index</span> <span class="pre">fastqs.tsv</span> <span class="pre">-c</span> <span class="pre">gip.config</span></code></p>
 </div></blockquote>
-<p>Compare gene CNVs in 3 specific isolates</p>
+<p>Compare the genomic bin CNVs in 2 specific isolates</p>
 <blockquote>
-<div><p><code class="docutils literal notranslate"><span class="pre">giptools</span> <span class="pre">ternary</span> <span class="pre">--gipOut</span> <span class="pre">gipOutDir</span> <span class="pre">--samples</span> <span class="pre">Lmj_A445</span> <span class="pre">Lmj_1948</span> <span class="pre">Ltr_16</span></code></p>
+<div><p><code class="docutils literal notranslate"><span class="pre">giptools</span> <span class="pre">binCNV</span> <span class="pre">--samples</span> <span class="pre">ZK43</span> <span class="pre">LIPA83</span></code></p>
 </div></blockquote>
-<div class="figure align-center">
-<a class="reference internal image-reference" href="_images/triangle1.png"><img alt="_images/triangle1.png" src="_images/triangle1.png" style="width: 500px;" /></a>
+<div class="figure align-default">
+<a class="reference internal image-reference" href="_images/binCNV.multiPanel1.png"><img alt="_images/binCNV.multiPanel1.png" src="_images/binCNV.multiPanel1.png" style="width: 100%;" /></a>
+</div>
+<p>Visualize SNV frequency together with sequencing depth in 3 isolates</p>
+<blockquote>
+<div><p><code class="docutils literal notranslate"><span class="pre">giptools</span> <span class="pre">SNV</span> <span class="pre">--samples</span> <span class="pre">LIPA83</span> <span class="pre">ZK28</span> <span class="pre">ZK5</span> <span class="pre">--showCoverage</span></code></p>
+</div></blockquote>
+<div class="figure align-default">
+<a class="reference internal image-reference" href="_images/SNV.byChr_chr81.png"><img alt="_images/SNV.byChr_chr81.png" src="_images/SNV.byChr_chr81.png" style="width: 100%;" /></a>
 </div>
 <div class="section" id="features">
 <h2>Features<a class="headerlink" href="#features" title="Permalink to this headline">¶</a></h2>

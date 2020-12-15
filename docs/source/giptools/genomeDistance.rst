@@ -22,6 +22,12 @@ Options
 |\-\-contextGenomes |Two columns TSV file listing additional genomes.   |[char]          |                
 |                   |                                                   |                |
 |                   |Syntax: name<Tab>filePath [default NA]             |                |
++-------------------+---------------------------------------------------+----------------+
+|\-\-customColors   |TSV file with 2 columns named "SAMPLE" and "COLOR" |[char]          |
+|                   |                                                   |                |
+|                   |indicating the color to be used for each sample. If|                |
+|                   |                                                   |                |
+|                   |"NA" colors are automatically assigned [default NA]|                |
 +-------------------+---------------------------------------------------+----------------+  
 |\-\-debug          |Dump session and quit                              |                |
 +-------------------+---------------------------------------------------+----------------+
