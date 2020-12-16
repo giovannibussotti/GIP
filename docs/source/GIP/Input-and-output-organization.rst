@@ -53,7 +53,7 @@ GIP requires the following mandatory input parameters:
     runOptions = '-B /home/projects -B /home/user/data/assemblies:/genome -B /home/user/sequencingData:/fq'
   }
   
-| Alternatively, an convenient alternatie is to set ``autoMounts=true`` and bind just a top-level folder of all data folders
+| Alternatively, a convenient alternatie is to set ``autoMounts=true`` and bind just a top-level folder of all data folders
 
 .. code-block:: guess
 
@@ -96,7 +96,7 @@ Output
 | **reports/**     | report files                |
 +------------------+-----------------------------+
 
-| The *report* process executed at the end of the pipeline returns .html files in the **reports/** subfolder, summarizing main results and figures for each sample.   
+| The *report* process executed at the end of the pipeline returns .html files in the **reports/** subfolder, summarizing main results and figures for each sample, like :download:`this example <../_static/LIPA83.html>`.
 | All the other files in the **gipOut/** directory are symbolic links to the data cached in the **work/** directory, which in turn is organized in subfolders named with the hexadecimal numbers identifying the executed processes. 
 | Thanks to the Nextflow implementation the user can easily test different GIP parameterization without the need to re-execute the entire pipeline. Just by adding ``-resume`` to the command line GIP will re-run just the process that are affected by the parameter change, and use the cached results of all the other processes.
         
