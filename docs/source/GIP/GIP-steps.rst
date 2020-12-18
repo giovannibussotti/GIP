@@ -358,8 +358,8 @@ Please refer to the `freebayes manual <https://github.com/ekg/freebayes>`_ for m
 
 
 
-Detect structural variants
---------------------------
+Detect and filter structural variants
+-------------------------------------
  
 | The genomic structural variants (SVs) are detected in the *delly* process using the `delly <https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3436805/>_` program. The SVs are predicted based on pair-end mapping orientation and split-read information, and include unbalanced reaffangements (i.e. CNV deletions or amplifications), as well as balanced rearrangements (inversions and translocations). delly is used to predict the four SV types using just the reads passing the ``--MAPQ`` filter. The output is the .vcf gzip compressed file  **gipOut/samples/sampleId/sampleId.delly.vcf.gz** and its tabix intex with .tbi extension.
 | GIP allows to apply custom quality filters and select a short-list of SV predictions using the ``--filterDellyOPT`` parameter, and setting the following variables:
@@ -425,7 +425,7 @@ Define and quantify gene clusters
 Depending on the sequencing technology and the experimental design, annotated genes presenting very high levels of sequence similarity may be difficoult to quantify.The length of the genomic reads and the fragment size influence the read MAPQ scores, thus the unicity of the read alignment.Instead of quantifying individual genes, GIP allows to quantify homologous genes as clusters. Given the set of gene coverage (.covPerGe.gz) files generated for each sample, GIP:
  
 1. Selects genes that cannot be directly quantified, i.e. have a mean MAPQ lower than the ``--MAPQ`` value in all samples 
-2. Runs `cd-hit-est <http://weizhongli-lab.org/cd-hit/>_` with option "-g 1" to cluster these genes by sequence similarity 
+2. Runs `cd-hit-est <http://weizhongli-lab.org/cd-hit/>`_ with option "-g 1" to cluster these genes by sequence similarity 
 3. Evaluates the sequencing coverage of the genes belonging to clusters
 4. Computes mean sequencing coverage for each gene cluster
 
