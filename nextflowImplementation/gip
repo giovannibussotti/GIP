@@ -85,7 +85,7 @@ params.repeatLibrary = "default"
 params.index         = 'index.tsv'
 params.geneFunction  = 'NA'
 genome               = file(params.genome)
-annotation           = file(params.annotation)
+inputAnnotation      = file(params.annotation)
 geneFunction         = file(params.geneFunction)
 repeatLibrary        = file(params.repeatLibrary)
 
@@ -130,7 +130,7 @@ process processGeneFunction {
   script:
   if( params.geneFunction == 'NA'  )
   """
-  cat $annotation | perl -ne 'if(\$_=~/gene_id \"([^\"]+)\"/){print "\$1\tNA\n";}' > geneFunction.tsv
+  cat $inputAnnotation | perl -ne 'if(\$_=~/gene_id \"([^\"]+)\"/){print "\$1\tNA\n";}' > geneFunction.tsv
   """
 
   else 
@@ -143,7 +143,7 @@ process prepareGenome {
   publishDir "$params.resultDir/genome"
 
   input:
-  file(annotation)
+  file(inputAnnotation)
   file(genome)
 
   output:
@@ -153,12 +153,13 @@ process prepareGenome {
   file("genome.gaps.gz") into (gaps_ch1 , gaps_ch2)
   file("repeats") into (repeats_ch1 , repeats_ch2 , repeats_ch3, repeats_ch4)
   file("snpEff")  into snpEffDb_ch1
+  file("annotation.ge.gtf") into (geGtf_ch1 , geGtf_ch2 , geGtf_ch3)
   env chroms into chromosomes
 
   script:
   if( params.repeatLibrary == 'default' )
   """
-  A-prepareGenome.sh -f $genome -x $annotation -c $task.cpus -l default
+  A-prepareGenome.sh -f $genome -x $inputAnnotation -c $task.cpus -l default
   if [ $chrs == 'all' ]; then
     chroms=`cut -f1 genome.chrSize | tr "\\n" " " | sed -e 's/ \$//'`
   else 
@@ -168,7 +169,7 @@ process prepareGenome {
 
   else
   """
-  A-prepareGenome.sh -f $genome -x $annotation -c $task.cpus -l $repeatLibrary
+  A-prepareGenome.sh -f $genome -x $inputAnnotation -c $task.cpus -l $repeatLibrary
   if [ $chrs == 'all' ]; then
     chroms=`cut -f1 genome.chrSize | tr "\\n" " " | sed -e 's/ \$//'`
   else 
@@ -284,7 +285,7 @@ process covPerGe {
   set val(sampleId), file(bam) , file(bai) , file(covPerChr) , file(covPerBin) , file(bed) from covPerBin4covPerGe
   set file(fa) , file(fai) , file(dict) , file(size) from genome_ch6
   file repeats from repeats_ch1
-  file (annotation)
+  file (annotation) from geGtf_ch1
   file geFun from geFun_ch1
   val(chromosomes) from chromosomes
 
@@ -396,7 +397,7 @@ process delly {
   set file(fa) , file(fai) , file(dict) , file(size) from genome_ch8
   file repeats from repeats_ch3
   file gaps from gaps_ch2
-  file (annotation)
+  file (annotation) from geGtf_ch2
   val(chromosomes) from chromosomes
 
   output:
@@ -518,7 +519,7 @@ process covPerClstr {
   input:
   file('*') from covPerGe1.collect()  
   set file(fa) , file(fai) , file(dict) , file(size) from genome_ch9
-  file (annotation)
+  file (annotation) from geGtf_ch3
   file geFun from geFun_ch
 
   output:

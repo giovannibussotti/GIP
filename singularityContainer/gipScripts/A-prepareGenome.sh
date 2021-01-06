@@ -91,7 +91,9 @@ perl -ne 'chomp;if( />(.*)/){ if($s==1){print "\t$i\n";$s=0;} $head = $1; $i=0; 
 mkdir -p snpEff/cache
 mkdir -p snpEff/data/$N
 FAp=`readlink -e ${OUT}.fa`
-cat $EX | sed -e 's/gene/exon/' > snpEff/data/${N}/genes.gtf
+perl /bin/prepareGTF.pl -gtf $EX -out gtf
+mv gtf.ge annotation.ge.gtf
+mv gtf.ann snpEff/data/${N}/genes.gtf
 ln -fs $FAp snpEff/data/${N}/sequences.fa
 cp /opt/snpEff.configTemplate snpEff/snpEff.config
 sed -i 's/GENOME/'$N'/g' snpEff/snpEff.config
