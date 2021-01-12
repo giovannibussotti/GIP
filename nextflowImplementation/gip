@@ -348,7 +348,7 @@ process snpEff {
   """ 
   #run snpEff on Freebayes output
   gunzip -c $vcf > tmpSnpEff_${sampleId}.vcf
-  java -jar /opt/snpEff/snpEff.jar -ud 0 -o gatk genome tmpSnpEff_${sampleId}.vcf -noLog -c $snpEff/snpEff.config -stats snpEff_summary_${sampleId} > ${sampleId}.snpEff.vcf
+  java -jar /opt/snpEff/snpEff.jar -ud 0 genome tmpSnpEff_${sampleId}.vcf -noLog -c $snpEff/snpEff.config -stats snpEff_summary_${sampleId} > ${sampleId}.snpEff.vcf
   bgzip ${sampleId}.snpEff.vcf
   gzip -f snpEff_summary_${sampleId}.genes.txt
   mv snpEff_summary_${sampleId} snpEff_summary_${sampleId}.html
@@ -358,7 +358,7 @@ process snpEff {
 
   #run snpEff on the filtered SNVs
   gunzip -c ${sampleId}_freebayesFiltered/singleVariants.vcf.gz > tmpSnpEff_${sampleId}.vcf
-  java -jar /opt/snpEff/snpEff.jar -ud 0 -o gatk genome tmpSnpEff_${sampleId}.vcf -noLog -c $snpEff/snpEff.config -stats snpEff_summary_${sampleId} > ${sampleId}.snpEff.vcf
+  java -jar /opt/snpEff/snpEff.jar -ud 0 genome tmpSnpEff_${sampleId}.vcf -noLog -c $snpEff/snpEff.config -stats snpEff_summary_${sampleId} > ${sampleId}.snpEff.vcf
   bgzip ${sampleId}.snpEff.vcf
   gzip -c snpEff_summary_${sampleId}.genes.txt > ${sampleId}_freebayesFiltered/snpEff_summary_${sampleId}.genes.txt.gz
   mv snpEff_summary_${sampleId} ${sampleId}_freebayesFiltered/snpEff_summary_${sampleId}.html
