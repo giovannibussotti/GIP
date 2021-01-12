@@ -56,7 +56,7 @@ df <- data.frame(
       MQM=MQMforEachAllele ,
       MQMR=MQMRforEachAllele,
       ref_alt=ref_altForEachAllele,
-      EFF=rep(unlist(info(vcf)$EFF),howmanyalleles),
+      EFF=rep(unlist(info(vcf)$ANN),howmanyalleles),
       stringsAsFactors=FALSE
     )
 write.table(x=df,row.names=F,col.names=T,quote=F,file=outName,sep="\t")
