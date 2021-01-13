@@ -33,6 +33,15 @@ effList <- as.list(strsplit(df$EFF, ','))
 names(effList) <- paste(df$chr ,  df$position ,  df$ref_alt, sep="_")
 effList <- lapply(effList,function(x){strsplit(x, '\\|')})
 
+#remove the 16th field which is occasionally present and reporting gene/transcript annotation issues
+#If the annotation has issues we don't care
+#all that matters is the effect annotation
+effList <- lapply(effList , function(x){
+	lapply(x, function(y){
+		  return(y[1:15])	
+	})
+})
+
 #################
 #count dN and dS#
 #################
@@ -50,6 +59,8 @@ out <- dcast(data=agg,gene~SYN,value.var="n",fill=0)
 out$other <- NULL
 names(out)[names(out)=="nonSyn"]="dN"
 names(out)[names(out)=="syn"]="dS"
+if(! "dS" %in% names(out)){ out$dS <- 0 }
+if(! "dN" %in% names(out)){ out$dN <- 0 }
 out <- out[,c("gene","dN","dS")]
 #ratio
 out$ratio <- out$dN/out$dS
@@ -99,7 +110,7 @@ effList <- sapply(effList , function(x){
 })
 #extract functions
 df$gene_annotation <- sapply(effList , function(x){
-	paste(annDF[match(x,annDF$id),"ann"],collapse=" ; ")
+	paste(annDF[match(unique(x),annDF$id),"ann"],collapse=" ; ")
 })
 df$gene_annotation[df$EFF == "INTERGENIC"]="NA"
 df$gene_annotation[is.na(df$gene_annotation)] = "NA"
