@@ -143,7 +143,11 @@ collapse <- function (inDf){
 }
 ampBins <- significant[significant$direction == "amplification" , ]
 depBins <- significant[significant$direction == "depletion" , ]
-redD <- rbind(collapse(ampBins) , collapse(depBins))
+clpsAmp <- NULL
+clpsDep <- NULL
+if(length(ampBins[,1]) > 0){clpsAmp <- collapse(ampBins)}
+if(length(depBins[,1]) > 0){clpsDep <- collapse(depBins)}
+redD <- rbind(clpsAmp , clpsDep)
 redD <- redD[with(redD, order(chr, start)), ]
 
 ################################
