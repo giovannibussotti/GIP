@@ -32,8 +32,8 @@ The following code snippet requires the `SRA Toolkit <https://trace.ncbi.nlm.nih
    fastq-dump --split-files $X
    #compress
    gzip ${X}*fastq
-   #remove .sra downloaded file
-   rm ~/ncbi/public/sra/${X}.sra
+   #remove .sra file
+   rm -rf $X
  done
  cd ..
  
