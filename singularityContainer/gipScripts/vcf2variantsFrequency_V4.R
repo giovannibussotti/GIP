@@ -291,7 +291,7 @@ makeDf <- function (chr , position , freq , AO , alt , depthForEachAllele , QaFo
       stringsAsFactors=FALSE
     )
     #2nd filter round
-    df <- filterDF(df)
+    df <- filterDF(df) 
     vcf <- vcf [ which ( paste(as.vector(seqnames(vcf)), as.vector(start(vcf)) , sep="_") %in% paste(df$chr,df$position,sep="_")  ) ,]
     #write filtered vcf and filtered df
     writeVcf(vcf , paste0(outdir,"/",variants,"Variants.vcf"))
@@ -306,12 +306,12 @@ filterDF <- function(df){
 	#filter by VRF
 	df <- df[(df$freq >= minFreq) & (df$freq <= maxFreq) , ]
 	#filter SNV involving N
-        df <- df[! grepl(x=df$ref_alt , pattern="N") , ]
+    df <- df[! grepl(x=df$ref_alt , pattern="N") , ]
 	#add SNV sequence context
 	context <- NULL; 
 	for (i in 1:length(df$chr)){
 		c   <- df[i,"chr"]
-		p   <- df[i,"position"]
+		p   <- df[i,"position"]    
 		#including N if the SNV is on the chr edge
 		if ((p + contextSpan) > length(refAssembly[[as.character(c)]])) {
 			terminalNs = (p + contextSpan) - length(refAssembly[[as.character(c)]])
@@ -319,7 +319,7 @@ filterDF <- function(df){
 			seq <- subseq(refAssembly[[as.character(c)]], p - contextSpan, p + reducedContextSpan)
 			seq <- toString(seq)
 			seq <- paste0(seq,paste0(rep("N",terminalNs),collapse=""))
-		} else if ((p - contextSpan) < 0) {
+		} else if ((p - contextSpan) <= 0) {
 			startingNs = abs(p - contextSpan)+1
 			reducedContextSpan =  contextSpan - startingNs
 			seq <- subseq(refAssembly[[as.character(c)]], p - reducedContextSpan, p + contextSpan)
