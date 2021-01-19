@@ -94,9 +94,9 @@ Software
 | `Source code <https://github.com/broadinstitute/picard/archive/2.18.9.tar.gz>`_
 
 | **delly**            
-| Version 0.6.7      
+| Version 0.8.7      
 | :download:`License & copyright <LICENSE_delly>`  
-| `Source code <https://github.com/dellytools/delly/archive/v0.6.7.tar.gz>`_             
+| `Source code <https://github.com/dellytools/delly/archive/v0.8.7.tar.gz>`_             
 
 | **bedGraphToBigWig** 
 | Version 2.8        

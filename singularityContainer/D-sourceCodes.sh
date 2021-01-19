@@ -15,7 +15,7 @@ https://github.com/weizhongli/cdhit/archive/V4.8.1.tar.gz
 https://cran.r-project.org/src/base/R-3/R-3.6.0.tar.gz
 http://circos.ca/distribution/circos-0.69-9.tgz
 https://github.com/broadinstitute/picard/archive/2.18.9.tar.gz
-https://github.com/dellytools/delly/archive/v0.6.7.tar.gz             
+https://github.com/dellytools/delly/archive/v0.8.7.tar.gz             
 http://toolsmith.ens.utulsa.edu/red/data/DataSet1Src.tar.gz
 )
 

@@ -412,7 +412,10 @@ process delly {
   #call SVs
   TYPES=(DEL DUP INV TRA)
   for T in "\${TYPES[@]}"; do
-    delly -q $MAPQ -t \$T -g $fa -o ${sampleId}_\${T}.vcf _tmpHQbam/${sampleId}.bam
+    delly call -q $MAPQ -t \$T -g $fa -o ${sampleId}_\${T}.bcf _tmpHQbam/${sampleId}.bam
+    vcftools --bcf ${sampleId}_\${T}.bcf --recode --recode-INFO-all --out ${sampleId}_\${T}
+    mv ${sampleId}_\${T}.recode.vcf ${sampleId}_\${T}.vcf
+    rm -rf ${sampleId}_\${T}.bcf ${sampleId}_\${T}.bcf.csi ${sampleId}_\${T}.log
   done
 
   #concatenate SVs if they exist
@@ -433,7 +436,8 @@ process delly {
   rm -rf ${sampleId}_DEL.vcf.gz ${sampleId}_DUP.vcf.gz ${sampleId}_INV.vcf.gz ${sampleId}_TRA.vcf.gz ${sampleId}_DEL.vcf.gz.tbi ${sampleId}_DUP.vcf.gz.tbi ${sampleId}_INV.vcf.gz.tbi ${sampleId}_TRA.vcf.gz.tbi _tmpHQbam
   
   #sort and compress again
-  cat ${sampleId}.delly.vcf | vcf-sort > ${sampleId}.delly.vcf.tmp
+  mkdir -p tmpVcfSort
+  cat ${sampleId}.delly.vcf | vcf-sort -t tmpVcfSort > ${sampleId}.delly.vcf.tmp
   mv ${sampleId}.delly.vcf.tmp ${sampleId}.delly.vcf 
   bgzip ${sampleId}.delly.vcf 
   tabix -p vcf -f ${sampleId}.delly.vcf.gz
