@@ -165,6 +165,7 @@ for (chr in chrSize$chr){
  axesDf <- rbind(axesDf, data.frame(x = size , y = 1, chr = chr))
 }
 pdf(paste0(outName,".multipanel.pdf"),height=10, width=15)
+df$chr <- factor(df$chr,levels=chrs)
 p <- ggplot() + geom_point(data=df , aes(x=position, y=freq , colour=sample),alpha=0.5) 
 p <- p + geom_blank(data = axesDf, aes(x = x, y = y)) 
 p <- p + facet_wrap(~chr, scales = "free") + xlab("Position") + ylab("Variant frequency") 
