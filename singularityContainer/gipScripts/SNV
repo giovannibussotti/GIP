@@ -78,6 +78,7 @@ for (s in samples) {
   snvDf[[s]]$tag    <- paste(snvDf[[s]]$chr , snvDf[[s]]$position , snvDf[[s]]$ref_alt ,sep="_")
   #filter VRF
   snvDf[[s]] <- snvDf[[s]][ snvDf[[s]]$freq >= minVRF , ]
+  snvDf[[s]] <- snvDf[[s]][ snvDf[[s]]$chr %in% chrs , ]
   snvDf[[s]]$sample <- s
   #covPerBin
   if(showCoverage){
