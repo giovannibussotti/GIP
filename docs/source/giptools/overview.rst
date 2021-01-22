@@ -59,21 +59,25 @@ Example
 
 | The output consists in four files: 
 
-* The .chrCov.pdf file represents the chromosome coverage:
-
-.. figure:: ../_static/karyotype1.png
-      :width: 100 %
-
-* The .binCov.pdf file represents the genomic bin coverage:
-
-.. figure:: ../_static/karyotype1.png
-      :width: 100 %
-
-* The .geCov.pdf file represents the gene coverage:
-
-.. figure:: ../_static/karyotype1.png
-      :width: 100 %
-
+* The .chrCov.pdf file represents the normalized chromosome coverage
+* The .binCov.pdf file represents the normalized genomic bin coverage
+* The .geCov.pdf file represents the normalized gene coverage. The first heatmap reports scaled values. The second heatmap shows the actual normalized gene coverage, but values greather than --ylim are reported as --ylim. 
 * The geCov.xlsx file is an excel table reporting the normalized gene coverage with the associated function (if available) 
+
+| In the genomic bins plot it is possible to limit the y-axis to a value of 2.5 (corresponding to 5 bin copies under the assumption of a disomic organism) and to remove bin coloring adding the options  ``--ylim 2.5 --highLowCovThresh 100 -1`` to the command. This gives the following plot:
+
+.. figure:: ../_static/overview.binCov.png
+      :width: 100 %
+ 
+| The options ``--highLowCovThresh 1.25 0.5 --MAPQ 50`` can be used to color the genomic bins with normalized coverage above 1.25 and to label low MAPQ bins:
+
+ .. figure:: ../_static/overview.binCov2.png
+      :width: 100 %
+
+
+
+
+
+
 
 
