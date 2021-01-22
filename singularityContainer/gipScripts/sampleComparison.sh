@@ -34,6 +34,7 @@ function printHelp {
   echo -e " genomeDistance  Compare samples genomic distance"
   echo -e " phylogeny       Extract the SNVs union and infer the phylogenetic tree"
   echo -e " convergentCNV   Detect convergent CNV gene amplifications"
+  echo -e " overview        Overview of the sequencing coverage of chromosomes, genomic bins and genes" 
   echo ""
 }
 
@@ -94,6 +95,11 @@ elif [ $MODE == "phylogeny" ]; then
 
 elif [ $MODE == "convergentCNV" ]; then
     CMD="Rscript /bin/convergentCNV $OPTS"
+    #echo executing $CMD
+    $CMD
+
+elif [ $MODE == "overview" ]; then
+    CMD="Rscript /bin/overview $OPTS"
     #echo executing $CMD
     $CMD
 
