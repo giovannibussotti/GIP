@@ -16,6 +16,7 @@ parser$add_argument("--outName" , help="Output name [default %(default)s]" , def
 parser$add_argument("--chrs"    , nargs="+" , help="Chromosomes to use. If \"NA\" it uses the same chromsomes as GIP [default %(default)s]" , default="NA")
 parser$add_argument("--MAPQ"  , type="integer" , help="Label bins with MAPQ < --MAPQ [default %(default)s]" , default=0)
 parser$add_argument("--highLowCovThresh" , nargs="+" , type="double" , help="Provide two numbers. Bins with normalized coverage values > num1 or < num2 will be labeled. [default %(default)s]" , default= c(1.5,0.5) )
+parser$add_argument("--minDelta"  , type="double" , help="Remove genes with normalized coverage delta < --minDelta [default %(default)s]" , default=0)
 parser$add_argument("--ylim" , type="double" , help="Plot visualization threshold. Bin or gene normalized coverage values > --ylim are shown as --ylim [default %(default)s]" , default="5")
 parser$add_argument("--maxGe"  , type="integer" , help="Plot visualization threshold. Max number of genes to show (ordered by delta coverage) [default %(default)s]" , default=10000)
 parser$add_argument("--binPlotDim" , nargs="+", type="double", help="Bin coverage plot height and width values [default %(default)s]" , default=c(10,20) )
@@ -172,8 +173,11 @@ for (s in samples[-1]){
    geDf <- merge(x=geDf,y=tmp,by="gene_id")
 }
 
-#sort and write
+#filter
 geDf$delta <- apply( geDf[,samples] , 1 , function(x){d=max(x)-min(x)} )
+geDf <- geDf[ geDf$delta >= minDelta , ]
+
+#sort and write
 geFunDf <- read.delim(paste0(gipOut,"/genome/geneFunction.tsv") , sep="\t", stringsAsFactors = F, header=F ,col.names=c("gene_id","geneFunction"))
 geDf <- merge(geDf,geFunDf,by="gene_id")
 geDf <- geDf[with(geDf, order(-delta)), ]

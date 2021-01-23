@@ -26,6 +26,10 @@ Options
 |                    |                                                                  |               |
 |                    |values > num1 or < num2 will be labeled [default 1.5 0.5]         |               |
 +--------------------+------------------------------------------------------------------+---------------+
+|\-\-minDelta        |Remove genes with normalized coverage delta < --minDelta          |[double]       |
+|                    |                                                                  |               |
+|                    |[default 0]                                                       |               |
++--------------------+------------------------------------------------------------------+---------------+
 |\-\-ylim            |Plot visualization threshold. Bin or gene normalized coverage     |[double]       |
 |                    |                                                                  |               |
 |                    |values > --ylim are shown as --ylim [default 5]                   |               |  
