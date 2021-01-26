@@ -20,6 +20,10 @@ Options
 |                    |                                                                  |               |
 |                    |[default NA]                                                      |               |
 +--------------------+------------------------------------------------------------------+---------------+
+|\-\-regions         |Bed3 file with regions of interest. Regions must be included in   |[chr]          |
+|                    |                                                                  |               |
+|                    | --chrs. If \"NA\" the regions output is not produced [default NA]|               |
++--------------------+------------------------------------------------------------------+---------------+
 |\-\-MAPQ            |Label bins with MAPQ < --MAPQ [default 0]                         |[int]          |
 +--------------------+------------------------------------------------------------------+---------------+
 |\-\-ploidy          |Genome ploidy. After normalization multiply                       |[int]          |
@@ -86,8 +90,7 @@ Example
  .. figure:: ../_static/overview.binCov2.png
       :width: 100 %
 
-
-
+| Optionally providing to ``regions`` parameter file with genomic coordinates in Bed3 format (i.e. chromosome<Tab>start<Tab>end), the user can zoom on specific regions of interest (.binCovRegions.pdf output)
 
 
 

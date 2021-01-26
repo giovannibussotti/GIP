@@ -4,6 +4,7 @@ parser$add_argument("--samples" , nargs="+", help="Sample names. It determines t
 parser$add_argument("--gipOut"  , help="GIP output directory [default %(default)s]" , default="gipOut")
 parser$add_argument("--outName" , help="Output name [default %(default)s]" , default="gipOut/sampleComparison/overview")
 parser$add_argument("--chrs"    , nargs="+" , help="Chromosomes to use. If \"NA\" it uses the same chromsomes as GIP [default %(default)s]" , default="NA")
+parser$add_argument("--regions"  , help="Bed3 file with regions of interest. Regions must be included in --chrs. If \"NA\" the regions output is not produced [default %(default)s]" , default="NA")
 parser$add_argument("--MAPQ"  , type="integer" , help="Label bins with MAPQ < --MAPQ [default %(default)s]" , default=0)
 parser$add_argument("--ploidy"  , type="integer" , help="Genome ploidy. After normalization multiply coverage values by --ploidy [default %(default)s]" , default=2)
 parser$add_argument("--highLowCovThresh" , nargs="+" , type="double" , help="Provide two numbers. Bins with normalized coverage values > num1 or < num2 will be labeled. [default %(default)s]" , default= c(1.5,0.5) )
@@ -38,6 +39,10 @@ system(paste0("mkdir -p ", outDir))
 if (is.na(samples[1])) {
   samples <- dir(paste0(gipOut,"/samples"))
 } 
+if(length(samples) < 2){
+  stop("ERROR. specify at least 2 samples")
+  quit(save = "no", status = 1, runLast = FALSE)
+}
 chrSel      <- as.character(read.table(paste0(gipOut,"/samples/",samples[1],"/chrCoverageMedians_",samples[1]),header=T)[,1])
 chrSize     <- read.table(paste0(gipOut,"/genome/genome.chrSize"),sep="\t", stringsAsFactors = F, header=F , col.names=c("chr","size"))
 chrSize$chr <- as.character(chrSize$chr)
@@ -93,7 +98,8 @@ theme_gip <- function(){
       axis.text.y  = element_text(size = 12) , 
       axis.title   = element_text(size=14,face="bold"),
       legend.title = element_text(face = "bold", size = 14),
-      legend.text  = element_text(size = 12))
+      legend.text  = element_text(size = 12),
+      legend.position = "bottom" )
 }
 #plot faceting
 #df with x and y axes range
@@ -124,6 +130,28 @@ p <- p + theme_gip()
 print(p)
 invisible(dev.off())
 
+#############
+#Bin Regions#
+#############
+if (! is.na(regions) ){
+  regionsDf <- read.table(regions,header=F,stringsAsFactors=F,col.names=c("chromosome","start","end"))
+  pdf(paste0(outName,".binCovRegions.pdf"))
+  for(i in 1:length(regionsDf[,1])){
+    tmp <- df[df$chromosome == regionsDf[i,"chromosome"] & df$position > regionsDf[i,"start"] & df$position < regionsDf[i,"end"],]
+    p <- ggplot(tmp, aes(position,meanCoverage))  
+    p <- p + geom_point(size=0.5,alpha=0.5,aes(colour=status)) 
+    p <- p + facet_grid( sample ~ chromosome , scales="free") + xlab("genomic bin position") 
+    p <- p + ylab("genomic bin sequencing coverage") + scale_x_continuous(labels = function(x) format(x, scientific = FALSE , big.mark = " "))
+    p <- p + scale_colour_manual(values = c("background" = "black","amplified" = "orange","depleted" = "blue","lowMAPQ" = "gray"),name="copy number" )
+    if (! is.na (ylimInt)){
+      p <- p + scale_y_continuous(limits = c(0, ylim), breaks = seq(0, ylim, by = as.numeric(ylimInt)))
+    }
+    p <- p + theme_gip()
+    print(p)
+  }
+  invisible(dev.off())
+}
+
 
 ###########
 #karyotype#
@@ -141,7 +169,11 @@ chrCovDf$CHR <- NULL
 #filter
 chrCovDf <- chrCovDf[chrs,]
 pdf(paste0(outName,".chrCov.pdf")) 
-pheatmap(chrCovDf)
+if( dim(chrCovDf)[1] == 1){
+  pheatmap(chrCovDf , cluster_rows=F)
+} else {
+  pheatmap(chrCovDf)
+}
 invisible(dev.off())
 
 
