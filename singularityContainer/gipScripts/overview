@@ -1,13 +1,3 @@
-#samples=NA
-#gipOut="gipOut"
-#outName="gipOut/sampleComparison/overview"
-#chrs=c("chr1" , "chr2" , "chr3" , "chr4" , "chr5" , "chr6" , "chr7" , "chrR")
-#debug=FALSE
-#MAPQ=50
-#ylim=12
-#highLowCovThresh=c(1.5,0.5)
-#maxGe=10000
-
 suppressPackageStartupMessages(library("argparse"))
 parser <- ArgumentParser(description="Overview of the sequencing coverage of chromosomes, genomic bins and genes")
 parser$add_argument("--samples" , nargs="+", help="Sample names. It determines the plotting order. If \"NA\" all samples are used [default %(default)s]" , default="NA")
@@ -15,9 +5,11 @@ parser$add_argument("--gipOut"  , help="GIP output directory [default %(default)
 parser$add_argument("--outName" , help="Output name [default %(default)s]" , default="gipOut/sampleComparison/overview")
 parser$add_argument("--chrs"    , nargs="+" , help="Chromosomes to use. If \"NA\" it uses the same chromsomes as GIP [default %(default)s]" , default="NA")
 parser$add_argument("--MAPQ"  , type="integer" , help="Label bins with MAPQ < --MAPQ [default %(default)s]" , default=0)
+parser$add_argument("--ploidy"  , type="integer" , help="Genome ploidy. After normalization multiply coverage values by --ploidy [default %(default)s]" , default=2)
 parser$add_argument("--highLowCovThresh" , nargs="+" , type="double" , help="Provide two numbers. Bins with normalized coverage values > num1 or < num2 will be labeled. [default %(default)s]" , default= c(1.5,0.5) )
 parser$add_argument("--minDelta"  , type="double" , help="Remove genes with normalized coverage delta < --minDelta [default %(default)s]" , default=0)
 parser$add_argument("--ylim" , type="double" , help="Plot visualization threshold. Bin or gene normalized coverage values > --ylim are shown as --ylim [default %(default)s]" , default="5")
+parser$add_argument("--ylimInt" , help="Bin scatterplot y-axis values interval. If \"NA\" it is automatically assigned [default %(default)s]" , default="NA")
 parser$add_argument("--maxGe"  , type="integer" , help="Plot visualization threshold. Max number of genes to show (ordered by delta coverage) [default %(default)s]" , default=10000)
 parser$add_argument("--binPlotDim" , nargs="+", type="double", help="Bin coverage plot height and width values [default %(default)s]" , default=c(10,20) )
 parser$add_argument("--debug"  , action="store_true" , help="Dump session and quit" , default=FALSE)
@@ -70,7 +62,7 @@ readCovPerBin <- function (s){
   tmp$position <- tmp$start + ( ((tmp$end - tmp$start) +1) /2)
   tmp$sample <- s
   #normalize
-  tmp$meanCoverage <- tmp$meanCoverage / medianCovL[[s]]
+  tmp$meanCoverage <- (tmp$meanCoverage / medianCovL[[s]]) * ploidy
   tmp <- tmp[,c("chromosome", "position" ,  "meanCoverage" ,  "MAPQ" , "sample")]
   return(tmp)
 }
@@ -125,6 +117,9 @@ p <- p + geom_blank(data = axesDf, aes(x = x, y = y))
 p <- p + facet_grid( sample ~ chromosome , scales="free") + xlab("genomic bin position") 
 p <- p + ylab("genomic bin sequencing coverage") + scale_x_continuous(labels = function(x) format(x, scientific = FALSE , big.mark = " "))
 p <- p + scale_colour_manual(values = c("background" = "black","amplified" = "orange","depleted" = "blue","lowMAPQ" = "gray"),name="copy number")
+if (! is.na (ylimInt)){
+  p <- p + scale_y_continuous(limits = c(0, ylim), breaks = seq(0, ylim, by = as.numeric(ylimInt)))
+}
 p <- p + theme_gip()
 print(p)
 invisible(dev.off())
@@ -137,7 +132,7 @@ chrCovL <- list()
 for (s in samples){
    chrCovL[[s]] <- read.table(paste0(gipOut,"/samples/" , s , "/chrCoverageMedians_" , s ),header=T,stringsAsFactors=F)[,c("CHR", "MEDIANCOV")]
    #normalize
-   chrCovL[[s]]$MEDIANCOV <- chrCovL[[s]]$MEDIANCOV / medianCovL[[s]]
+   chrCovL[[s]]$MEDIANCOV <- (chrCovL[[s]]$MEDIANCOV / medianCovL[[s]]) * ploidy
    names(chrCovL[[s]]) <- c("CHR",s)
 }
 chrCovDf <- Reduce(function(...) merge(..., by="CHR" ,all=T , sort=F), chrCovL)
@@ -161,14 +156,14 @@ geDf$end   <- as.numeric(gsub(x=geDf$locus,pattern="(.+):(.+)-(.+)$",replacement
 #filter
 geDf <- geDf[geDf$chr %in% chrs,]
 #normalize
-geDf$meanCoverage <- geDf$meanCoverage / medianCovL[[s1]]
+geDf$meanCoverage <- (geDf$meanCoverage / medianCovL[[s1]]) * ploidy
 geDf <- geDf[,c("gene_id","chromosome","start","end","meanCoverage")]
 names(geDf)<-c("gene_id","chromosome","start","end",s1)
 #read the other samples
 for (s in samples[-1]){
    tmp <- fread(data.table=F, cmd=paste0("gunzip -c ", gipOut , "/samples/" , s , "/" , s , ".covPerGe.gz") , colClasses=list(character=1)) [,c("gene_id" , "meanCoverage" )]
    #normalize
-   tmp$meanCoverage <- tmp$meanCoverage / medianCovL[[s]]
+   tmp$meanCoverage <- (tmp$meanCoverage / medianCovL[[s]]) * ploidy
    names(tmp) <- c("gene_id",s)
    geDf <- merge(x=geDf,y=tmp,by="gene_id")
 }
