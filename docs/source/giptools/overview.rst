@@ -21,6 +21,10 @@ Options
 |                    |[default NA]                                                      |               |
 +--------------------+------------------------------------------------------------------+---------------+
 |\-\-MAPQ            |Label bins with MAPQ < --MAPQ [default 0]                         |[int]          |
++--------------------+------------------------------------------------------------------+---------------+
+|\-\-ploidy          |Genome ploidy. After normalization multiply                       |[int]          |
+|                    |                                                                  |               |
+|                    |coverage values by --ploidy [default 2]                           |               |
 +--------------------+------------------------------------------------------------------+---------------+ 
 |\-\-highLowCovThresh|Provide two numbers. Bins with normalized coverage                |[double]       |
 |                    |                                                                  |               |
@@ -33,6 +37,10 @@ Options
 |\-\-ylim            |Plot visualization threshold. Bin or gene normalized coverage     |[double]       |
 |                    |                                                                  |               |
 |                    |values > --ylim are shown as --ylim [default 5]                   |               |  
++--------------------+------------------------------------------------------------------+---------------+
+|\-\-ylimInt         |Bin scatterplot y-axis values interval. If \"NA\" it is           |[double]       |
+|                    |                                                                  |               |
+|                    |automatically assigned [default NA]                               |               |
 +--------------------+------------------------------------------------------------------+---------------+
 |\-\-maxGe           |Plot visualization threshold. Max number of genes to show         |[int]          |
 |                    |                                                                  |               |
@@ -49,7 +57,7 @@ Options
 Description
 -----------
 
-| The ``overview`` module aims at comparing the samples in terms of chromosomes, genomic bins and genes sequencing coverage. Unlike other modules like ``binCNV`` or ``geCNV`` where normalization accounts for chromosome copy number, data in ``overview`` is normalized by median genome coverage only. ``overview`` is suited to display CNV variation in multiple samples with respect to the reference genome. ``overview`` does not perform sequencing coverage ratios between samples. The normalized scores do not represent somy scores. The normalization procedure is such that the coverage of most genomic bins will be centered on 1.   
+| The ``overview`` module aims at comparing the samples in terms of chromosomes, genomic bins and genes sequencing coverage. Unlike other modules like ``binCNV`` or ``geCNV`` where normalization accounts for chromosome copy number, data in ``overview`` is normalized by median genome coverage only. ``overview`` is suited to display CNV variation in multiple samples with respect to the reference genome. ``overview`` does not perform sequencing coverage ratios between samples. The normalized scores do not represent somy scores. The normalization procedure is such that the coverage of most genomic bins will be centered on 1. The ``--ploidy`` parameter can be used to indicate the organism ploidy level, which is 2 by default (diploid). ``overview`` multiplies the normalized coverage scores of bins, genes and chromosomes by the ploidy value.     
 
 
 Example
@@ -68,7 +76,7 @@ Example
 * The .geCov.pdf file represents the normalized gene coverage. The first heatmap reports scaled values. The second heatmap shows the actual normalized gene coverage, but values greather than --ylim are reported as --ylim. 
 * The geCov.xlsx file is an excel table reporting the normalized gene coverage with the associated function (if available) 
 
-| In the genomic bins plot it is possible to limit the y-axis to a value of 2.5 (corresponding to 5 bin copies under the assumption of a disomic organism) and to remove bin coloring adding the options  ``--ylim 2.5 --highLowCovThresh 100 -1`` to the command. This gives the following plot:
+| In the genomic bins plot is possible to center the coverage to 1, limit the y-axis to 2.5 and remove bin coloring by adding the options  ``--ploidy 1 --ylim 2.5 --highLowCovThresh 100 -1`` to the command. This gives the following plot:
 
 .. figure:: ../_static/overview.binCov.png
       :width: 100 %
