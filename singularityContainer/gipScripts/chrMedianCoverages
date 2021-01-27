@@ -5,7 +5,6 @@
 #MAPQ: Min read MAPQ (recommended 5)
 #CHRS: array of chr names. E.g. CHRS=(1 2 3 4) chromosomes not included in the list will be skipped
 #D: Directory with containing the bam files
-#GAPS: gzipped gaps in bed format
 #OUTPUT
 #chrCoverageMedians_ File with chromosome name, median nucleotide coverage, and +/- 2 MADs
 S=$1
@@ -13,29 +12,20 @@ CHRSIZE=$2
 MAPQ=$3
 CHRSstr=$4
 D=$5
-GAPS=$6
+
 
 IFS=' ' read -r -a CHRS <<< $CHRSstr  
 
-
+#estimate the median coverage +/- 2 MADs (median absolute deviation)
 echo -e "CHR\tMEDIANCOV\tMEDIANCOVminus2MAD\tMEDIANCOVplus2MAD" > ${D}/chrCoverageMedians_$S
-cat $CHRSIZE | while IFS='' read -r line || [[ -n "$line" ]]; do
-    CHR=`echo $line |awk '{print $1}'`
-    END=$(echo $line |awk '{print $2}')
-    CHECK=`case "${CHRS[@]}" in  *"$CHR"*) echo "found" ;; esac`
-    if [ -z "$CHECK" ]; then continue ; fi
-    echo -e "$CHR\t1\t$END" > ${D}/chr_${S}.bed
-    #estimate the median coverage +/- 2 MADs (median absolute deviation)
-    samtools view -b -q $MAPQ ${D}/${S}.bam $CHR |  bedtools coverage -a ${D}/chr_${S}.bed -b stdin -d -split | awk '{print $1 "\t" $4 "\t" $4 "\t" $5 }' > ${D}/_notNormalized_chrCoverageMedians$S
-    #remove gaps
-    zcat $GAPS > ${D}/TMPgaps$S
-  	bedtools intersect -v -a ${D}/_notNormalized_chrCoverageMedians$S -b ${D}/TMPgaps$S > ${D}/_notNormalized_chrCoverageMediansNoGaps$S
+for CHR in "${CHRS[@]}"; do 
+    samtools depth -a -Q $MAPQ ${D}/${S}.bam -r $CHR > ${D}/_notNormalized_chrCoverageMediansNoGaps$S
     mkdir -p ${D}/TMPsortDir_notNormalized_$S
-    MEDIANCOV=`cut -f4 ${D}/_notNormalized_chrCoverageMediansNoGaps$S | sort -n -T ${D}/TMPsortDir_notNormalized_$S |  awk ' { a[i++]=$1; } END { x=int((i+1)/2); if (x < (i+1)/2) print (a[x-1]+a[x])/2; else print a[x-1]; }'`
+    MEDIANCOV=`cut -f3 ${D}/_notNormalized_chrCoverageMediansNoGaps$S | sort -n -T ${D}/TMPsortDir_notNormalized_$S |  awk ' { a[i++]=$1; } END { x=int((i+1)/2); if (x < (i+1)/2) print (a[x-1]+a[x])/2; else print a[x-1]; }'`
     MAD=`awk 'function abs(x){return ((x < 0.0) ? -x : x)}  {dev=abs($4 - '$MEDIANCOV'); print dev }' ${D}/_notNormalized_chrCoverageMediansNoGaps$S | sort -n -T ${D}/TMPsortDir_notNormalized_$S |  awk ' { a[i++]=$1; } END { x=int((i+1)/2); if (x < (i+1)/2) print (a[x-1]+a[x])/2; else print a[x-1]; }'`
     maxDp=`perl -e 'print '$MEDIANCOV'+ (2 * '$MAD');'`
     minDp=`perl -e 'print '$MEDIANCOV'- (2 * '$MAD');'`
-    rm -rf ${D}/TMPgaps$S ${D}/_notNormalized_chrCoverageMedians$S ${D}/chr_${S}.bed ${D}/TMPsortDir_notNormalized_$S ${D}/_notNormalized_chrCoverageMediansNoGaps$S
+    rm -rf  ${D}/TMPsortDir_notNormalized_$S ${D}/_notNormalized_chrCoverageMediansNoGaps$S
     echo -e "$CHR\t$MEDIANCOV\t$minDp\t$maxDp" >> ${D}/chrCoverageMedians_$S
 done
 

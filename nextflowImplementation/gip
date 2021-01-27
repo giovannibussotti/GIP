@@ -150,7 +150,7 @@ process prepareGenome {
   file ("db") into bwaDb_ch1
   file("genome.chrSize") into chrSize_ch1
   set file("genome.fa") , file("genome.fa.fai") , file("genome.dict") , file("genome.chrSize") into (genome_ch1 , genome_ch2 , genome_ch4 , genome_ch5 , genome_ch6 , genome_ch7 , genome_ch8, genome_ch9, genome_ch10)
-  file("genome.gaps.gz") into (gaps_ch1 , gaps_ch2)
+  file("genome.gaps.gz") into (gaps_ch2)
   file("repeats") into (repeats_ch1 , repeats_ch2 , repeats_ch3, repeats_ch4)
   file("snpEff")  into snpEffDb_ch1
   file("annotation.ge.gtf") into (geGtf_ch1 , geGtf_ch2 , geGtf_ch3)
@@ -229,14 +229,13 @@ process covPerChr {
   input:
   set val(sampleId), file(bam) , file(bai) from map1
   set file(fa) , file(fai) , file(dict) , file(size) from genome_ch2
-  file gaps from gaps_ch1
   val(chromosomes) from chromosomes
 
   output:
   set val(sampleId), file(bam) , file(bai), file("chrCoverageMedians_$sampleId") into ( covPerChr2 , covPerChr3, covPerChr4 )
 
   """
-  chrMedianCoverages $sampleId $size $MAPQ \"$chromosomes\" . $gaps
+  chrMedianCoverages $sampleId $size $MAPQ \"$chromosomes\" .
   """
 }
 
