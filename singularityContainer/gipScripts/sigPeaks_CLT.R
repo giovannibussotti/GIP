@@ -100,6 +100,12 @@ SNCDab <- rep(df$score,each=n)
 ########
 #mu, se#
 ########
+#R cannot work with vectors too long
+#select just a random subsest of SNCDab
+if( length(SNCDab) > 60000000 ) { 
+	set.seed(123)
+	SNCDab <- sample(SNCDab,60000000)
+}
 mu <- mean(SNCDab)
 SNCDab_se <- sd(SNCDab)/sqrt(n)
 ######
