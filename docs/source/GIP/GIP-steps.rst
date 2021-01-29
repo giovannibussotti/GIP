@@ -141,15 +141,9 @@ Measure genomic bin sequencing coverage
 
 
 | The resulting bin are evaluated for significant copy number variation (CNV) with respect to the reference genome. Often, the CNV span regions larger than the bin size. In order to match the size of the CNV region (at a bin size resolution), GIP collapses adjacent significant CNV bins of the same type (i.e. adjacent bins composing a depletion, or adjacent bins composing an amplification), then averages their coverage score. We refer to these sets of collapsed bins as **segments**.
-
-| For the statistical test GIP derives the single nucleotide coverage distribution after binning (SNCDab) where the coverage of each nucleotide is approximated with the mean bin coverage.  
-| For the central limit theorem (CLT):
-
-* Regardless the shape of SNCDab, the sampling distribution of the sample means (SDSM) is gaussian
-* The mean (mu) and the standard error (se) of SNCDab correspond to the mean (mu) and the standard deviation (sd) of SDSM with sample size equal n
-              
+    
 | For each bin the null-hypothesis is that it is possible to observe its sequencing coverage just by chance under a normal (i.e. non-CNV) condition due to coverage fluctuations intruduced by the sequencing technology. The competing hypothesis is that the oberved coverage is the readout of a genuine CNV region.
-| Based on the CLT, GIP computes the P-value of each bin by measuring how many se away each bin score is from the SNCDab mu.
+| The cental limit teorem (CLT) states that the distribution of the samples means approximates to a normal distribution. As a consequence, the distribution of the genomic bin mean coverage approximates to a gaussian as well. GIP computes the P-value of each bin by measuring the number of standard deviations from the mean. 
 
 | The ``--covPerBinSigOPT`` parameter accepts a string of 3 parameters, and can be used to customize the detection of bin and segments of interest.
 
@@ -345,17 +339,17 @@ Please refer to the `freebayes manual <https://github.com/ekg/freebayes>`_ for m
 
 | For the dNdS analysis the snpEff effects counting as synonimous substitutions are:
 
-* SYNONYMOUS_CODING
-* SYNONYMOUS_STOP
+* synonymous_variant
+* stop_retained_variant
+* start_retained
 
 | The snpEff effects counting as non-synonimous substitutions are:
 
-* NON_SYNONYMOUS_CODING
-* NON_SYNONYMOUS_START 
-* START_LOST
-* STOP_GAINED
-* STOP_LOST
-
+* missense_variant
+* start_lost
+* stop_gained
+* stop_lost
+* coding_sequence_variant
 
 
 Detect and filter structural variants
