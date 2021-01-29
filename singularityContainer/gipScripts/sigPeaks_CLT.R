@@ -1,60 +1,36 @@
 #Read coverage per bin data and returns the CNVs statistically significant
-#########
-#CONTEXT#
-#########
-#You generated single nucleotide coverage distribution (SNCD) #e.g.
-#1	1	55
-#1	2	56
-#and you binned it in bins of size n (covPerBin or chrStartEndScore). 
-#The bin score is approximated to the mean coverage in the bin, normalized by median chr coverage (to account for chr ploidy) and GC corrected.
-#This is the script INPUT#e.g.
-#1      1       300     50
-#1      301     600     60
-#Single Nucleotide coverage distribution after binning (SNCDab) is derived by re-expanding the bins into single nucleotides, with each nucleotide taking the expected normalized coverage of the bin
-#e.g. SNCDab
-#1	1	50
-#1	1	50
-#..
-#1	301	60
-#For the central limit theorem (CLT), regardless the shape of SNCDab, the sampling distribution of the sample means (SDSM) will be gaussian. In other words, if we sample many times SNCDab, and we compute the mean of the sample each time, we get a gaussian distribution
-#e.g. SDSM
-#50,60,55,70,52...
-#Another important property is that The mean (mu) and the standard error (se) of SNCDab are the mean (mu) and the standard deviation (sd) of SDSM with sample size equal n
-#So we do not need to do the sampling to generate SDSM to know its mu and sd.
-#Given a bin of size n of asjacent bases in SNCDab and its mean score (i.e. the covPerBin score), my null-hypothesis is that we can get a bin with the same or higher score just by randomly selecting bins of n nucleotides from SNCDab. 
+#You generated single nucleotide coverage distribution (SNCD), and you binned it in bins of size n (covPerBin)
+#The bin score is approximated to the mean coverage in the bin
+#For the central limit theorem (CLT), regardless the shape of SNCD, the sampling distribution of the sample means (SDSM) will be gaussian. 
+#i.e. if we sample many times SNCD, and we compute the mean of the sample each time, we get a gaussian distribution
+
+#CLT example
+  #n=100
+  #se <- function(x,y) sd(x)/sqrt(y)
+#single nucleotide coverage following poisson
+  #a <- rpois(1000000,30)
+#sampling distribution of a (by binning adjacet nt)
+  #b <- sapply(split(a, ceiling(seq_along(a)/n)),mean)
+#sampling distribution of a (by binning random positions)
+  #d=c(); for (i in 1:10000) {d<-c(d,mean(sample(a,n))) }
+#for CLT the se of a is equal to the sd of the sampling distribution
+  #se(a,n)
+  #sd(b)
+  #sd(d)
+#check normality
+  #shapiro.test(sample(a,5000)) #not normal
+  #shapiro.test(sample(b,5000)) #normal
+  #shapiro.test(sample(d,5000)) #normal
+
 #The competing hypothesis is that there is something special about that specific bin.
-#Because SDSM is gaussian, I can compute the P-value of each covPerBin bin by measuring how many se away each bin score is from the SNCDab mu.
-##############
-#SCRIPT-STEPS#
-##############
-#1)read covPerBin or chrStartEndScore file measuring the bin size n
-#2)expand the bins generating SNCDab
-#3)mu and se of SNCDab are measured to get mu and sd of SDSM
-#4)A P-value is given to each input bin	
-#5)The p-value is corrected by multiple testing
-#6)Bins that pass the p-value filter are selected
-#7)Adjacent successfull bins are merged in larger areas (segments), and the coverage score merged
-#8)if --coverageThresholds the segments are selected to have a score above or below the two threshold indicated
-#########
-#WARNING#
-#########
-#In covPerBin or chrStartEndScore the bin size is regular, i.e. always the same. In covPerGe the bin size is the size of each gene, and it is not constant. So you should not use this script but sigPeaks_mixture.R
+#Because SDSM is gaussian, I can compute the P-value of each covPerBin bin by measuring how many sd away each bin score is from its mean.
 
-#NOTE
-#if you are comparing coverage in two conditions you can first subtract the two samples (use subtractBins.R) and then run sigPeaks_CLT.R on that
-#The the subtracted distribution score will be centered on 0 (not 1) so you should shift eventual --coverageThresholds filters (e.g. using -0.5 and 1) 
+#In covPerBin or chrStartEndScore the bin size is regular, i.e. always the same. In covPerGe the bin size is the size of each gene, and it is not constant. 
+#So you should not use this script but sigPeaks_mixture.R
 
-#see also
-#sigPeaks_mixture.R, subtractBins.R 
 
-#e.g. Rscript sigPeaks_CLT.R --input ../../../../sp-ama_Ht0_5749.covPerBin.gz --inFormat covPerBin --pThresh 0.0001 --coverageThresholds 2 0.5
-#################################################
-#               CONFIGURATION
-#################################################
 suppressPackageStartupMessages(library("argparse"))
-# create parser object
 parser <- ArgumentParser()
-# specify our desired options # by default ArgumentParser will add an help option
 parser$add_argument("--input"    , type="character" , help="bin file, with coverage values normalized by median chr coverage (and GC content) [default %(default)s]")
 parser$add_argument("--inFormat" , type="character" , help="format of the input bin file. Supperted are chr start end score (chrStartEndScore) or covPerBin [default %(default)s]" , default="covPerBin")
 parser$add_argument("--pThresh"  , type="double"    , help="p-value threshold [default %(default)s]" , default=1 )
@@ -93,25 +69,16 @@ if(inFormat == "chrStartEndScore"){
 	quit(save = "no", status = 1, runLast = FALSE)
 }
 n = df[1,"end"] - df[1,"start"] + 1
-########
-#expand#
-########
-SNCDab <- rep(df$score,each=n)
+
 ########
 #mu, se#
 ########
-#R cannot work with vectors too long
-#select just a random subsest of SNCDab
-if( length(SNCDab) > 60000000 ) { 
-	set.seed(123)
-	SNCDab <- sample(SNCDab,60000000)
-}
-mu <- mean(SNCDab)
-SNCDab_se <- sd(SNCDab)/sqrt(n)
+mu <- mean(df$score)
+SD <- sd(df$score)
 ######
 #pval#
 ######
-p.lowerTail  <- pnorm(df$score , mean=mu , sd=SNCDab_se , lower.tail=TRUE)
+p.lowerTail  <- pnorm(df$score , mean=mu , sd=SD , lower.tail=TRUE)
 p.higherTail <- 1 - p.lowerTail
 leftTailObs  <- df$score < mu
 df$pvalue    <- p.higherTail
@@ -180,8 +147,8 @@ system(paste0("gzip ",outName,".bins.tsv"))
 #write stats
 write.table("##DISTRIBUTIONS FEATURES",quote=F,col.names=F,sep="\t",append=F,row.names=F,file=paste0(outName,".stats"))
 write.table(paste("bin size", n),quote=F,col.names=F,sep="\t",append=T,row.names=F,file=paste0(outName,".stats"))
-write.table(paste("SNCDab mean", mu)      ,quote=F,col.names=F,sep="\t",append=T,row.names=F,file=paste0(outName,".stats"))
-write.table(paste("SNCDab standard error" , SNCDab_se),quote=F,col.names=F,sep="\t",append=T,row.names=F,file=paste0(outName,".stats"))
+write.table(paste("distribution mean", mu)      ,quote=F,col.names=F,sep="\t",append=T,row.names=F,file=paste0(outName,".stats"))
+write.table(paste("distribution standard deviation" , SD),quote=F,col.names=F,sep="\t",append=T,row.names=F,file=paste0(outName,".stats"))
 write.table("##FILTERING AND FALSE DISCOVERY RATE",quote=F,col.names=F,sep="\t",append=T,row.names=F,file=paste0(outName,".stats"))
 write.table(paste("significant bins with minMAPQ",minMAPQ, ", adjusted p-val threshold", pThresh ,"and correction strategy", padjust," that were retained after possible coverageThresholds filtering are", length(significant[,1])),quote=F,col.names=F,sep="\t",append=T,row.names=F,file=paste0(outName,".stats"))
 write.table(paste("collapsed adjacent bins (i.e. segments) that are retained after possible coverageThresholds and a min segment length of",minLen,"are", length(redD[,1])),quote=F,col.names=F,sep="\t",append=T,row.names=F,file=paste0(outName,".stats"))
