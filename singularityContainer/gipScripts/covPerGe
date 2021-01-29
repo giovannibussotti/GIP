@@ -38,7 +38,7 @@ if($_=~/gene_id \"([^\"]+)\"/){
  	} else {die "covPerGe cannot parse gtf line $_\n";}
 } ' | sort -k1,1 -k2,2n -T $TMP/_sort1 > $TMP/genes
 bedtools map -a $TMP/genes -b $BED -c 5 -o mean -null 0 > $TMP/meanMapq
-bedtools coverage -d -a $TMP/genes -b $BED > $TMP/geneCov
+bedtools coverage -sorted -d -a $TMP/genes -b $BED > $TMP/geneCov
 echo -e "gene_id\tlocus\tmeanCoverage" > $TMP/covPerGeNotNorm
 awk '{i=$4"\t"$1":"$2"-"$3; count[i]++; sum[i]+=$6;} END{ for(i in count) {m = sum[i]/count[i]; print i "\t" m}}  ' $TMP/geneCov  | sort -k1,1 -k2,2n -T $TMP/_sort2 >> $TMP/covPerGeNotNorm
 #normalize
