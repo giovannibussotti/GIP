@@ -17,6 +17,7 @@ http://circos.ca/distribution/circos-0.69-9.tgz
 https://github.com/broadinstitute/picard/archive/2.18.9.tar.gz
 https://github.com/dellytools/delly/archive/v0.8.7.tar.gz             
 http://toolsmith.ens.utulsa.edu/red/data/DataSet1Src.tar.gz
+https://github.com/samtools/bcftools/releases/download/1.11/bcftools-1.11.tar.bz2
 )
 
 
@@ -30,8 +31,6 @@ for URL in "${URLS[@]}"; do
         rm $PKG 
 done
 
-wget https://github.com/vcftools/vcftools/archive/d0c95c57bb1408c0355e610b66e39fe2583076a3.zip         
-unzip d0c95c57bb1408c0355e610b66e39fe2583076a3.zip
 
 for PKG in `ls`;do 
 	tar -czf ${PKG}.tar.gz $PKG

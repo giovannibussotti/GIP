@@ -37,10 +37,10 @@ Software
 | :download:`LICENSE Python3 <LICENSE_Python3>`
 | `Source code <https://www.python.org/ftp/python/3.7.0/Python-3.7.0.tgz>`_
 
-| **vcftools**         
-| Version 0.1.16 github commit d0c95c5      
-| :download:`LICENSE vcftools <LICENSE_vcftools>`
-| `Source code <https://github.com/vcftools/vcftools/archive/d0c95c57bb1408c0355e610b66e39fe2583076a3.zip>`_         
+| **bcftools**         
+| Version 1.11      
+| :download:`LICENSE bcftools <LICENSE_bcftools>`
+| `Source code <https://github.com/samtools/bcftools/releases/download/1.11/bcftools-1.11.tar.bz2>`_         
 
 | **deeptools**        
 | Version 2.4.2      

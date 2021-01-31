@@ -19,6 +19,7 @@ circosv=0.69-9
 mummerv=4.0.0rc1
 iqtreev=2.1.2
 trfv=4.09.1
+bcftoolsv=1.11
 
 #create the output dir
 mkdir -p files/
@@ -77,7 +78,12 @@ unzip snpEff_latest_core.zip
 rm -rf snpEff_latest_core.zip
 
 #vcftools (Latest commit d0c95c5 on Sep 2, 2018)
-git clone https://github.com/vcftools/vcftools.git
+#git clone https://github.com/vcftools/vcftools.git
+
+#bcftools
+wget https://github.com/samtools/bcftools/releases/download/${bcftoolsv}/bcftools-${bcftoolsv}.tar.bz2
+tar -xf bcftools-${bcftoolsv}.tar.bz2
+mv bcftools-${bcftoolsv} bcftools
 
 #delly
 wget https://github.com/dellytools/delly/releases/download/v${dellyv}/delly_v${dellyv}_linux_x86_64bit
@@ -128,7 +134,7 @@ tar -xzf iqtree-${iqtreev}-Linux.tar.gz
 mv iqtree-${iqtreev}-Linux/bin/iqtree2 .
 
 #CLEAN
-rm -rf bedtools-${bedtoolsv}.tar.gz iqtree-${iqtreev}-Linux iqtree-${iqtreev}-Linux.tar.gz mummer-${mummerv}.tar.gz Python-${python3v}.tgz _tmp htslib-${htslibv}.tar.bz2 samtools-${SAMTOOLSv}.tar.bz2 bwa-${BWAv}.tar.bz2 R-${Rv}.tar.gz RepeatMasker-${RepeatMaskerv}.tar.gz v${LGERTv}.tar.gz rmblast-${RMBlastv}+-x64-linux.tar.gz clinEff V${cdhitv}.tar.gz circos-${circosv}.tgz redUnix64/ DataSet2Unix64.tar.gz
+rm -rf bcftools-${bcftoolsv}.tar.bz2 bedtools-${bedtoolsv}.tar.gz iqtree-${iqtreev}-Linux iqtree-${iqtreev}-Linux.tar.gz mummer-${mummerv}.tar.gz Python-${python3v}.tgz _tmp htslib-${htslibv}.tar.bz2 samtools-${SAMTOOLSv}.tar.bz2 bwa-${BWAv}.tar.bz2 R-${Rv}.tar.gz RepeatMasker-${RepeatMaskerv}.tar.gz v${LGERTv}.tar.gz rmblast-${RMBlastv}+-x64-linux.tar.gz clinEff V${cdhitv}.tar.gz circos-${circosv}.tgz redUnix64/ DataSet2Unix64.tar.gz
 
 #compress
 mkdir -p packages
