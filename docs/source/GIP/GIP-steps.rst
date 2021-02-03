@@ -355,61 +355,62 @@ Please refer to the `freebayes manual <https://github.com/ekg/freebayes>`_ for m
 Detect and filter structural variants
 -------------------------------------
  
-| The genomic structural variants (SVs) are detected in the *delly* process using the `delly <https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3436805/>_` program. The SVs are predicted based on pair-end mapping orientation and split-read information, and include unbalanced reaffangements (i.e. CNV deletions or amplifications), as well as balanced rearrangements (inversions and translocations). delly is used to predict the four SV types using just the reads passing the ``--MAPQ`` filter. The output is the .vcf gzip compressed file  **gipOut/samples/sampleId/sampleId.delly.vcf.gz** and its tabix intex with .tbi extension.
+| The genomic structural variants (SVs) are detected in the *delly* process using the `delly <https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3436805/>_` program. The SVs are predicted based on pair-end mapping orientation and split-read information, and include unbalanced reaffangements (i.e. CNV deletions, amplifications and insertions), as well as balanced rearrangements (inversions and break ends translocations). delly is used to predict the five SV types using just the reads passing the ``--MAPQ`` filter. The outputs are the .vcf bgzip compressed file  **gipOut/samples/sampleId/sampleId.delly.vcf.gz** and its tabix index with .tbi extension.
 | GIP allows to apply custom quality filters and select a short-list of SV predictions using the ``--filterDellyOPT`` parameter, and setting the following variables:
 
-* *--minDV*          - min. num. of read pairs supporting the variant [int] 
-* *--minPercentDVDR* - min. percent of read pairs supporting the variant [num] 
-* *--PRECISE*        - delly "PRECISE" attribute [yes|no] 
-* *--maxBanSeq*      - discard SVs where the percent of overlapping repeats or gap sequences is > --maxBanSeq [num]
-* *--chrEndFilter*   - num. of bases spanning from the chromosome ends inwards. SVs overlapping such telomeric or sub-telomeric regions are discarded [int]
+* *--minMAPQ*      - min median mapping quality of paired-ends supporting the SV [int]
+* *--chrEndFilter* - num. of bases spanning from the chromosome ends inwards. SVs overlapping such telomeric or sub-telomeric regions are discarded [int]
+* *--rmLowQual*    - Remove delly predictions labelled as LowQual
+* *--rmImprecise*  - Keep just delly predictions labelled as PRECISE
+* *--topRc[Bnd|Ins|Del|Dup|Inv]*        - Select top SVs based on RC score [int]
+* *--topHqCount[Bnd|Ins|Del|Dup|Inv]*   - Select top SVs based on DV+RV score [int]
+* *--topHqPercent[Bnd|Ins|Del|Dup|Inv]* - Select top SVs based on (DV+RV/DV+RV+DR+RR)*100 score [int]
+
+| The --topRc* --topHqCount* and --topHqPercent* filters are applied sequentially and consist in selecting the best predicted SVs based on 3 different quality metrics: the RC score, the DV+RV score and the (DV+RV/DV+RV+DR+RR)*100 score.
+| Unless specified in ``--filterDellyOPT``, none of these filter is used. To use these filters it is needed to specify the filter type with a suffix indicating the SV of interest: "Bnd" (break ends), "Ins" (insertions), "Del" (deletions), "Dup" (duplications) and "Inv" (inversions).
+| for instance ``--topHqCountInv 50`` would select the 50 predicted inversions with the best DV+RV score.
+| The vcf description of the RC, DV, RV, DR, RR scores is the following: 
+
+* RC: Raw high-quality read counts or base counts for the SV
+* DV: # high-quality variant pairs
+* RV: # high-quality variant junction reads
+* DR: # high-quality reference pairs
+* RR: # high-quality reference junction reads
 
 | The parameter default is:
 
 .. code-block:: bash
+   
+   filterDellyOPT="--rmLowQual --chrEndFilter 100 --minMAPQ 50 --topHqPercentBnd 150 \ 
+   --topHqPercentIns 150 --topHqPercentDel 150 --topHqPercentDup 150 --topHqPercentInv 150"
 
-   filterDellyOPT="--minDV 2 --minPercentDVDR 5 --PRECISE no \
-   --maxBanSeq 90 --chrEndFilter 100"
 
-| Additionally, GIP allows to filter the tandem duplications and deletions predicted with delly based on their sequencing coverage relative to the chromosome median coverage. Predicted tandem duplication must have a normalized coverage > ``--minNormCovForDUP`` (e.g. 1.5), while deletions must have a normalized coverage < ``--maxNormCovForDEL`` (e.g. 0.5). However these filters are not effective by default (values set to 0 and 100, respectively) because genuine deletions or depletions may not always defined by variation in sequencing coverage. Whole genome sequencing data obtained from cell populations is such that a given locus under evolutive pressure can be amplified in a sub-population, and deleted in in another sub-population. Moreover, in biological systems with high DNA plasiticity such as the human pathogen *Leishmania*, a genomic region can undergo multiple, complex genomic rearrangements and shuffling whose presence may be revealed by read pair mapping orientation or split-read information, but not necessarily by sequencing coverage variations.            
+| The duplication and deletion analysis performed by delly is complementary to the analysis performed considering the sequencing coverage only. Genuine deletions or depletions may not always show a variation in sequencing coverage. Whole genome sequencing data obtained from cell populations is such that a given locus under evolutive pressure can be amplified in a sub-population, and deleted in in another sub-population. Moreover, in biological systems with high DNA plasiticity such as the human pathogen *Leishmania*, a genomic region can undergo multiple, complex genomic rearrangements and shuffling whose presence may be revealed by read pair mapping orientation or split-read information, but not necessarily by sequencing coverage variations.            
 | The results relative to the filtered SVs are stored in the **gipOut/samples/sampleId/sampleId_dellyFiltered/** folder including:
 
++------------------------+----------------------------------+
+| output.vcf.gz          | compressed vcf file              |
++------------------------+----------------------------------+
+| output.vcf.gz.tbi      | tabix index                      |
++------------------------+----------------------------------+
+| DEL.bed                | deletions coordinates            |
++------------------------+----------------------------------+
+| DUP.bed                | tandem duplications coordinates  |
++------------------------+----------------------------------+
+| INV.bed                | inversions coordinates           |
++------------------------+----------------------------------+
+| BND.bed                | break end  coordinates           |
++------------------------+----------------------------------+
+| INS.bed                | insertions coordinates           |
++------------------------+----------------------------------+
+| sampleId_circosData/   | data for circos plot             |
++------------------------+----------------------------------+
+| sampleId.SV.circos.png | circos plot                      |
++------------------------+----------------------------------+
 
-+-------------------------------------+----------------------------------+
-| sampleId.delly.DEL.filter           | deletions table                  |
-+-------------------------------------+----------------------------------+
-| sampleId.delly.DEL.filter.circosBed | deletions coordinates            |
-+-------------------------------------+----------------------------------+
-| sampleId.delly.DUP.filter           | tandem duplications table        |
-+-------------------------------------+----------------------------------+
-| sampleId.delly.DUP.filter.circosBed | tandem duplications coordinates  |
-+-------------------------------------+----------------------------------+
-| sampleId.delly.INV.filter           | inversions table                 |
-+-------------------------------------+----------------------------------+
-| sampleId.delly.INV.filter.circosBed | inversions coordinates           |
-+-------------------------------------+----------------------------------+
-| sampleId.delly.TRA.filter           | translocations table             |
-+-------------------------------------+----------------------------------+
-| sampleId.delly.TRA.filter.circosBed | translocations coordinates       |
-+-------------------------------------+----------------------------------+
-| sampleId_circosData/                | data for circos plot             |
-+-------------------------------------+----------------------------------+
-| sampleId.SV.circos.png              | circos plot                      |
-+-------------------------------------+----------------------------------+
+For circos plot representation the chromosomes of interest are binned in into genomic intervals whose size (bp) is regulated by ``--binSizeCircos`` (default 25000). In the the inner part of circos plot the predicted break ends translocations events are shown as black lines. The karyotype color reflects the mean reads MAPQ score calculated for each genomic bin. Black indicates a MAPQ < 2, gray indicates a MAPQ ≥ 2 and < 20 and white indicates a MAPQ ≥ 20. Ticks positions and ticks labels are automatically assigned by GIP depending on genome size. If any, the position of insetions is indicated by red stripes on the karyotype. 
 
-| All coordinates files are in bed format, except for **sampleId.delly.TRA.filter.circosBed**, where the six fields correspond to the coordinates (chromosome<Tab>start<Tab>end) of the two translocation break points. All SV tables have the following fields:
-
-1. *locus*                 - SV coordinates (chromosome:start-end)
-2. *normCov*               - mean sequencing coverage normalized by chromosome median coverage
-3. *percReadsSupportingSV* - percent of read pairs supporting the variant 
-4. *MAPQ*                  - mean MAPQ score of reads mapping to the SV locus
-5. *SV*                    - SV type
-6. *sampleId*              - sample identifier
-7. *SVid*                  - SV identifier
-8. *genes*                 - comma separated list of genes overlapping the SV 
-
-
-For circos plot representation the chromosomes of interest are binned in into genomic intervals whose size (bp) is regulated by ``--binSizeCircos`` (default 25000). In the the inner part of circos plot the predicted translocations events are shown as black lines. The genes on the positive and negative strands are shown respectivelly in green and red. Ticks are shown ong the kayotype track every 100kb, and a label is shown every 1Mb. Moving outwards the circos plot shows a track where the mean reads MAPQ score in each bin is shown in a color scale ranging from black (MAPQ ≤ 5) to white (MAPQ ≥ 50). Outside follow the tracks relative to predicted duplication (orange), deletion (green) and inversion (blue) regions. The outmost track shows the genomic bin sequencing coverage (light blue bars) normalized by chromosome median coverage and ranging from 0 to 3. To ease visualization, amplifications with normalized coverage greather than 3 are shown with a value of 3.      
+Moving outwards the circos plot shows the tracks relative to predicted duplications (orange), deletions (blue) and inversions (green). The outmost track shows the genomic bin sequencing coverage (light blue bars) normalized by chromosome median coverage and ranging from 0 to 3. To ease visualization, amplifications with normalized coverage greather than 3 are shown with a value of 3.      
 
 
 

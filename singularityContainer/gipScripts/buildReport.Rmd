@@ -353,57 +353,38 @@ figureX <- figureX +1
 The genomic SVs that were evaluated include 
 
 * inversions
-* translocations
+* break ends
 * duplications
 * deletions 
+* insertions
 
 The file in VCF format with delly's predictions is available from [here](`r paste0("../samples/",sample,"/",sample,".delly.vcf.gz")`).  
-Downstream filters were applied on the delly's output to reduce the number of false positives.  
-The filtered output is available from [here](`r paste0("../samples/",sample,"/",sample,"_freebayesFiltered/dNdStable.tsv.gz")`).  
+Downstream quality filters were applied on the delly's output to reduce the number of false positives and ease graphical representation.  
+The filtered output is available from [here](`r paste0("../samples/",sample,"/",sample,"_dellyFiltered/output.tsv.gz")`).  
 
 ```{r dellyStats ,  results='asis'}
-invDf <- read.delim(paste0(sample,"_dellyFiltered/",sample,".delly.INV.filter"),stringsAsFactors=F,header=T,sep="\t")
-delDf <- read.delim(paste0(sample,"_dellyFiltered/",sample,".delly.DEL.filter"),stringsAsFactors=F,header=T,sep="\t")
-dupDf <- read.delim(paste0(sample,"_dellyFiltered/",sample,".delly.DUP.filter"),stringsAsFactors=F,header=T,sep="\t")
-traDf <- read.delim(paste0(sample,"_dellyFiltered/",sample,".delly.TRA.filter"),stringsAsFactors=F,header=T,sep="\t")
-displayInv=FALSE ; if(length(invDf[,1])) {displayInv=TRUE;} 
-displayDel=FALSE ; if(length(delDf[,1])) {displayDel=TRUE;} 
-displayDup=FALSE ; if(length(dupDf[,1])) {displayDup=TRUE;} 
-displayTra=FALSE ; if(length(traDf[,1])) {displayTra=TRUE;} 
+invDf <- read.delim(paste0(sample,"_dellyFiltered/INV.bed"),stringsAsFactors=F,header=T,sep="\t")
+delDf <- read.delim(paste0(sample,"_dellyFiltered/DEL.bed"),stringsAsFactors=F,header=T,sep="\t")
+insDf <- read.delim(paste0(sample,"_dellyFiltered/INS.bed"),stringsAsFactors=F,header=T,sep="\t")
+bndDf <- read.delim(paste0(sample,"_dellyFiltered/BND.bed"),stringsAsFactors=F,header=T,sep="\t")
+dupDf <- read.delim(paste0(sample,"_dellyFiltered/DUP.bed"),stringsAsFactors=F,header=T,sep="\t")
+ 
 ```
-  
   
 ```{r dellySVs  , out.width = "50%" , fig.cap=paste0("Figure ",figureX -1,": Structural varaints analysis")}
 knitr::include_graphics(paste0(sample,"_dellyFiltered/",sample,".SV.circos.png"))
 figureX <- figureX +1
 ```
   
-  
-```{r inv ,  results='asis' , eval=displayInv ,  include=displayInv}
-tmp <- pickFromDf(invDf,"percReadsSupportingSV",length(invDf[,1]),"head",c("rawSampleId"))
-kable(tmp , align='c', "simple" , row.names = F , caption=paste0("Table ",tableX,": Genomic inversions"))
-tableX <- tableX +1
-```
-  
-```{r dup ,  results='asis' , eval=displayDup ,  include=displayDup}
-tmp <- pickFromDf(dupDf,"percReadsSupportingSV",length(dupDf[,1]),"head",c("rawSampleId"))
-kable(tmp , align='c', "simple" , row.names = F , caption=paste0("Table ",tableX,": Genomic duplications"))
-tableX <- tableX +1
-```
-  
-```{r del ,  results='asis' , eval=displayDel ,  include=displayDel}
-tmp <- pickFromDf(delDf,"percReadsSupportingSV",length(delDf[,1]),"head",c("rawSampleId"))
-kable(tmp , align='c', "simple" row.names = F , caption=paste0("Table ",tableX,": Genomic deletions"))
-tableX <- tableX +1
-```
-  
-```{r tra ,  results='asis' , eval=displayTra ,  include=displayTra}
-tmp <- pickFromDf(traDf,"percReadsSupportingSV",length(traDf[,1]),"head",c("rawSampleId"))
-kable(tmp , align='c', "simple" , row.names = F , caption=paste0("Table ",tableX,": Genomic translocations"))
-tableX <- tableX +1
-```
-    
-  
+
+In total the SV filtered output includes 
+
+* `r length(bndDf[,1])` break end translocations (links) [BND](`r paste0("../samples/",sample,"/",sample,"_dellyFiltered/BND.bed")` 
+* `r length(insDf[,1])` insertions (red) [INS](`r paste0("../samples/",sample,"/",sample,"_dellyFiltered/INS.bed")` 
+* `r length(dupDf[,1])` duplications (orange) [DUP](`r paste0("../samples/",sample,"/",sample,"_dellyFiltered/DUP.bed")` 
+* `r length(delDf[,1])` deletions (blue) [DEL](`r paste0("../samples/",sample,"/",sample,"_dellyFiltered/DEL.bed")` 
+* `r length(invDf[,1])` inversions (green) [INV](`r paste0("../samples/",sample,"/",sample,"_dellyFiltered/INV.bed")` 
+
   
 # References
 

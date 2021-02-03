@@ -27,14 +27,14 @@ library(data.table)
 library(ggplot2)
 options(datatable.fread.input.cmd.message=FALSE)
 
-if(debug){library(session);save.session("session_DEBUG");quit()}
+if(debug){library(session);save.session("session_plotCovPerBin");quit()}
 
 
 #chr size cumulative sum
 chrSize <- read.table(chrSizeFile,header=F,stringsAsFactors=F,col.names=c("chr","size"))
 chrSize$chr <- as.character(chrSize$chr)
 chrSize <- chrSize[chrSize$chr %in% chrs,]
-chrSizeCumSum <- cumsum(chrSize$size)
+chrSizeCumSum <- cumsum(as.numeric(chrSize$size))
 v <- c(0,chrSizeCumSum)
 chrSizeCumSum <- v[-length(v)]
 names(chrSizeCumSum) <- chrSize$chr
