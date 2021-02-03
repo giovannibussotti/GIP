@@ -109,6 +109,7 @@ From: ubuntu:xenial
   cpan Clone
   cpan Config::General
   cpan Font::TTF::Font
+  cpan -f Archive::Zip
   cpan GD
   cpan Math::Bezier
   cpan Math::Round
