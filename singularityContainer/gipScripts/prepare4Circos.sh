@@ -10,7 +10,7 @@ case $OPTION in
   b)  BINSIZE=$OPTARG;;
   x)  covPerChr=$OPTARG;;
   t)  CONFTEMPLATE=$OPTARG;;
-  z)  TRADATA=$OPTARG;;
+  z)  BNDDATA=$OPTARG;;
   j)  INVDATA=$OPTARG;;
   k)  DUPDATA=$OPTARG;;
   w)  DELDATA=$OPTARG;;
@@ -24,12 +24,12 @@ case $OPTION in
       echo "   -b    bin size"
       echo "   -x    coverage per chromosome file"
       echo "   -t    configuration template"
-      echo "   -z    traslocation data"
+      echo "   -z    break end traslocation data"
       echo "   -j    inversion data"
       echo "   -k    duplication data"
       echo "   -w    deletion data"
       echo "   -g    insertion file"
-      echo "example: ./prepare4Circos.sh -x chrCoverageMedians_Ldo_CH33 -i Ldo_CH33 -m Ldo_CH33_EP.bam -s /pasteur/projets/policy01/BioIT/Giovanni/datasets/projects/p2p5/LdBPKv2.chrSize -g /pasteur/projets/policy01/BioIT/Giovanni/datasets/projects/p2p5/LdBPKv2.ge.gtf -c \"1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36\" -b 25000 -t templateCircos.conf -z Ldo_CH33_EP+3.delly.TRA.filter.circosBed -j Ldo_CH33_EP+3.delly.INV.filter.circosBed -k Ldo_CH33_EP+3.delly.DUP.filter.circosBed -w Ldo_CH33_EP+3.delly.DEL.filter.circosBed"
+      echo "example: ./prepare4Circos.sh -x chrCoverageMedians_Ldo_CH33 -i Ldo_CH33 -m Ldo_CH33_EP.bam -s /pasteur/projets/policy01/BioIT/Giovanni/datasets/projects/p2p5/LdBPKv2.chrSize -g INS.bed -c \"1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36\" -b 25000 -t templateCircos.conf -z TRA.bed -j INV.bed -k DUP.bed -w DEL.bed"
 	    exit 0;;
 	\?)	echo "Unknown argument \"-$OPTARG\"."
 	echo $HELP ; exit 1;;

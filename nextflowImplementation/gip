@@ -396,7 +396,7 @@ process delly {
   set val(sampleId), file("${sampleId}.delly.vcf.gz") , file("${sampleId}.delly.vcf.gz.tbi") , file("${sampleId}_dellyFiltered")  into delly
 
   """
-  delly call -q $MAPQ -g $genome -o delly.bcf $bam
+  delly call -q $MAPQ -g $fa -o delly.bcf $bam
   bcftools view delly.bcf > ${sampleId}.delly.vcf
   bgzip ${sampleId}.delly.vcf 
   tabix -p vcf -f ${sampleId}.delly.vcf.gz
@@ -404,9 +404,7 @@ process delly {
                            --outDir . --chrsToKeep \"$chromosomes\" $filterDellyOPT 
   #circos
   cp /bin/ideogram.conf /bin/ticks.conf .
-  prepare4Circos.sh -i ${sampleId} -m ${sampleId}.bam -s genome.chrSize -x chrCoverageMedians_${sampleId} \
-                  -c "$chromosomes" -b $binSizeCircos -t /bin/templateCircos.conf \
-                  -z BND.bed -j INV.bed -k DUP.bed -w DEL.bed -g INS.bed
+  prepare4Circos.sh -i ${sampleId} -m ${sampleId}.bam -s genome.chrSize -x chrCoverageMedians_${sampleId} -c "$chromosomes" -b $binSizeCircos -t /bin/templateCircos.conf -z BND.bed -j INV.bed -k DUP.bed -w DEL.bed -g INS.bed
   #reorganize output
   mkdir -p ${sampleId}_dellyFiltered/
   mv ${sampleId}.SV.circos.png ${sampleId}_dellyFiltered/

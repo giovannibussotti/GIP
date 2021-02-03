@@ -150,7 +150,7 @@ if(length(bnd) > 0 ) {
 	              chr2=paste0("chr",info(bnd)$CHR2) , start2=info(bnd)$POS2 , end2=info(bnd)$POS2 +1 , stringsAsFactors=F)
     write.table(x=bed,quote=F,append=F,col.names=F,row.names=F,sep="\t",file=paste0(outDir,"/BND.bed"))
 } else {
-    system(paste0("touch " , outDir,"/",SVTYPE,".bed"))
+    system(paste0("touch " , outDir,"/BND.bed"))
 }
 #print out VCF
 writeVcf(rbind(vcf,bnd)[SVsel,],filename=paste0(outDir,"/output.vcf"))

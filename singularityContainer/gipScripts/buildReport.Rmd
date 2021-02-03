@@ -350,25 +350,16 @@ figureX <- figureX +1
 
 # Structural variants
 `delly`[[6]](#references) was used to detect structural variants (SVs) based of read pairing orientation and split reads information.  
-The genomic SVs that were evaluated include 
-
-* inversions
-* break ends
-* duplications
-* deletions 
-* insertions
-
 The file in VCF format with delly's predictions is available from [here](`r paste0("../samples/",sample,"/",sample,".delly.vcf.gz")`).  
 Downstream quality filters were applied on the delly's output to reduce the number of false positives and ease graphical representation.  
 The filtered output is available from [here](`r paste0("../samples/",sample,"/",sample,"_dellyFiltered/output.tsv.gz")`).  
 
 ```{r dellyStats ,  results='asis'}
-invDf <- read.delim(paste0(sample,"_dellyFiltered/INV.bed"),stringsAsFactors=F,header=T,sep="\t")
-delDf <- read.delim(paste0(sample,"_dellyFiltered/DEL.bed"),stringsAsFactors=F,header=T,sep="\t")
-insDf <- read.delim(paste0(sample,"_dellyFiltered/INS.bed"),stringsAsFactors=F,header=T,sep="\t")
-bndDf <- read.delim(paste0(sample,"_dellyFiltered/BND.bed"),stringsAsFactors=F,header=T,sep="\t")
-dupDf <- read.delim(paste0(sample,"_dellyFiltered/DUP.bed"),stringsAsFactors=F,header=T,sep="\t")
- 
+invDf <- tryCatch(read.table(paste0(sample,"_dellyFiltered/INV.bed"),stringsAsFactors=F,header=F,sep="\t") , error=function(cond){} )
+delDf <- tryCatch(read.table(paste0(sample,"_dellyFiltered/DEL.bed"),stringsAsFactors=F,header=F,sep="\t") , error=function(cond){} )
+insDf <- tryCatch(read.table(paste0(sample,"_dellyFiltered/INS.bed"),stringsAsFactors=F,header=F,sep="\t") , error=function(cond){} )
+bndDf <- tryCatch(read.table(paste0(sample,"_dellyFiltered/BND.bed"),stringsAsFactors=F,header=F,sep="\t") , error=function(cond){} )
+dupDf <- tryCatch(read.table(paste0(sample,"_dellyFiltered/DUP.bed"),stringsAsFactors=F,header=F,sep="\t") , error=function(cond){} )
 ```
   
 ```{r dellySVs  , out.width = "50%" , fig.cap=paste0("Figure ",figureX -1,": Structural varaints analysis")}
@@ -377,13 +368,13 @@ figureX <- figureX +1
 ```
   
 
-In total the SV filtered output includes 
+In total the SV filtered output includes: 
 
-* `r length(bndDf[,1])` break end translocations (links) [BND](`r paste0("../samples/",sample,"/",sample,"_dellyFiltered/BND.bed")` 
-* `r length(insDf[,1])` insertions (red) [INS](`r paste0("../samples/",sample,"/",sample,"_dellyFiltered/INS.bed")` 
-* `r length(dupDf[,1])` duplications (orange) [DUP](`r paste0("../samples/",sample,"/",sample,"_dellyFiltered/DUP.bed")` 
-* `r length(delDf[,1])` deletions (blue) [DEL](`r paste0("../samples/",sample,"/",sample,"_dellyFiltered/DEL.bed")` 
-* `r length(invDf[,1])` inversions (green) [INV](`r paste0("../samples/",sample,"/",sample,"_dellyFiltered/INV.bed")` 
+* `r length(bndDf[,1])` break end translocations (links) [BND](`r paste0("../samples/",sample,"/",sample,"_dellyFiltered/BND.bed")`) 
+* `r length(insDf[,1])` insertions (red) [INS](`r paste0("../samples/",sample,"/",sample,"_dellyFiltered/INS.bed")`) 
+* `r length(dupDf[,1])` duplications (orange) [DUP](`r paste0("../samples/",sample,"/",sample,"_dellyFiltered/DUP.bed")`) 
+* `r length(delDf[,1])` deletions (blue) [DEL](`r paste0("../samples/",sample,"/",sample,"_dellyFiltered/DEL.bed")`) 
+* `r length(invDf[,1])` inversions (green) [INV](`r paste0("../samples/",sample,"/",sample,"_dellyFiltered/INV.bed")`) 
 
   
 # References
