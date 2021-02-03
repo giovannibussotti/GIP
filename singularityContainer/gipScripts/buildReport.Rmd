@@ -352,7 +352,7 @@ figureX <- figureX +1
 `delly`[[6]](#references) was used to detect structural variants (SVs) based of read pairing orientation and split reads information.  
 The file in VCF format with delly's predictions is available from [here](`r paste0("../samples/",sample,"/",sample,".delly.vcf.gz")`).  
 Downstream quality filters were applied on the delly's output to reduce the number of false positives and ease graphical representation.  
-The filtered output is available from [here](`r paste0("../samples/",sample,"/",sample,"_dellyFiltered/output.tsv.gz")`).  
+The filtered output is available from [here](`r paste0("../samples/",sample,"/",sample,"_dellyFiltered/output.vcf.gz")`).  
 
 ```{r dellyStats ,  results='asis'}
 invDf <- tryCatch(read.table(paste0(sample,"_dellyFiltered/INV.bed"),stringsAsFactors=F,header=F,sep="\t") , error=function(cond){} )
@@ -370,11 +370,11 @@ figureX <- figureX +1
 
 In total the SV filtered output includes: 
 
-* `r length(bndDf[,1])` break end translocations (links) [BND](`r paste0("../samples/",sample,"/",sample,"_dellyFiltered/BND.bed")`) 
-* `r length(insDf[,1])` insertions (red) [INS](`r paste0("../samples/",sample,"/",sample,"_dellyFiltered/INS.bed")`) 
-* `r length(dupDf[,1])` duplications (orange) [DUP](`r paste0("../samples/",sample,"/",sample,"_dellyFiltered/DUP.bed")`) 
-* `r length(delDf[,1])` deletions (blue) [DEL](`r paste0("../samples/",sample,"/",sample,"_dellyFiltered/DEL.bed")`) 
-* `r length(invDf[,1])` inversions (green) [INV](`r paste0("../samples/",sample,"/",sample,"_dellyFiltered/INV.bed")`) 
+* `r length(bndDf[,1])` break end translocations (links): [BND coordinates](`r paste0("../samples/",sample,"/",sample,"_dellyFiltered/BND.bed")`) 
+* `r length(insDf[,1])` insertions (red): [INS coordinates](`r paste0("../samples/",sample,"/",sample,"_dellyFiltered/INS.bed")`) 
+* `r length(dupDf[,1])` duplications (orange): [DUP coordinates](`r paste0("../samples/",sample,"/",sample,"_dellyFiltered/DUP.bed")`) 
+* `r length(delDf[,1])` deletions (blue): [DEL coordinates](`r paste0("../samples/",sample,"/",sample,"_dellyFiltered/DEL.bed")`) 
+* `r length(invDf[,1])` inversions (green): [INV coordinates](`r paste0("../samples/",sample,"/",sample,"_dellyFiltered/INV.bed")`) 
 
   
 # References
