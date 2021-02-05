@@ -6,7 +6,7 @@ parser$add_argument("--gipOut"  , help="GIP output directory [default %(default)
 parser$add_argument("--outName" , help="Output name [default %(default)s]" , default="gipOut/sampleComparison/phylogeny")
 parser$add_argument("--VRFcutoff" , nargs="+" , type="double" , help="Provide 2 numbers. For each sample, heterozygous SNVs where NUM2 <= VRF < NUM are labeled with the IUPAC ambiguous notation. SNVs with VRF < NUM2 are removed [default %(default)s]" , default=c(0.70,0.10))
 parser$add_argument("--regionsGtf"         , help="Select just the SNVs present in regions specified in this GTF file (e.g. genes). If \"NA\" nor region filter is applied [default %(default)s]" , default="NA")
-parser$add_argument("--iqtreeOpts" , help="IQ-tree options [default %(default)s]" , default="-alrt 1000 -bb 1000 -nt 1 -quiet")
+parser$add_argument("--iqtreeOpts" , help="IQ-tree options [default %(default)s]" , default="--alrt 1000 -B 1000 -T 1 -quiet")
 parser$add_argument("--debug"  , action="store_true" , help="Dump session and quit" , default=FALSE)
 args <- parser$parse_args()
 for (n in names(args)){if(args[[n]][1] == "NA"){args[[n]] <- NA}  }

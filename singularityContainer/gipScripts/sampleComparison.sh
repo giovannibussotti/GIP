@@ -89,9 +89,13 @@ elif [ $MODE == "genomeDistance" ]; then
     $CMD
 
 elif [ $MODE == "phylogeny" ]; then
-    CMD="Rscript /bin/phylogeny $OPTS"
-    #echo executing $CMD
-    $CMD
+    OPTS2=`echo $OPTS | perl -ne ' chomp $_; $_=~s/--iqtreeOpts\s+\"([^\"]*)\"//; print "$_";'`
+    OPTS3=`echo $OPTS | perl -ne ' chomp $_; if($_=~/--iqtreeOpts\s+\"([^\"]*)\"/){print "$1";} '`
+    if [ -z "$OPTS3" ]; then
+      Rscript /bin/phylogeny $OPTS2
+    else
+      Rscript /bin/phylogeny $OPTS2 --iqtreeOpts "$OPTS3"
+    fi
 
 elif [ $MODE == "convergentCNV" ]; then
     CMD="Rscript /bin/convergentCNV $OPTS"
