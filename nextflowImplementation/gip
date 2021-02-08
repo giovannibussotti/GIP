@@ -228,7 +228,7 @@ process covPerChr {
   val(chromosomes) from chromosomes
 
   output:
-  set val(sampleId), file(bam) , file(bai), file("chrCoverageMedians_$sampleId") into ( covPerChr2 , covPerChr3, covPerChr4 )
+  set val(sampleId), file(bam) , file(bai), file("chrCoverageMedians_$sampleId") into ( covPerChr1 , covPerChr2 , covPerChr3, covPerChr4 )
 
   """
   chrMedianCoverages $sampleId $size $MAPQ \"$chromosomes\" .
@@ -246,7 +246,7 @@ process covPerBin {
 
   output:
   set val(sampleId), file ("${sampleId}.covPerBin.gz"), file ("${sampleId}.covPerBin.plot.all.png") , file ("${sampleId}.covPerBin.plot.byChr.pdf") , file ("${sampleId}.covPerBin.plot.tsv.gz") , file ("${sampleId}.covPerBin.plot.faceting.png") , file("${sampleId}.covPerBin.significant.bins.tsv.gz") , file("${sampleId}.covPerBin.significant.segments.tsv.gz") , file("${sampleId}.covPerBin.significant.stats") into (covPerBin)
-  set val(sampleId), file(bam) , file(bai) , file(covPerChr) , file ("${sampleId}.covPerBin.gz") , file ("${sampleId}.bed") into (covPerBin4covPerGe , covPerBin4delly) 
+  set val(sampleId), file(bam) , file(bai) , file(covPerChr) , file ("${sampleId}.covPerBin.gz") , file ("${sampleId}.bed") into (covPerBin4covPerGe) 
   set val(sampleId), file ("${sampleId}.karyotype.boxplot.png") , file ("${sampleId}.karyotype.ridges.png") , file ("${sampleId}.karyotype.allMedians.tsv") , file ("${sampleId}.karyotype.medianCoverage") into (karyotype)
 
 
@@ -388,7 +388,7 @@ process delly {
   tag { "${sampleId}" }
 
   input:
-  set val(sampleId), file(bam) , file(bai) , file(covPerChr) , file(covPerBin) , file (bed) from covPerBin4delly
+  set val(sampleId), file(bam) , file(bai) , file(covPerChr) from covPerChr1
   set file(fa) , file(fai) , file(dict) , file(size) from genome_ch8
   val(chromosomes) from chromosomes
 
@@ -400,14 +400,15 @@ process delly {
   bcftools view delly.bcf > ${sampleId}.delly.vcf
   bgzip ${sampleId}.delly.vcf 
   tabix -p vcf -f ${sampleId}.delly.vcf.gz
-  Rscript /bin/filterDelly.R --vcfFile ${sampleId}.delly.vcf.gz --chrSizeFile $size \
-                           --outDir . --chrsToKeep \"$chromosomes\" $filterDellyOPT 
+  Rscript /bin/filterDelly.R --vcfFile ${sampleId}.delly.vcf.gz --chrSizeFile $size --outDir . --chrsToKeep $chromosomes $filterDellyOPT 
   #circos
   cp /bin/ideogram.conf /bin/ticks.conf .
-  prepare4Circos.sh -i ${sampleId} -m ${sampleId}.bam -s genome.chrSize -x chrCoverageMedians_${sampleId} -c "$chromosomes" -b $binSizeCircos -t /bin/templateCircos.conf -z BND.bed -j INV.bed -k DUP.bed -w DEL.bed -g INS.bed
+  prepare4Circos.sh -i $sampleId -m $bam -s $size -x $covPerChr -c "$chromosomes" -b $binSizeCircos -t /bin/templateCircos.conf -z BND.bed -j INV.bed -k DUP.bed -w DEL.bed -g INS.bed
   #reorganize output
   mkdir -p ${sampleId}_dellyFiltered/
   mv ${sampleId}.SV.circos.png ${sampleId}_dellyFiltered/
+  bcftools sort -T ./bcfSort -o sorted.vcf output.vcf
+  mv sorted.vcf output.vcf
   bgzip output.vcf 
   tabix -p vcf -f output.vcf.gz
   mv INS.bed INV.bed DEL.bed DUP.bed BND.bed output.vcf.gz output.vcf.gz.tbi ${sampleId}_dellyFiltered/
