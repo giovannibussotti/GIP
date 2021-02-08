@@ -422,6 +422,7 @@ process bigWigGenomeCov {
 
   input:
   set val(sampleId), file(bam) , file(bai) from map3
+  val(chromosomes) from chromosomes
   
   output:
   set val(sampleId), file("${sampleId}.bw") into (bigWigGenomeCov)
@@ -430,7 +431,7 @@ process bigWigGenomeCov {
   #generate a bedGraph per chr
   TMP=tmpbw
   mkdir -p \$TMP
-  for CHR in `samtools idxstats $bam | cut -f1 | head -n -2`; do
+  for CHR in $chromosomes ; do
     samtools view  -b $bam \$CHR > \$TMP/\${CHR}.bam    
     samtools index \$TMP/\${CHR}.bam
     bamCoverage -b \$TMP/\${CHR}.bam --outFileName \$TMP/\${CHR}.bg --numberOfProcessors $task.cpus --outFileFormat bedgraph --normalizeUsingRPKM --ignoreDuplicates -r \$CHR $bigWigOPT
