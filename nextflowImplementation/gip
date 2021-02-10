@@ -397,7 +397,7 @@ process delly {
 
   """
   delly call -q $MAPQ -g $fa -o delly.bcf $bam
-  bcftools view delly.bcf > ${sampleId}.delly.vcf
+  bcftools view -i 'REF="A" | REF="C" | REF="G" | REF="T"' delly.bcf > ${sampleId}.delly.vcf
   bgzip ${sampleId}.delly.vcf 
   tabix -p vcf -f ${sampleId}.delly.vcf.gz
   Rscript /bin/filterDelly.R --vcfFile ${sampleId}.delly.vcf.gz --chrSizeFile $size --outDir . --chrsToKeep $chromosomes $filterDellyOPT 
