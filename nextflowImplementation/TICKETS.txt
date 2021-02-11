@@ -1,5 +1,8 @@
-18) the container works fine in the old centos 6 cluster with singularity 3.5. In the cluster with the new centos version there is a problem with typeset -fx (i.e. declare the bash function). The problem is related to what is described in this post: https://stackoverflow.com/questions/58317190/automatically-source-configuration-when-running-singularity-container-with-shel
-The solution to make the container work on all systems would be to convert the bash functions into separate independent bash scripts
+20) GIP should handle automatically the TMPDIR variable
+
+19)GIP should remove the channels representing samples too shallow. If for instance the chromosome median coverage in a sample is 0 then most likely GIP crashes (while it should just skip the sample)
+
+18) GIP should make a check that names have a good syntax. i.e. whether read.table check.names changes them or not. For instance "-" should be avoided in sample names because break R syntax. The  risk is that then when you try to use the column with $ it does not find the column
 
 17) you need to remove the big sample.bed file including all the reads. if you do that you cannot -resume anymore. one solution would be to combine all the processes using the bed file (covPerBin, covPerGe, and delly) but seems unpractical. Test the afterScript process directive to remove this file
 

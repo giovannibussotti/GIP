@@ -26,7 +26,7 @@ suppressPackageStartupMessages(library("openxlsx"))
 suppressPackageStartupMessages(library("ggtree"))
 suppressPackageStartupMessages(library("ape"))
 suppressPackageStartupMessages(library("ggplot2"))
-if(debug){library(session); save.session("session_convergentCNV");quit()}
+if(debug){library(session); save.session("session_DEBUG_convergentCNV");quit()}
 
 #setup
 if (is.na(gipOut)){
@@ -55,7 +55,7 @@ if (is.na(outName)){
 #read
 treeSNV    <- read.tree(newickTree)
 treeSNV    <- drop.tip(treeSNV,"reference")
-SNVdistMat <- read.table(distMat,header=T,stringsAsFactors=F)
+SNVdistMat <- read.table(distMat,header=T,stringsAsFactors=F,check.names=F)
 SNVdistMat <- as.matrix(SNVdistMat[treeSNV$tip.label,treeSNV$tip.label])
 geneCNV  <- read.xlsx(geCNV,sheet="normGeneCoverage")
 row.names(geneCNV) <- geneCNV$gene_id

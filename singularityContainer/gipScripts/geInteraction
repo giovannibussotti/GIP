@@ -1,28 +1,3 @@
-#samplesList="samplesList2_info"
-#gipOut="gipOut"
-#outName=NA
-#chrs=NA
-#debug=FALSE
-#minMAPQ=50
-#minDelta=1
-#minMaxCov=NA
-#quantileSaturation=NA
-#clusteringMethod="complete"
-#cutree_cnv=3
-#cutree_samp=4
-#show_geneNames=TRUE
-#show_sampNames=TRUE
-#heatmapType="scaled"
-#doNotClusterSamples=TRUE
-#DEVELOP_ONLY=TRUE
-#kmeansClusters=3
-#MCLinflation=NA
-#MCLexpansion=2
-#clMaxSDdist=Inf
-#clMinSize=2
-#edgesMeanCorFilter=FALSE
-#edgesPvalueFilter=0.1
-
 suppressPackageStartupMessages(library("argparse"))
 parser <- ArgumentParser(description="Detect CNV genes across multiple samples and produce correlation-based networks")
 parser$add_argument("--samplesList" , nargs="+", required=TRUE, help="File with a column named \"sample\" listing samples names. Additional TSV columns will be used to annotate the output figures. \"field\"_COLOR columns are used to map colors to the additional fields [required]" )
@@ -72,7 +47,7 @@ suppressPackageStartupMessages(library("reshape2"))
 suppressPackageStartupMessages(library("randomcoloR"))
 suppressPackageStartupMessages(library("pheatmap"))
 
-if(debug){library(session);save.session("session_DEBUG_interaction");quit()}
+if(debug){library(session);save.session("session_DEBUG_geInteraction");quit()}
 
 #setup
 if(! dir.exists(gipOut)){
@@ -100,7 +75,7 @@ row.names(sampInfo) <- samples
 allFiles <- list()
 
 for (i in 1:length(samples)){
-  N <- samples[i] 
+  N <- samples[i]
   allFiles[[N]] <- as.data.frame(fread(cmd=paste0("gunzip -c ", gipOut , "/samples/" , N , "/" , N , ".covPerGe.gz") , colClasses=list(character=1)))
   allFiles[[N]] <- allFiles[[N]][ allFiles[[N]]$normalizedMeanCoverage <= 0.01 | (allFiles[[N]]$normalizedMeanCoverage > 0.01 & allFiles[[N]]$MAPQ >= minMAPQ) ,]  #filter just if it is not a deletion (we keep deletions)
   allFiles[[N]]$chr    <- gsub(x=allFiles[[N]]$locus,pattern="(.+):(.+)-(.+)$",replacement="\\1")
@@ -187,7 +162,7 @@ row.names(cnvChrColors) <- row.names(df)
 ######################
 #SAMPLES
 samplInfoColList <- list()
-sampFeats <- names(sampInfo[,-1])[! grepl("_COLOR" , names(sampInfo[,-1]))]
+sampFeats <- names(sampInfo)[-1][! grepl("_COLOR" , names(sampInfo)[-1])]
 if (length(sampFeats) > 0) {
   for (feat in sampFeats){
     featCol = paste0(feat,"_COLOR")
@@ -199,10 +174,10 @@ if (length(sampFeats) > 0) {
         quit(save = "no", status = 1, runLast = FALSE) 
       }
     } else {
-      print(paste("Color column not specified for the",feat," feature. Using random colors"))
+      print(paste("Color column not specified for the",feat,"feature. Using random colors"))
       set.seed(123)
       samplInfoColList[[feat]] <- data.frame( feature=unique(sampInfo[,feat]) ,  colors=distinctColorPalette(length(unique(sampInfo[,feat]))), stringsAsFactors=F)
-      sampInfo[[featCol]] <- samplInfoColList[[feat]] [ match(sampInfo$operator , samplInfoColList[[feat]]$feature) , "colors" ]
+      sampInfo[[featCol]] <- samplInfoColList[[feat]] [ match(sampInfo[[feat]] , samplInfoColList[[feat]]$feature) , "colors" ]
     }
   }
 }
