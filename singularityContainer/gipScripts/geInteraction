@@ -97,14 +97,10 @@ geFunDf <- read.delim(paste0(gipOut,"/genome/geneFunction.tsv") , sep="\t", stri
 #read input and measure delta#
 ##############################
 row.names(sampInfo) <- samples
-#fileName check
-RsyntaxConvertedNames <- make.names(samples)
-namesDiff <- setdiff(samples,RsyntaxConvertedNames)
-if(length(namesDiff) > 0 ){print ("Warn. The following input files use inappropriate syntax. This script will use corrected names for those"); print(namesDiff)}
 allFiles <- list()
 
 for (i in 1:length(samples)){
-  N <- RsyntaxConvertedNames[i]
+  N <- samples[i] 
   allFiles[[N]] <- as.data.frame(fread(cmd=paste0("gunzip -c ", gipOut , "/samples/" , N , "/" , N , ".covPerGe.gz") , colClasses=list(character=1)))
   allFiles[[N]] <- allFiles[[N]][ allFiles[[N]]$normalizedMeanCoverage <= 0.01 | (allFiles[[N]]$normalizedMeanCoverage > 0.01 & allFiles[[N]]$MAPQ >= minMAPQ) ,]  #filter just if it is not a deletion (we keep deletions)
   allFiles[[N]]$chr    <- gsub(x=allFiles[[N]]$locus,pattern="(.+):(.+)-(.+)$",replacement="\\1")
