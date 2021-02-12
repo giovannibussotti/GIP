@@ -319,7 +319,7 @@ cnvInfo$SD <- apply(mr,1,sd)
 
 #prepare pheatmap ribons
 sampInfoColObj <- NULL
-if (length(sampFeats) > 1) {
+if (length(sampFeats) > 0) {
   sampInfoColObj <- sampInfo [ , sampFeats , drop=FALSE]
 }
 cnvInfoRowObj <- cnvInfo[,c("chromosome"),drop=FALSE]
