@@ -49,12 +49,17 @@ addTransparency <- function(colors,alpha){
 return(newcolors)
 }
 plotAll <- function(varPerChrNormalised , df , outName , chrSizes){
-    remainingChrs <- chrs[chrs %in% unique(df$chr)]
+    tmpCHRS <- unique(df$chr)
+    remainingChrs <- c()
+    for (ch in selectedChrs){
+      if (ch %in% tmpCHRS) {remainingChrs <- c(remainingChrs,ch)}  
+    }
     df$chr <- factor(df$chr,levels=remainingChrs)
 
     #tot var perChr (normalised)
     png(paste0(outdir,"/",outName,"_totVarPerChr.png"),type='cairo' , width = 1000, height = 1000)
     varPerChrNormalisedDf <- as.data.frame(varPerChrNormalised)
+    varPerChrNormalisedDf$Var1 <- factor(varPerChrNormalisedDf$Var1 , levels=remainingChrs)
     p <- ggplot(data=varPerChrNormalisedDf, aes(x=Var1, y=Freq)) +  geom_bar(stat="identity",fill="#69b3a2") 
     p <- p + coord_flip() + theme_bw() + ylab("chromosome") + xlab("number of SNVs per Kb")
     p <- p + theme(axis.text=element_text(size=18), axis.title=element_text(size=21,face="bold"))
@@ -381,12 +386,8 @@ vcf            <- filterVCF(vcf)
 howmanyalleles <- elementNROWS(alt(vcf))
 
 #select the chrs from chrSizes that are also in the vcf
-chrSizes <- read.table(chrSizeFile,stringsAsFactors=F,header=F)
-names(chrSizes)      <- c("chr","size")
-class(chrSizes$chr)  <- "character"
-class(chrSizes$size) <- "integer"
+chrSizes <-  read.table(chrSizeFile,stringsAsFactors=F,header=F,col.names=c("chr","size"), colClasses=c("character","integer"))
 chrSizes <- chrSizes[chrSizes$chr %in% unique(seqnames(vcf)),]
-chrs     <- chrSizes$chr
 
 ######################################################################################
 #if you do not select just the SNVs with one single variant allele (--variant single)#

@@ -25,7 +25,7 @@ if(! is.na(depletionThreshold)){depletionThreshold <- as.numeric(depletionThresh
 
 library(karyoploteR)
 
-if(debug){library(session);save.session("session_DEBUG");quit();}
+if(debug){library(session);save.session("session_DEBUG_karyoplotCovPerGe");quit();}
 
 ######
 #READ#
@@ -101,11 +101,12 @@ plotKP <- function(chr,ymax,repeatRange){
  #see https://bernatgel.github.io/karyoploter_tutorial//Examples/GeneExpression/GeneExpression.html to add markers to genes/dots
  #ymax should be equal to the value you have in the top tick
  system(paste("mkdir -p", outDir))
- png(paste0(outDir,"/",chr,".png") , width = 2000 , height = 1000 , type='cairo')#, width = 2500, height = 1000 , res=700
+ png(paste0(outDir,"/",chr,".png") , width = 3000 , height = 1500 , type='cairo')#, width = 2500, height = 1000 , res=700
 
  #ideogram
  pp <- getDefaultPlotParams(plot.type=3)
- pp$data2height <- 60
+ pp$data2height <- 20
+ pp$data1height <- 300
  #pp$leftmargin  <- 0.1
  kp <- plotKaryotype(genome = genomeGr , plot.type=3, main="" , chromosomes=c(chr) , plot.params = pp)
  #kpDataBackground(kp, data.panel = 1)
@@ -121,27 +122,48 @@ plotKP <- function(chr,ymax,repeatRange){
  backgroundGeDf <- tmpGeDf[ tmpGeDf$status == "background" , ]
  lowmapqGeDf <- tmpGeDf[ tmpGeDf$status == "lowMAPQ" , ]
 
- #repeats to show
+ #genomic ranges
  geToMarkGr <- GRanges( seqnames=geToMarkDf$chr , ranges = IRanges(geToMarkDf$start, end = geToMarkDf$end, names = geToMarkDf$gene_id ))
+ tmpBinGr <- GRanges( seqnames=tmpBinDf$chromosome , ranges = IRanges(tmpBinDf$start, end = tmpBinDf$end), mid=tmpBinDf$mid , normalizedMeanCoverage=tmpBinDf$normalizedMeanCoverage)
+ tmpGeGr <- GRanges( seqnames=tmpGeDf$chr , ranges = IRanges(tmpGeDf$start, end = tmpGeDf$end, names = tmpGeDf$gene_id ), mid=tmpGeDf$mid, normalizedMeanCoverage=tmpGeDf$normalizedMeanCoverage)
+
+ #remove bin overlapping genes
+ ov <- findOverlaps(query=tmpBinGr, subject=tmpGeGr)
+ tmpBinGr <- tmpBinGr[-queryHits(ov),]
+
+ #add to binGr the genes
+ tmpBinGr <- c(tmpBinGr,tmpGeGr)
+ tmpBinGr <- tmpBinGr[order(tmpBinGr$mid),]
+
+ #repeats to show must be in repeatRange  
  geToMarkGr <- geToMarkGr + repeatRange
  repsToShow <- repsGr[subjectHits(findOverlaps(geToMarkGr,repsGr)),]
+ geToMarkGr <- geToMarkGr - repeatRange
+ #and just the closest preceding and following the significant gene
+ repsToShowIndex <- c(precede(geToMarkGr,repsToShow) , follow(geToMarkGr,repsToShow))
+ repsToShowIndex <- repsToShowIndex[! is.na(repsToShowIndex)]
+ if (length(repsToShowIndex) > 0) {
+  repsToShow <- repsToShow[repsToShowIndex,]
+ }
 
  #plot
  points.top <- 0.8
  kpAxis(kp, data.panel=1 , cex=2 , lwd=2 , numticks = 4, tick.pos = c(0, 0.25, 0.5, 0.75 , 1), labels = c(0, ymax/4, ymax/2, ymax/2 + ymax/4, ymax) , r1=points.top)
  kpAddLabels(kp, cex=2 ,labels="normalized coverage", srt=90, pos=3 , label.margin = 0.04 , data.panel = 1 , r1=points.top)
  #kpLines(kp, chr=chr, x=tmpBinDf$mid, y=tmpBinDf$normalizedMeanCoverage,col="gray",ymax=ymax , r1=points.top)
- kpArea(kp, chr=chr, x=tmpBinDf$mid, y=tmpBinDf$normalizedMeanCoverage,col="gray",ymax=ymax , r1=points.top )
+ kpArea(kp, chr=chr, x=tmpBinGr$mid, y=tmpBinGr$normalizedMeanCoverage,col="gray",ymax=ymax , r1=points.top )
  kpPoints(kp, chr=chr, x=backgroundGeDf$mid, y=backgroundGeDf$normalizedMeanCoverage,pch=19,col=backgroundGeDf$color,lwd=3,ymax=ymax , r1=points.top)
  kpPoints(kp, chr=chr, x=geToMarkDf$mid, y=geToMarkDf$normalizedMeanCoverage,pch=19,col=geToMarkDf$color, lwd=8 , ymax=ymax , r1=points.top)
  kpPoints(kp, chr=chr, x=lowmapqGeDf$mid, y=lowmapqGeDf$normalizedMeanCoverage,pch=19,col=lowmapqGeDf$color, lwd=3 , ymax=ymax , r1=points.top)
  if (length(geToMarkDf[,1]) > 0) { 
-  kpPlotMarkers(kp, chr=geToMarkDf$chr, x=geToMarkDf$mid, labels=geToMarkDf$gene_id , text.orientation = "horizontal" , r0=points.top)
+  kpPlotMarkers(kp, chr=geToMarkDf$chr, x=geToMarkDf$mid, labels=geToMarkDf$gene_id , r0=points.top , r1=0.9 ,
+  	marker.parts = c(0.01,0.01, 0.01), text.orientation = "vertical" , max.iter=1000 , label.dist = 0.005, ignore.chromosome.ends=TRUE , cex=2)
   kpSegments(kp, chr=chr, x0=geToMarkDf$mid, x1=geToMarkDf$mid, y0=geToMarkDf$normalizedMeanCoverage, y1=ymax, ymax=ymax,  r1=points.top)
  }
  if (length(repsToShow) > 0) { 
   kpPlotRegions(kp, repsToShow, col="black", avoid.overlapping=F, r0=0 , r1=0.1 , data.panel=2 )
-  kpPlotMarkers(kp, repsToShow , r0=0.1  , r1=0.3 , data.panel=2)
+  kpPlotMarkers(kp, repsToShow , r0=0.1  , r1=0.3 , data.panel=2 , 
+  	            max.iter=1000 , label.dist = 0.004 , ignore.chromosome.ends=TRUE, cex=1.5)
  }
  dev.off()
 }

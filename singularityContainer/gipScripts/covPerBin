@@ -4,11 +4,14 @@ BINSIZE=$2
 CHRSIZE=$3
 chrCoverageMedians=$4
 TMP=$5
+BED=$6
 
 mkdir -p $TMP/_sort1 $TMP/_sort2 $TMP/_sort3
 OUT=${BAM/%.bam/.covPerBin}
-BED=${BAM/%.bam/.bed} 
-bedtools bamtobed -split -i $BAM | sort -k1,1 -k2,2n -T $TMP/_sort1 > $BED
+if [ -z "$BED" ]; then
+  BED=${BAM/%.bam/.bed} 
+  bedtools bamtobed -split -i $BAM | sort -k1,1 -k2,2n -T $TMP/_sort1 > $BED
+fi
 bedtools makewindows -g $CHRSIZE -w $BINSIZE | sort -k1,1 -k2,2n -T $TMP/_sort2 > $TMP/windows
 bedtools map -a $TMP/windows -b $BED -c 5 -o mean -null 0 > $TMP/meanMapq
 bedtools coverage -sorted -d -a $TMP/windows -b $BED > $TMP/winCov

@@ -1,36 +1,5 @@
-#Read coverage per bin data and returns the peaks statistically significant
-#The bin coverage need to be already normalized by median chromosome coverage
-#steps
-#1)use mixtools to fit gaussian mixture distribution with 2 components. 1 distribution will have most of observation and will represent the null hypothesis (central distribution), while the other will include all the outliers (outliers distribution)
-#2) we use mu and sigma of the central distribution to give a z-score and a p-value to all the bins. The p-value, i.e. probability of the null hypothesis, for bins on the right end of the central distribution (high peak, CNV duplications, $probOfTheValueOrHigher) this is given by 1 - pnorm(x,mu,sigma). see http://stats.seandolinar.com/calculating-z-scores-with-r/. Otherwise, the p-value of bins on the left end side of the central distribution (low peaks, depletions, $probOfTheValueOrLower) will have a probability simply given by pnorm(x,mu,sigma). In the script $probabilityTailed stores the correct p-value. If the bin has a score positioning to the right end side of the central distribution it uses the $probOfTheValueOrHigher value, otherwise the  $probOfTheValueOrLower
-#3) we select bins with very high/low zscores (e.g. --zsThresh 4) or very low p-values (e.g. --pThresh 0.001 possibly corrected by multiple testing)
-#4) to make sure the central distribution is actually normal, we select all the bins with +/- 2 z-scores (enclosing most values of the central distribution) and run a shapiro.test (with 5000 randomly points, the max the function can use, or the entire set if this is <5000). We use also descdist() and fitdist() to visualize the fitting, and the qqplots (equivalent of a qqnorm, provided that we specify "norm")
-#4) The significant bins are processed reducing the regions of interest to a smaller list by collapsing adjacent bins to merged positions (called peaks) with the mean score in all bins. This should be useless for covPerGe files, or anyway not harmful
-#5) Peaks can be further filtered to have a minLength or to have custom coverage above and below certain values (--coverageThresholds)
-#6) write the peaks, and the file with the statistics 
-
-#out pdf slides
-#1- density curves: mixtools out showing the central and the outlier PDFs together with a dashed density representation of the real data. See https://www.r-bloggers.com/fitting-mixture-distributions-with-the-r-package-mixtools/
-#2- p-value distribution: a good distribution shows a peak at 0 and all the other values more or less the same if there is not a major bias problem
-#3- p-value distribution after multiple testing correction: if the correction was selected this shows how the distribution changed
-#4- cullen and frey graph: plot fitdistrplus to guide de decision on the appropriate distribution. If the blue dot (representing the central distribution) is close to the asterisc (representing a gaussian distribution) then it is good
-#5- fitdistrplus plots with empirical and theoretical densities
-
-#NOTE
-#if you are comparing coverage in two conditions you can first subtract the two samples (use subtractBins.R) and then run sigPeaks_mixture.R on that
-#The the subtracted distribution score will be centered on 0 (not 1) so you should shift eventual --coverageThresholds filters (e.g. using -0.5 and 1) 
-
-#see also
-#sigPeaks_CLT.R, subtractBins.R  
-
-#Example: Rscript sigPeaks_mixture.R --pThresh 0.001 --pFilter --outName test --input file.covPerBin.gz --padjust --inFormat covPerBin --minMAPQ 50 --coverageThresholds 2 0.5
-#################################################
-#               CONFIGURATION
-#################################################
 suppressPackageStartupMessages(library("argparse"))
-# create parser object
 parser <- ArgumentParser()
-# specify our desired options # by default ArgumentParser will add an help option
 parser$add_argument("--zsThresh"    , type="integer"      , help="z-score threshold (if --zscoreFilter) [default %(default)s]", default=0 )
 parser$add_argument("--pThresh"     , type="double"       , help="p-value threshold [default %(default)s]" , default=1 )
 parser$add_argument("--zscoreFilter", action="store_true" , help="flag. filter bins by z-score instead of pvalue [default %(default)s]" , default=FALSE )
@@ -41,10 +10,13 @@ parser$add_argument("--inFormat"    , type="character" , help="format of the inp
 parser$add_argument("--minMAPQ"      , type="integer"   , help="OPTION: if --inFormat is covPerBin or covPerGe filter out bins MAPQ < --minMAPQ (recommended 50) [default %(default)s]", default=0 )
 parser$add_argument("--coverageThresholds" , nargs="+" , type="character" , help="OPTION: Provide two numbers, and selected peaks will undergo an additional filter. Just peaks > num1 or < num2 will be selected [default %(default)s]" , default= "NA" )
 parser$add_argument("--minLen"      , type="integer"   , help="OPTION: selected peaks need to be at least --minLen nucleotides long. Not recommended for covPerGe inputs because you risk to discard small genes [default %(default)s]", default=0 )
+parser$add_argument("--debug"  , action="store_true" , help="dump session and quit [default %(default)s]" , default=FALSE)
 args <- parser$parse_args()
 #patch NA
 for (n in names(args)){if(args[[n]][1] == "NA"){args[[n]] <- NA}  }
 for (n in names(args)){assign(n,args[[n]]) }
+
+if(debug){library(session);save.session("session_DEBUG_sigPeaks_mixture");quit();}
 
 pFilter=TRUE
 if (zscoreFilter){

@@ -13,7 +13,7 @@ vim: syntax=groovy
 ----------------------------------------------------------------------------------------
 */
 
-version = "1.0.5"
+version = "1.0.6"
 def helpMessage() {
     log.info"""
     =========================================
@@ -247,6 +247,7 @@ process covPerBin {
   output:
   set val(sampleId), file ("${sampleId}.covPerBin.gz"), file ("${sampleId}.covPerBin.plot.all.png") , file ("${sampleId}.covPerBin.plot.byChr.pdf") , file ("${sampleId}.covPerBin.plot.tsv.gz") , file ("${sampleId}.covPerBin.plot.faceting.png") , file("${sampleId}.covPerBin.significant.bins.tsv.gz") , file("${sampleId}.covPerBin.significant.segments.tsv.gz") , file("${sampleId}.covPerBin.significant.stats") into (covPerBin)
   set val(sampleId), file(bam) , file(bai) , file(covPerChr) , file ("${sampleId}.covPerBin.gz") , file ("${sampleId}.bed") into (covPerBin4covPerGe) 
+  set val(sampleId), file(bam) , file(bai) , file(covPerChr) , file ("${sampleId}.bed") into (covPerBin4delly)
   set val(sampleId), file ("${sampleId}.karyotype.boxplot.png") , file ("${sampleId}.karyotype.ridges.png") , file ("${sampleId}.karyotype.allMedians.tsv") , file ("${sampleId}.karyotype.medianCoverage") into (karyotype)
 
 
@@ -388,7 +389,7 @@ process delly {
   tag { "${sampleId}" }
 
   input:
-  set val(sampleId), file(bam) , file(bai) , file(covPerChr) from covPerChr1
+  set val(sampleId), file(bam) , file(bai) , file(covPerChr) , file(bed) from covPerBin4delly
   set file(fa) , file(fai) , file(dict) , file(size) from genome_ch8
   val(chromosomes) from chromosomes
 
@@ -403,7 +404,7 @@ process delly {
   Rscript /bin/filterDelly.R --vcfFile ${sampleId}.delly.vcf.gz --chrSizeFile $size --outDir . --chrsToKeep $chromosomes $filterDellyOPT 
   #circos
   cp /bin/ideogram.conf /bin/ticks.conf .
-  prepare4Circos.sh -i $sampleId -m $bam -s $size -x $covPerChr -c "$chromosomes" -b $binSizeCircos -t /bin/templateCircos.conf -z BND.bed -j INV.bed -k DUP.bed -w DEL.bed -g INS.bed
+  prepare4Circos.sh -i $sampleId -m $bam -v $bed -s $size -x $covPerChr -c "$chromosomes" -b $binSizeCircos -t /bin/templateCircos.conf -z BND.bed -j INV.bed -k DUP.bed -w DEL.bed -g INS.bed
   #reorganize output
   mkdir -p ${sampleId}_dellyFiltered/
   mv ${sampleId}.SV.circos.png ${sampleId}_dellyFiltered/

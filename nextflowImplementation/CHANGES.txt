@@ -1,6 +1,12 @@
-###################
+##################
+#v1.0.6- 19022021#
+##################
+-Improved visualization of covPerGe plots
+-improved covPerBin that now can accept a BED file without having to compute it each time
+
+##################
 #v1.0.5- 11122020#
-###################
+##################
 - removed bashFunctions.sh. All the bash functions are now independent bash scripts. This change was made to prevent the typeset -fx error when declaring variables in the singularity environment of singularity version 3.6
 - exon/intron structure aware. The input annotation can now also be exons or CDS. This is important not much for the gene CNV (since the gene definition anyway include both exons and introns) but for snpEff: an intragenic but intronic SNV will have a different effect than an exonic one. Also, now gip is parsing the ANN field of snpEff, not the EFF. Eventually,a single SNV can impact multiple genes (e.g. opposite strands). In this case the function of all genes will be reported in the output table (semicolumn separated)
 

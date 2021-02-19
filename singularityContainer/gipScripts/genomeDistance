@@ -1,9 +1,3 @@
-#contextGenomes="contextGenomes"
-#samples=c("Dog1-P2","Dog3","DogX")
-#gipOut="gipOut"
-#outName=NA
-#debug=FALSE
-
 suppressPackageStartupMessages(library("argparse"))
 parser <- ArgumentParser(description="Compare samples genomic distance")
 parser$add_argument("--samples" , nargs="+", help="Sample names. If \"NA\" all samples are used" , default="NA")
@@ -12,6 +6,8 @@ parser$add_argument("--outName" , help="Output name [default %(default)s]" , def
 parser$add_argument("--contextGenomes" , help="Two columns TSV file listing additional genomes. Syntax: name<Tab>filePath [default %(default)s]" , default="NA")
 parser$add_argument("--threads"  , type="integer" , help="Number of nucmer threads [default %(default)s]" , default=1)
 parser$add_argument("--customColors", help="TSV file with 2 columns named \"SAMPLE\" and \"COLOR\" indicating the color to be used for each sample. If \"NA\" colors are automatically assigned [default %(default)s]", default="NA" )
+parser$add_argument("--phylogenyDistance", help="distance matrix e.g. the phylogeny.treefile.distMat.gz file produced with the phylogeny module. If \"NA\" the ANI distance is measured [default %(default)s]", default="NA" )
+parser$add_argument("--PCAlabel", help="show PCA labels [all|none] [default %(default)s]" , default="all")
 parser$add_argument("--debug"  , action="store_true" , help="Dump session and quit" , default=FALSE)
 args <- parser$parse_args()
 
@@ -37,45 +33,51 @@ if (is.na(samples[1])) {
 } 
 outDir <- paste0(gipOut,"/sampleComparison/")
 system(paste0("mkdir -p ", outDir))
-data <- data.frame(name=samples,file=paste0(gipOut,"/samples/",samples,"/",samples,"_freebayesFiltered/pseudoReference.fa.gz"),stringsAsFactors=F)
-if (! is.na(contextGenomes)){
-  extraData  <- read.table("contextGenomes",header=F,stringsAsFactors=F,col.names=c("name","file"))
-  data <- rbind(data,extraData)
-}
-row.names(data) <- data$name
+distMat <- NULL
 
 #compute Average Nucleotide Identity (ANI) for all genome pair
-contrasts <- as.data.frame(gtools::combinations(n=length(data$name),r=2,data$name),stringsAsFactors=F)
-aniMat <- matrix(0L, nrow = length(data$name), ncol = length(data$name))
-colnames(aniMat) <- data$name
-rownames(aniMat) <- data$name
-for (i in 1:nrow(contrasts)){
-  s1=contrasts[i,"V1"]
-  s2=contrasts[i,"V2"]
-  f1=data[s1,"file"]
-  f2=data[s2,"file"]
-  u1=paste0("._tmp_",s1)
-  u2=paste0("._tmp_",s2)
-  dd="._tmp_dnadiff"
-  system(paste0("gunzip -c ",f1," > ",u1))
-  system(paste0("gunzip -c ",f2," > ",u2))
-  cmd <- paste("nucmer --mum --forward --threads ", threads ," --delta .nucOut.delta ", u1 , u2)
-  #print(cmd)
-  system(cmd , ignore.stdout=TRUE , ignore.stderr=TRUE)
-  cmd <- paste("dnadiff -d .nucOut.delta -p " , dd)
-  #print(cmd)
-  system(cmd , ignore.stdout=TRUE , ignore.stderr=TRUE)
-  ani <- as.numeric(system("grep  AvgIdentity ._tmp_dnadiff.report | head -1 | awk '{print $2}'",intern=T))
-  aniMat[s1,s2] = ani
-  aniMat[s2,s1] = ani
-  aniMat[s1,s1] = 100
-  aniMat[s2,s2] = 100
-  system(paste0("rm -rf .nucOut.delta ", u1 , " " , u2 , " " , dd,".1coords " ,  dd,".delta " , dd,".mdelta " , dd,".rdiff " , dd,".snps " , dd,".1delta " , dd,".mcoords " , dd,".qdiff " , dd,".report " ))
+if (is.na(phylogenyDistance)) {
+ data <- data.frame(name=samples,file=paste0(gipOut,"/samples/",samples,"/",samples,"_freebayesFiltered/pseudoReference.fa.gz"),stringsAsFactors=F)
+ if (! is.na(contextGenomes)){
+   extraData  <- read.table("contextGenomes",header=F,stringsAsFactors=F,col.names=c("name","file"))
+   data <- rbind(data,extraData)
+ }
+ row.names(data) <- data$name
+ contrasts <- as.data.frame(gtools::combinations(n=length(data$name),r=2,data$name),stringsAsFactors=F)
+ distMat <- matrix(0L, nrow = length(data$name), ncol = length(data$name))
+ colnames(distMat) <- data$name
+ rownames(distMat) <- data$name
+ for (i in 1:nrow(contrasts)){
+   s1=contrasts[i,"V1"]
+   s2=contrasts[i,"V2"]
+   f1=data[s1,"file"]
+   f2=data[s2,"file"]
+   u1=paste0("._tmp_",s1)
+   u2=paste0("._tmp_",s2)
+   dd="._tmp_dnadiff"
+   system(paste0("gunzip -c ",f1," > ",u1))
+   system(paste0("gunzip -c ",f2," > ",u2))
+   cmd <- paste("nucmer --mum --forward --threads ", threads ," --delta .nucOut.delta ", u1 , u2)
+   #print(cmd)
+   system(cmd , ignore.stdout=TRUE , ignore.stderr=TRUE)
+   cmd <- paste("dnadiff -d .nucOut.delta -p " , dd)
+   #print(cmd)
+   system(cmd , ignore.stdout=TRUE , ignore.stderr=TRUE)
+   ani <- as.numeric(system("grep  AvgIdentity ._tmp_dnadiff.report | head -1 | awk '{print $2}'",intern=T))
+   distMat[s1,s2] = ani
+   distMat[s2,s1] = ani
+   distMat[s1,s1] = 100
+   distMat[s2,s2] = 100
+   system(paste0("rm -rf .nucOut.delta ", u1 , " " , u2 , " " , dd,".1coords " ,  dd,".delta " , dd,".mdelta " , dd,".rdiff " , dd,".snps " , dd,".1delta " , dd,".mcoords " , dd,".qdiff " , dd,".report " ))
+ }
+} else {
+  distMat <- as.matrix(read.table(phylogenyDistance))
+  distMat <- distMat[samples,samples]
 }
 
 pdf(paste0(outName,".pdf"))
 #dendrogram
-hcd <- as.dendrogram(hclust(dist(aniMat)))
+hcd <- as.dendrogram(hclust(dist(distMat)))
 edgePar = list(col = c("steelblue") , lwd=2)
 par(lwd=2,font=2, cex=0.9 , mar=c(8,4,4,4))
 plot(hcd,  ylab = "", edgePar = edgePar,horiz=FALSE , cex=0.9 , axes=FALSE) 
@@ -83,23 +85,23 @@ par(cex.axis=1.5)
 axis(2)
 mtext("Distance", side = 2, line = 3, outer = FALSE )
 #pca
-res.pca <- PCA(aniMat, graph=FALSE)
+res.pca <- PCA(distMat, graph=FALSE)
 if(! is.na(customColors)){
   customColDf  <- read.table(customColors,header=T,stringsAsFactors=F,sep="\t" , comment.char = "")
-  if(! all(colnames(aniMat) %in% customColDf$SAMPLE)) {
+  if(! all(colnames(distMat) %in% customColDf$SAMPLE)) {
     stop(paste("ERROR. some samples are not included in",customColors))
     quit(save = "no", status = 1, runLast = FALSE)
   }
-  pal <- customColDf[ match(customColDf$SAMPLE , colnames(aniMat)) , "COLOR"]
-  plot.PCA(res.pca , choix="ind" , habillage="ind" , col.hab=pal)
+  pal <- customColDf[match(colnames(distMat) , customColDf$SAMPLE),"COLOR"]
+  plot.PCA(res.pca , choix="ind" , habillage="ind" , col.hab=pal , autoLab="auto" , label=PCAlabel )
 } else{
-  plot.PCA(res.pca , choix="ind")
+  plot.PCA(res.pca , choix="ind" , autoLab="auto" , label=PCAlabel)
 }
-plot.PCA(res.pca , choix="var")
+plot.PCA(res.pca , choix="var" , autoLab="auto" , label=PCAlabel)
 invisible(dev.off())
 
 #table
-df <- cbind(row.names(aniMat), as.data.frame(aniMat))
+df <- cbind(row.names(distMat), as.data.frame(distMat))
 names(df)[1] <- "sample"
 write.xlsx(x=list(genomePairANI=df),file=paste0(outName,".xlsx"),asTable=T)
 

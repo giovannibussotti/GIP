@@ -4,7 +4,7 @@ From: ubuntu:xenial
 %labels
   maintainer Giovanni Bussotti <gbussott@pasteur.fr>
   package.name  GIP
-  package.version 1.0.0
+  package.version 1.0.6
   package.homepage  https://github.com/giovannibussotti/GIP
   package.license  GPLv3
 
