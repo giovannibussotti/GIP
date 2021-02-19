@@ -146,6 +146,7 @@ process prepareGenome {
   file ("db") into bwaDb_ch1
   file("genome.chrSize") into chrSize_ch1
   set file("genome.fa") , file("genome.fa.fai") , file("genome.dict") , file("genome.chrSize") into (genome_ch1 , genome_ch2 , genome_ch4 , genome_ch5 , genome_ch6 , genome_ch7 , genome_ch8, genome_ch9, genome_ch10)
+  file("genome.chrSize") into size_ch1
   file("genome.gaps.gz")
   file("repeats") into (repeats_ch1 , repeats_ch2 , repeats_ch4)
   file("snpEff")  into snpEffDb_ch1
@@ -424,6 +425,8 @@ process bigWigGenomeCov {
   input:
   set val(sampleId), file(bam) , file(bai) from map3
   val(chromosomes) from chromosomes
+  file(size) from size_ch1
+
   
   output:
   set val(sampleId), file("${sampleId}.bw") into (bigWigGenomeCov)
@@ -441,8 +444,7 @@ process bigWigGenomeCov {
   #combine chrs and turn to bigWig
   mkdir -p \$TMP/sort
   cat \$TMP/*.bg | sort -k1,1 -k2,2n -T \$TMP/sort > \$TMP/${sampleId}.bg
-  samtools idxstats $bam | cut -f 1,2 | head -n -2 > \$TMP/chrSize
-  /bin/bedGraphToBigWig \$TMP/${sampleId}.bg \$TMP/chrSize \$TMP/${sampleId}.bw
+  /bin/bedGraphToBigWig \$TMP/${sampleId}.bg $size \$TMP/${sampleId}.bw
   mv \$TMP/${sampleId}.bw .
   rm -rf \$TMP
   """
