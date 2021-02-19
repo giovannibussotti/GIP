@@ -1,16 +1,3 @@
-#samples=c("Dog3","Dog1-P2","DogX")
-#gipOut="gipOut"
-#outName=NA
-#chrs=NA
-#MAPQ=50
-#colorByDelta=FALSE
-#highLowDeltaColor=c("black","green")
-#showDensity=FALSE
-#highLowDensityColor=c("black","gray")
-#debug=FALSE
-#plot3dMaxCOV=3
-#plot3dMaxFC=3
-
 suppressPackageStartupMessages(library("argparse"))
 parser <- ArgumentParser(description="Compare gene sequencing coverage in 3 samples")
 parser$add_argument("--samples" , nargs="+", required=TRUE, help="Sample names. It determines the plotting order [required]" )

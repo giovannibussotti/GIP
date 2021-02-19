@@ -1,21 +1,5 @@
-#following http://stats.stackexchange.com/questions/52860/loess-and-ma-normalization-in-r
-#which is the same as the withing lane (i.e. sample specific) regression normalization described in this paper: GC content normalization for RNA-seq data (PMID 22177264).
-
-#given a covPerGe file this script plot the GC% of each gene vs the meanCoverge (and the normalizedMeanCoverage). 
-#Then if fits a loess regression
-#Then is correct the original gene meanCoverge (or normalizedMeanCoverage) by subtracting the values on the loess model. If there is a GC bias the loess has a bump. So genes with GC values corresponnding to a loess bump will be more penalized than other genes were the loess is straight
-#Finally the script plots again the corrected genes, fitting a new loess, that now should be more or less straight  and generates a loess corrected covPerGe (meanCoverge and normalizedMeanCoverage GC corrected)
-
-#The script repeats the same operation for both meanCoverge and normalizedMeanCoverage, correcting both for %GC bias
-#see also covPerBin2loessGCnormalization.R
-
-#NOTE: This _v2 of the script is an improvement of the previous version because the "span" parameter of the loess function is chose using a 5 folds cross validation
-#e.g. Rscript covPerGe2loessGCnormalization.R --ASSEMBLY /pasteur/projets/policy01/BioIT/Giovanni/datasets/assemblies/leishmanias/ENSEMBL_ProtistsRelease29/Leishmania_donovani_bpk282a1.GCA_000227135.2.29.dna_sm.toplevel.fa --DIR /pasteur/projets/policy01/BioIT/Giovanni/leish/p2p5/bwa --SAMPLE sp-ama_Ht0_5749 --ylim 10 --outName sp-ama_Ht0_5749
-
 suppressPackageStartupMessages(library("argparse"))
-# create parser object
 parser <- ArgumentParser()
-# specify our desired options # by default ArgumentParser will add an help option
 parser$add_argument("--ASSEMBLY" , help="genome reference [default %(default)s]" )
 parser$add_argument("--DIR" , help="dir with the covPerGe.gz file [default %(default)s]" )
 parser$add_argument("--SAMPLE" , help="sample name [default %(default)s]")

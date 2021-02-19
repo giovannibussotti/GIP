@@ -1,15 +1,3 @@
-#samples=c("Dog3","Dog1-P2","DogX")
-#gipOut="gipOut"
-#outName=NA
-#chrs=NA
-#MAPQ=50
-#highLowDensityColor=c("black","gray")
-#debug=FALSE
-#pseudocount=0.1
-#densityN=200
-#densityBin=10
-#showSubset=100
-
 suppressPackageStartupMessages(library("argparse"))
 parser <- ArgumentParser(description="Compare bin sequencing coverage in 3 samples")
 parser$add_argument("--samples" , nargs="+", required=TRUE, help="Sample names. It determines the plotting order [required" )

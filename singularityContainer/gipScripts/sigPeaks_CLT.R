@@ -1,34 +1,3 @@
-#Read coverage per bin data and returns the CNVs statistically significant
-#You generated single nucleotide coverage distribution (SNCD), and you binned it in bins of size n (covPerBin)
-#The bin score is approximated to the mean coverage in the bin
-#For the central limit theorem (CLT), regardless the shape of SNCD, the sampling distribution of the sample means (SDSM) will be gaussian. 
-#i.e. if we sample many times SNCD, and we compute the mean of the sample each time, we get a gaussian distribution
-
-#CLT example
-  #n=100
-  #se <- function(x,y) sd(x)/sqrt(y)
-#single nucleotide coverage following poisson
-  #a <- rpois(1000000,30)
-#sampling distribution of a (by binning adjacet nt)
-  #b <- sapply(split(a, ceiling(seq_along(a)/n)),mean)
-#sampling distribution of a (by binning random positions)
-  #d=c(); for (i in 1:10000) {d<-c(d,mean(sample(a,n))) }
-#for CLT the se of a is equal to the sd of the sampling distribution
-  #se(a,n)
-  #sd(b)
-  #sd(d)
-#check normality
-  #shapiro.test(sample(a,5000)) #not normal
-  #shapiro.test(sample(b,5000)) #normal
-  #shapiro.test(sample(d,5000)) #normal
-
-#The competing hypothesis is that there is something special about that specific bin.
-#Because SDSM is gaussian, I can compute the P-value of each covPerBin bin by measuring how many sd away each bin score is from its mean.
-
-#In covPerBin or chrStartEndScore the bin size is regular, i.e. always the same. In covPerGe the bin size is the size of each gene, and it is not constant. 
-#So you should not use this script but sigPeaks_mixture.R
-
-
 suppressPackageStartupMessages(library("argparse"))
 parser <- ArgumentParser()
 parser$add_argument("--input"    , type="character" , help="bin file, with coverage values normalized by median chr coverage (and GC content) [default %(default)s]")
