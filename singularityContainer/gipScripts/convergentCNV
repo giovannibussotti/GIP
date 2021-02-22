@@ -125,7 +125,7 @@ convEvGeCovDf <- convEvGeCovDf[,col.order]
 pdf(paste0(outName,".pdf") ,height=plotDim[1],width=plotDim[2])
 p  <- ggtree(treeSNV , branch.length=branchLen , layout=layout)
 if (! is.na(treeTip)){
-  sampleInfo  <- read.xlsx(geCNV,sheet="sampleInfo")[,c("sample",treeTip,paste0(treeTip,"_COLOR"))]
+  sampleInfo  <- read.xlsx(geCNV,sheet="sampleInfo")[,c("sampleId",treeTip,paste0(treeTip,"_COLOR"))]
   names(sampleInfo) <- c("sample","feature","featureColor") 
   p <- p %<+% sampleInfo + geom_tippoint(aes(color=feature) ) 
   p <- p + scale_color_manual(name=treeTip , values=sampleInfo$featureColor , breaks=sampleInfo$feature  )
@@ -148,8 +148,9 @@ if(! hideXlabs){
   p <- p + theme_void() 
 }
 
-p <- p + theme(legend.title = element_text(face = "bold", size = 14), 
-               legend.text  = element_text(size = 12)) 
+ p <- p + theme(legend.title = element_text(face = "bold"))#, size = 8), 
+                #legend.text  = element_text(size = 8) , legend.position = "bottom") 
+
 
 suppressMessages(p <- p + scale_fill_gradientn(name="Normalized\ncoverage", 
 	                         colors = heatCols,

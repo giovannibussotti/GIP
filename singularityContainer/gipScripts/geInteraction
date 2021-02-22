@@ -9,7 +9,7 @@ parser$add_argument("--minDelta" , type="integer" , help="Min normalized coverag
 parser$add_argument("--minMaxCov" , type="character" , nargs="+" , help="Use only genes with normalized coverage >Value1 or <Value2 in at least one sample. If \"NA\" no filter is applied [default %(default)s]" , default="NA" )
 parser$add_argument("--heatmapType" , help="Gene normalized coverage value transformation used for the CNVs vs samples heatmap [scaled|log10|saturated|flatten] [default %(default)s]" , default="scaled" )
 parser$add_argument("--covSaturation" , type="double" , help="Gene normalized coverage saturation value. DEPENDENCY --heatmapType \"saturated\" or \"flatten\"  [default %(default)s]" , default=3)
-parser$add_argument("--quantileSaturation" , type="double" , nargs="+" , help="Provide two numbers. Saturate the colors of the gene CNVs vs samples heatmap for quantiles < num1 or > num2. DEPENDENCY --heatmapType [scaled|log10] [default %(default)s]" , default=c(0,1))
+parser$add_argument("--quantileSaturation" , type="double" , nargs="+" , help="Provide two numbers. Saturate the colors of the gene CNVs vs samples heatmap for quantiles < num1 or > num2. DEPENDENCY --heatmapType [scaled|log10] [default %(default)s]" , default=c(0.05,0.95))
 parser$add_argument("--doNotClusterSamples"  , action="store_false" , help="Do not cluster heatmap columns. Show the samples in the same order as in --samplesList [default %(default)s]" , default=TRUE)
 parser$add_argument("--clusteringMethod" , help="Heatmaps clustering method [ward.D2|ward|single|complete|average|mcquitty|median|centroid] [default %(default)s]" , default="complete")
 parser$add_argument("--cutree_cnv" , type="integer" , help="Based on the hierarchical clustering, divide the genes in this number of clusters [default %(default)s]" , default=1)
@@ -24,8 +24,8 @@ parser$add_argument("--MCLinflation" , help="NETWORK. Use this inflation MCL val
 parser$add_argument("--MCLexpansion" , type="integer" , help="NETWORK. MCL expansion value. DEPENDENCY --MCLinflation not \"NA\" [default %(default)s]" , default=2)
 parser$add_argument("--clMaxSDdist" , type="character", help="NETWORK. Gene CNVs with distance from the cluster centroid > --clMaxSDdist standard deviations from the mean distance are removed from the cluster. High values make this filter unffective. [default %(default)s]" , default="Inf")
 parser$add_argument("--clMinSize"   , type="integer" , help="NETWORK. Min number of members in a cluster [default %(default)s]" , default=2)
-parser$add_argument("--edgesMeanCorFilter" , action="store_true" , help="NETWORK. Remove edges representing CNV correlation scores lower than the mean absolute CNV correlation [default %(default)s]" , default=FALSE)
-parser$add_argument("--edgesPvalueFilter"  , type="double" , help="NETWORK. Remove edges with adjusted pvalue below this threshold  [default %(default)s]" , default="0.1")
+parser$add_argument("--edgesMeanCorFilter" , action="store_true" , help="NETWORK. Remove edges representing CNV correlation scores lower than the mean absolute CNV correlation" , default=FALSE)
+parser$add_argument("--edgesPvalueFilter"  , type="double" , help="NETWORK. Remove edges with adjusted pvalue below this threshold  [default %(default)s]" , default="0.01")
 parser$add_argument("--debug"  , action="store_true" , help="Dump session and quit" , default=FALSE)
 
 args <- parser$parse_args()
@@ -130,7 +130,7 @@ if (nrow(df) < 2) {
   quit()
 }
 #min max cov filter
-if (! is.na (minMaxCov)) {
+if (! is.na (minMaxCov[1])) {
   minMaxCov <- as.numeric(minMaxCov)
   dMax <- apply( subset(df,select=-c(1,2,3)) , 1 , max )
   dMin <- apply( subset(df,select=-c(1,2,3)) , 1 , min )
@@ -416,6 +416,9 @@ if(length(sampFeats) > 0){
     p <- ggplot(pcaCoord , aes(x=Dim.1 , y=Dim.2 , color=feature)) + geom_point( size=1.5 ) + ggtitle(paste("Sample PCA colored by",n))
     p <- p + scale_color_manual(name=n , values=sampInfo[[paste0(n,"_COLOR")]] , breaks=sampInfo[[n]])
     p <- p + theme_gip() + theme(legend.position="bottom" , axis.text  = element_text(size = 14)) 
+    if( length(unique(pcaCoord$feature)) > 12 ){
+      p <- p + theme(legend.text  = element_text(size = 8)) 
+    }
     p <- p + xlab("Principal component dimension 1") + ylab("Principal component dimension 2")
     print(p)
   }
@@ -488,7 +491,9 @@ filterDistantCNVs <- function(mat,classification) {
   splitDf <- split(tdf,tdf$cl)
   #remove clusters of just 1 element
   for (cl in names(splitDf)){ if(length(splitDf[[cl]][,1]) == 1){splitDf[cl] <- NULL}}
-  clCentroids <- sapply( splitDf , function(x){ v <- as.vector(apply(x[,row.names(x)] , 2  , mean)) ; names(v) <- row.names(x) ; return(v)    })
+  clCentroids <- lapply( splitDf , function(x){ 
+    v <- as.vector(apply(x[,row.names(x)] , 2  , mean)) ; 
+    names(v) <- row.names(x) ; return(v)    })
   for (cl in names(clCentroids)){
     centroid <- clCentroids[[cl]]
     cluster  <- tdf[names(centroid),names(centroid)]
