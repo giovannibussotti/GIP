@@ -6,6 +6,12 @@ parser$add_argument("--outName" , help="Output name [default %(default)s]" , def
 parser$add_argument("--chrs"    , nargs="+" , help="Chromosomes to use. If \"NA\" it uses the same chromsomes as GIP [default %(default)s]" , default="NA")
 parser$add_argument("--coordCartesianYlim" , help="Max y-axis value for density plots. If \"NA\" the value is automatically attributed [default %(default)s]" , default="NA")
 parser$add_argument("--minVRF" , type="double" , help="Discard SNVs with frequency < --minVRF [default %(default)s]" , default=0)
+parser$add_argument("--maxVRF" , type="double" , help="Discard SNVs with frequency > --maxVRF [default %(default)s]" , default=1)
+parser$add_argument("--densitySize" , type="double" , help="Density plot line thickness [default %(default)s]" , default=1)
+
+parser$add_argument("--densityMaxExp" , action="store_true" , help="Add " , default=FALSE)
+
+
 parser$add_argument("--showCoverage"  , action="store_true" , help="Overlay sequencing coverage" , default=FALSE)
 parser$add_argument("--smoothingFactor" , type="double" , help="Merge and average the normalized coverage of this number of adjacent bins. DEPENDENCY --showCoverage [default %(default)s]" , default=30)
 parser$add_argument("--maxCov" , type="double" , help="Normalized coverage values > --maxCov are shown as --maxCov. DEPENDENCY --showCoverage [default %(default)s]" , default=5)
@@ -36,24 +42,11 @@ if (is.na(samples[1])) {
 outDir <- paste0(gipOut,"/sampleComparison/")
 system(paste0("mkdir -p ", outDir))
 chrSel      <- as.character(read.table(paste0(gipOut,"/samples/",samples[1],"/chrCoverageMedians_",samples[1]),header=T)[,1])
-chrSize     <- read.table(paste0(gipOut,"/genome/genome.chrSize"),sep="\t", stringsAsFactors = F, header=F , col.names=c("chr","size"))
-chrSize$chr <- as.character(chrSize$chr)
+chrSize     <- read.table(paste0(gipOut,"/genome/genome.chrSize"),sep="\t", stringsAsFactors = F, header=F , col.names=c("chr","size") , colClasses=c("character","numeric"))
 chrSize     <- chrSize[match(chrSel,chrSize$chr),]
 if (is.na (chrs[1])){
   chrs <- chrSize$chr
 }
-chrSize <- chrSize[chrSize$chr %in% chrs,]
-
-#chr size cumulative sum
-chrSizeCumSum <- cumsum(chrSize$size)
-v <- c(0,chrSizeCumSum)
-chrSizeCumSum <- v[-length(v)]
-names(chrSizeCumSum) <- chrSize$chr
-
-#chr mid points
-chrMids <- c()
-for (i in 1:length(chrSizeCumSum)-1) {chrMids = c(chrMids , (chrSizeCumSum[i] + chrSizeCumSum[i + 1]) / 2)}
-chrMids = c(chrMids ,  ( chrSizeCumSum[length(chrSizeCumSum)] + sum(chrSize$size) ) / 2)
 
 smoothing <- function(x){
   compressedL <- list()
@@ -78,6 +71,7 @@ for (s in samples) {
   snvDf[[s]]$tag    <- paste(snvDf[[s]]$chr , snvDf[[s]]$position , snvDf[[s]]$ref_alt ,sep="_")
   #filter VRF
   snvDf[[s]] <- snvDf[[s]][ snvDf[[s]]$freq >= minVRF , ]
+  snvDf[[s]] <- snvDf[[s]][ snvDf[[s]]$freq <= maxVRF , ]
   snvDf[[s]] <- snvDf[[s]][ snvDf[[s]]$chr %in% chrs , ]
   snvDf[[s]]$sample <- s
   #covPerBin
@@ -95,6 +89,27 @@ for (s in samples) {
 df <- do.call(rbind,snvDf)
 covPerBin <- do.call(rbind,covPerBinL)
 
+
+#remaining chrs after filtering
+tmpCHRS <- unique(df$chr)
+remainingChrs <- c()
+for (ch in chrs){
+  if (ch %in% tmpCHRS) {remainingChrs <- c(remainingChrs,ch)}  
+}
+chrs <- remainingChrs
+chrSize <- chrSize[chrSize$chr %in% chrs,]
+
+
+#chr size cumulative sum
+chrSizeCumSum <- cumsum(as.numeric(chrSize$size))
+v <- c(0,chrSizeCumSum)
+chrSizeCumSum <- v[-length(v)]
+names(chrSizeCumSum) <- chrSize$chr
+
+#chr mid points
+chrMids <- c()
+for (i in 1:length(chrSizeCumSum)-1) {chrMids = c(chrMids , (chrSizeCumSum[i] + chrSizeCumSum[i + 1]) / 2)}
+chrMids = c(chrMids ,  ( chrSizeCumSum[length(chrSizeCumSum)] + sum(chrSize$size) ) / 2)
 
 
 #PLOT
@@ -121,16 +136,7 @@ if(! is.na(customColors)){
   names(pal) <- samples
 }
 df$sample <- factor(df$sample,levels=samples)
-pdf(paste0(outName,".density.pdf"),height=10, width=12 )
-#density plots
-p <- ggplot(df, aes(freq, colour = sample)) + geom_density() + theme_bw() + facet_wrap(~chr,scales="free_y") 
-p <- p + xlab("Variant frequency") + ylab("Density") +coord_cartesian(xlim=c(0,1)) + scale_color_manual(values=pal,name="Sample") 
-p <- p + theme_gip() + theme(legend.position="bottom") 
-if(! is.na(coordCartesianYlim)) { 
-  p <- p + coord_cartesian(ylim=c(0,as.numeric(coordCartesianYlim)))
-}
-print (p)
-invisible(dev.off())
+
 
 #tot SNV per chr (sorted by chr size)
 pdf(paste0(outName,".count.pdf"))
@@ -140,6 +146,18 @@ p <- ggplot(df, aes(chr, fill = sample)) + geom_bar(stat="count")
 p <- p + xlab("Chromosome") + ylab("Number of SNV") + theme(axis.text.x = element_text(angle = 90, hjust = 1))
 p <- p + scale_fill_manual(values=pal,name="Sample") + theme_gip() 
 print(p)
+invisible(dev.off())
+
+#density plots
+df$chr <- factor(df$chr,levels=chrs)
+pdf(paste0(outName,".density.pdf"),height=10, width=12 )
+p <- ggplot(df, aes(freq, colour = sample)) + geom_density(size=densitySize) + theme_bw() + facet_wrap(~chr,scales="free_y") 
+p <- p + xlab("Variant frequency") + ylab("Density") + scale_color_manual(values=pal,name="Sample") + xlim(0,1)
+p <- p + theme_gip() + theme(legend.position="bottom") 
+if(! is.na(coordCartesianYlim)) { 
+  p <- p + coord_cartesian(ylim=c(0,as.numeric(coordCartesianYlim)))
+}
+print (p)
 invisible(dev.off())
 
 #position/VRF: genome overview
@@ -165,7 +183,6 @@ for (chr in chrSize$chr){
  axesDf <- rbind(axesDf, data.frame(x = size , y = 1, chr = chr))
 }
 pdf(paste0(outName,".multipanel.pdf"),height=10, width=15)
-df$chr <- factor(df$chr,levels=chrs)
 p <- ggplot() + geom_point(data=df , aes(x=position, y=freq , colour=sample),alpha=0.5) 
 p <- p + geom_blank(data = axesDf, aes(x = x, y = y)) 
 p <- p + facet_wrap(~chr, scales = "free") + xlab("Position") + ylab("Variant frequency") 

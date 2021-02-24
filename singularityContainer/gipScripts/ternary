@@ -59,7 +59,10 @@ clstr <- list()
 clstr[[s1]] <- tryCatch(read.delim(paste0(gipOut,"/covPerClstr/",s1,".covPerClstr.gz") , header=T,stringsAsFactors=F,row.names=1),error=function(cond){return(NULL)}) #message(cond);
 clstr[[s2]] <- tryCatch(read.delim(paste0(gipOut,"/covPerClstr/",s2,".covPerClstr.gz") , header=T,stringsAsFactors=F,row.names=1),error=function(cond){return(NULL)}) #message(cond);
 clstr[[s3]] <- tryCatch(read.delim(paste0(gipOut,"/covPerClstr/",s3,".covPerClstr.gz") , header=T,stringsAsFactors=F,row.names=1),error=function(cond){return(NULL)}) #message(cond);
-clstrFun <- tryCatch(read.delim(paste0(gipOut,"/covPerClstr/clstrAnnFormat2.tsv") , header=F,stringsAsFactors=F,col.names=c("geId","clstrFunction","clstrId")),error=function(cond){return(NULL)}) #message(cond);
+clstrFun <- NULL
+if (file.exists(paste0(gipOut,"/covPerClstr/clstrAnnFormat2.tsv"))){
+ clstrFun <- tryCatch(read.delim(paste0(gipOut,"/covPerClstr/clstrAnnFormat2.tsv") , header=F,stringsAsFactors=F,col.names=c("geId","clstrFunction","clstrId")),error=function(cond){return(NULL)}) #message(cond);
+}
 
 #MAKE DF
 makeDf <- function(List){
@@ -89,7 +92,7 @@ makeDf <- function(List){
  return(d)
 }
 df <- makeDf(genes)
-if(! is.null (clstr)) {
+if(! is.null (clstrFun)) {
   dfCl <- makeDf(clstr)
   dfCl$type <- "cluster"
   dfCl$color  <- "red"
@@ -192,7 +195,7 @@ names(df) <- c("chromosome" , "start" , "end" , paste0("normalizedMeanCoverage_"
 df <- df[,c(ncol(df),1:(ncol(df)-1)) ]
 
 #prepare clstr table
-if( ! is.null(dfCl) ) {
+if( length(dfCl[,1]) > 0 ) {
  is.num      <- sapply(dfCl, is.numeric)
  dfCl[is.num] <- lapply(dfCl[is.num], round, 3)
  dfCl$clstr_id <- row.names(dfCl)

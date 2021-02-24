@@ -7,7 +7,7 @@ parser$add_argument("--chrs"    , nargs="+" , help="Chromosomes to use. If \"NA\
 parser$add_argument("--regions"  , help="Bed3 file with regions of interest. Regions must be included in --chrs. If \"NA\" the regions output is not produced [default %(default)s]" , default="NA")
 parser$add_argument("--MAPQ"  , type="integer" , help="Label bins with MAPQ < --MAPQ [default %(default)s]" , default=0)
 parser$add_argument("--ploidy"  , type="integer" , help="Genome ploidy. After normalization multiply coverage values by --ploidy [default %(default)s]" , default=2)
-parser$add_argument("--highLowCovThresh" , nargs="+" , type="double" , help="Provide two numbers. Bins with normalized coverage values > num1 or < num2 will be labeled. [default %(default)s]" , default= c(1.5,0.5) )
+parser$add_argument("--highLowCovThresh" , nargs="+" , type="double" , help="Provide two numbers. Bins with normalized coverage values > num1 or < num2 will be labeled. [default %(default)s]" , default= c(3,1) )
 parser$add_argument("--minDelta"  , type="double" , help="Remove genes with normalized coverage delta < --minDelta [default %(default)s]" , default=0)
 parser$add_argument("--ylim" , type="double" , help="Plot visualization threshold. Bin or gene normalized coverage values > --ylim are shown as --ylim [default %(default)s]" , default="5")
 parser$add_argument("--ylimInt" , help="Bin scatterplot y-axis values interval. If \"NA\" it is automatically assigned [default %(default)s]" , default="NA")

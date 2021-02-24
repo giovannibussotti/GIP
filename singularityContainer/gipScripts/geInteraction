@@ -7,6 +7,7 @@ parser$add_argument("--chrs"    , nargs="+" , help="Chromosomes to use. If \"NA\
 parser$add_argument("--minMAPQ" , type="integer" , help="Remove genes with MAPQ < --minMAPQ [default %(default)s]", default=0 )
 parser$add_argument("--minDelta" , type="integer" , help="Min normalized coverage delta between samples [default %(default)s]" , default=1)
 parser$add_argument("--minMaxCov" , type="character" , nargs="+" , help="Use only genes with normalized coverage >Value1 or <Value2 in at least one sample. If \"NA\" no filter is applied [default %(default)s]" , default="NA" )
+parser$add_argument("--rmNotSigGenes" , action="store_true" , help="Use only genes with significant coverage in at least one of the samples " , default=FALSE)
 parser$add_argument("--heatmapType" , help="Gene normalized coverage value transformation used for the CNVs vs samples heatmap [scaled|log10|saturated|flatten] [default %(default)s]" , default="scaled" )
 parser$add_argument("--covSaturation" , type="double" , help="Gene normalized coverage saturation value. DEPENDENCY --heatmapType \"saturated\" or \"flatten\"  [default %(default)s]" , default=3)
 parser$add_argument("--quantileSaturation" , type="double" , nargs="+" , help="Provide two numbers. Saturate the colors of the gene CNVs vs samples heatmap for quantiles < num1 or > num2. DEPENDENCY --heatmapType [scaled|log10] [default %(default)s]" , default=c(0.05,0.95))
@@ -76,8 +77,9 @@ allFiles <- list()
 
 for (i in 1:length(samples)){
   N <- samples[i]
-  allFiles[[N]] <- as.data.frame(fread(cmd=paste0("gunzip -c ", gipOut , "/samples/" , N , "/" , N , ".covPerGe.gz") , colClasses=list(character=1)))
-  allFiles[[N]] <- allFiles[[N]][ allFiles[[N]]$normalizedMeanCoverage <= 0.01 | (allFiles[[N]]$normalizedMeanCoverage > 0.01 & allFiles[[N]]$MAPQ >= minMAPQ) ,]  #filter just if it is not a deletion (we keep deletions)
+  allFiles[[N]] <- fread(cmd=paste0("gunzip -c ", gipOut , "/samples/" , N , "/" , N , ".covPerGe.gz") , colClasses=list(character=1), data.table=FALSE)
+  #filter just if it is not a deletion (we keep deletions)
+  allFiles[[N]] <- allFiles[[N]][ allFiles[[N]]$normalizedMeanCoverage <= 0.01 | (allFiles[[N]]$normalizedMeanCoverage > 0.01 & allFiles[[N]]$MAPQ >= minMAPQ) ,]  
   allFiles[[N]]$chr    <- gsub(x=allFiles[[N]]$locus,pattern="(.+):(.+)-(.+)$",replacement="\\1")
   allFiles[[N]]$start  <- as.numeric(gsub(x=allFiles[[N]]$locus,pattern="(.+):(.+)-(.+)$",replacement="\\2"))
   allFiles[[N]]$end    <- as.numeric(gsub(x=allFiles[[N]]$locus,pattern="(.+):(.+)-(.+)$",replacement="\\3"))
@@ -88,8 +90,6 @@ df = Reduce(function(...) merge(..., by="tag" ,all=T , sort=F), allFiles) #a bin
 row.names(df) <- df$tag
 df <- df[,c(names(allFiles[[1]][1:3]) ,  names(df)[grepl(x=names(df),pattern="score_")])]
 names(df)[1:3] <- c("chr","start","end")
-
-
 
 #generate correlating genes for testing purpose only
 #if (DEVELOP_ONLY) {
@@ -122,23 +122,33 @@ names(df)[1:3] <- c("chr","start","end")
 #remove the bins filtered in some samples but present in others
 df <- df[complete.cases(df),]
 names(df) <- gsub(x=names(df),pattern="score_(.*)",replacement="\\1")
+#remove genes that are never significant
+if (rmNotSigGenes) {
+  allSigGe <- NULL
+  for (i in 1:length(samples)){
+   allSigGe <- c(allSigGe , row.names(read.table(paste0(gipOut , "/samples/" , N , "/" , N , ".covPerGe.significant.tsv"))))
+  }
+  allSigGe <- unique(allSigGe)
+  df <- df[row.names(df) %in% allSigGe,]
+  if (nrow(df) < 2) {print("< 2 genes left removing non significant genes. Quitting..") ; quit()}
+}
 #delta filter
 df$delta <- apply( subset(df,select=-c(1,2,3)) , 1 , function(x){d=max(x)-min(x)} )
 df <- df[df$delta >= minDelta,]
-if (nrow(df) < 2) {
-  print( paste( "less than 2 genes show a delta coverage greather than --minDelta. Quitting..") )
-  quit()
-}
+if (nrow(df) < 2) {print("< 2 genes show a delta coverage greather than --minDelta. Quitting..") ; quit()}
 #min max cov filter
 if (! is.na (minMaxCov[1])) {
   minMaxCov <- as.numeric(minMaxCov)
   dMax <- apply( subset(df,select=-c(1,2,3)) , 1 , max )
   dMin <- apply( subset(df,select=-c(1,2,3)) , 1 , min )
   df <- df[dMax > minMaxCov[1] | dMin < minMaxCov[2],]
+  if (nrow(df) < 2) {print("< 2 genes show a coverage > or < --minMaxCov Quitting..") ; quit()}
 }
 #chr filter
 df <- df[df$chr %in% chrs,]
 df <- df[with(df, order(chr, start)), ]
+if (nrow(df) < 2) {print("< 2 genes left after filtering. Quitting..") ; quit()}
+
 
 ###############################
 #map CNVs to chromosome colors#

@@ -41,7 +41,7 @@ chrSize <- chrSize[chrSize$chr %in% chrs,]
 
 
 #chr size cumulative sum
-chrSizeCumSum <- cumsum(chrSize$size)
+chrSizeCumSum <- cumsum(as.numeric(chrSize$size))
 v <- c(0,chrSizeCumSum)
 chrSizeCumSum <- v[-length(v)]
 names(chrSizeCumSum) <- chrSize$chr
