@@ -8,10 +8,6 @@ parser$add_argument("--coordCartesianYlim" , help="Max y-axis value for density 
 parser$add_argument("--minVRF" , type="double" , help="Discard SNVs with frequency < --minVRF [default %(default)s]" , default=0)
 parser$add_argument("--maxVRF" , type="double" , help="Discard SNVs with frequency > --maxVRF [default %(default)s]" , default=1)
 parser$add_argument("--densitySize" , type="double" , help="Density plot line thickness [default %(default)s]" , default=1)
-
-parser$add_argument("--densityMaxExp" , action="store_true" , help="Add " , default=FALSE)
-
-
 parser$add_argument("--showCoverage"  , action="store_true" , help="Overlay sequencing coverage" , default=FALSE)
 parser$add_argument("--smoothingFactor" , type="double" , help="Merge and average the normalized coverage of this number of adjacent bins. DEPENDENCY --showCoverage [default %(default)s]" , default=30)
 parser$add_argument("--maxCov" , type="double" , help="Normalized coverage values > --maxCov are shown as --maxCov. DEPENDENCY --showCoverage [default %(default)s]" , default=5)

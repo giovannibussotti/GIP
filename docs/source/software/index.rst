@@ -4,7 +4,7 @@ Software
 | giptools provides the following software installed in ubuntu xenial.
 | Ubuntu xenial is covered by the Creative Commons CC-BY-SA version 3.0 UK `licence <https://ubuntu.com/legal/intellectual-property-policy>`_
 | Links to download the software source code are provided and accessible to general public. 
-| Please contact us to receive a copy of the relevant source code in case the provided links are not functioning. 
+| Source code of third party software is available from giptools at the container location /opt/source_code
 | The license and copyright notice of the tools are also available from giptools at the container location /opt/licenses.tar.gz
 
 | **samtools**

@@ -34,6 +34,10 @@ Options
 |                       |                                                              |                |
 |                       |If \"NA\" no filter is applied [default NA]                   |                |
 +-----------------------+--------------------------------------------------------------+----------------+
+|\-\-rmNotSigGenes      |Use only genes with significant coverage in at least          |                |
+|                       |                                                              |                |
+|                       |one of the samples                                            |                |
++-----------------------+--------------------------------------------------------------+----------------+
 |\-\-heatmapType        |Gene normalized coverage value transformation used            |[scaled | log10 |
 |                       |                                                              |                |
 |                       |for the CNV vs samples heatmap.  [default scaled]             |saturated |     |
