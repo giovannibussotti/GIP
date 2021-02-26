@@ -1,14 +1,27 @@
-#Given a list of bams, this script generate a table summarizing mapping statistics using picard CollectAlignmentSummaryMetrics
-#Tested with CollectAlignmentSummaryMetrics Version: 1.94(1484) and R version 3.2.2
-#example: Rscript stats.R --bams sample1.bam sample2.bam --dir testBam/ --assembly assembly.toplevel.fa
+#############################################################################
+# giptools                                                                  #
+#                                                                           #
+# Authors: Giovanni Bussotti                                                #
+# Copyright (c) 2021  Institut Pasteur                                      #
+#                                                                           #
+#                                                                           #
+# This program is free software: you can redistribute it and/or modify      #
+# it under the terms of the GNU General Public License as                   #
+# published by the Free Software Foundation, either version 3 of the        #
+# License, or (at your option) any later version.                           #
+#                                                                           #
+# This program is distributed in the hope that it will be useful,           #
+# but WITHOUT ANY WARRANTY; without even the implied warranty of            #
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             #
+# GNU General Public License for more details.                              #
+#                                                                           #
+# You should have received a copy of the GNU General Public License         #
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.    #
+#                                                                           #
+#############################################################################
 
-#################################################
-#		CONFIGURATION
-#################################################
 suppressPackageStartupMessages(library("argparse"))
-# create parser object
 parser <- ArgumentParser()
-# specify our desired options # by default ArgumentParser will add an help option
 parser$add_argument("--bams" , nargs="+", help="List of bam files to load [default %(default)s]" )
 parser$add_argument("--dir"  , help="Directory containing the bam files[default %(default)s]" )
 parser$add_argument("--assembly"  , help="reference assembly multifasta file[default %(default)s]" )

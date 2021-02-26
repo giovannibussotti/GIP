@@ -1,4 +1,26 @@
 #!/bin/bash
+#############################################################################
+# giptools                                                                  #
+#                                                                           #
+# Authors: Giovanni Bussotti                                                #
+# Copyright (c) 2021  Institut Pasteur                                      #
+#                                                                           #
+#                                                                           #
+# This program is free software: you can redistribute it and/or modify      #
+# it under the terms of the GNU General Public License as                   #
+# published by the Free Software Foundation, either version 3 of the        #
+# License, or (at your option) any later version.                           #
+#                                                                           #
+# This program is distributed in the hope that it will be useful,           #
+# but WITHOUT ANY WARRANTY; without even the implied warranty of            #
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             #
+# GNU General Public License for more details.                              #
+#                                                                           #
+# You should have received a copy of the GNU General Public License         #
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.    #
+#                                                                           #
+#############################################################################
+
 S=$1
 
 perl -e 'open(F,"<'$S'.alignmentMetrics"); while(<F>){if($_=>/\#\# METRICS CLASS/){$s=1;next;}if($_=>/^\s*$/){$s=0;} if($s==1){print}}' > ${S}.alignmentMetrics.table

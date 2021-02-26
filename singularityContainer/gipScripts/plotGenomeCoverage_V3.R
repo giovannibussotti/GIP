@@ -1,47 +1,28 @@
-#First generate genome coverage files (.covPerNt) where the sequencing depth of each nucleotide is normalised by the median genomic coverage 
-#Then given a list of gzipped .covPerNt files (--file), this script downsample the covPerNt scores (e.g. by binning), then convert the bin scores to somy scores which will be used for the boxplots and statistics 
-
-#The somy score is defined as the downsampled score (e.g. bin score) divided by the median downsampled score of a chromosome deemed to be disomic and multiplied by 2
-#If no disomic chromosome is deemed, the somy score is just the downsampled score multiplied by 2
-#To assess what chromosome is disomic you can do a dry run of the script and pick a chromsome that has median cenetered on 2 and does not vary much across the various samples
-
-#To test whether the chromosome coverage varies in different conditions in theory one could use a wilcoxon (default), ks or aov test. 
-#In practice, since there are many many observations (nucleotide) the distributions of the coverages will look always statistically significant (even if from the boxplot sometimes you can see they are very very similar). 
-#Since the coverage vectors are big the statistical test have an hard time (wilcoxon or ks tests return mostly pvalues of 0 and 1). 
-#that is why it is needed to adopt a downsampling approach. This script explores two alternative strategies.
-
-#One is to use the resample function (--fft yes) which transforms the coverage profile to the Fourier Space and resize the signal before performing the inverse transform. It is explained here: https://support.bioconductor.org/p/66313/
-#The size of the coverage distribution after shrinking is regulated by --maxShrinkedLength. The script will automatically estimate a shrinking factor to have a final chromosome coverage vector shorter than --maxShrinkedLength.
-#It works OK for short chromosomes but it takes ages for big chromosomes. Also the fourier transform can introduce negative values (that do not make sense since it is a coverage), and the reported pvalues are not stable at all when changing --maxShrinkedLength
-
-#The other, which is recommended, simply bins the chromosomes and estimate the median coverage of each bin (--window).
-#It works much better than the fourier approach.
-#As an option (--selectQuantiles) out of each distribution of bins it considers just those between the 10th and the 90th quantile, so to strip out outliers bins. This is because outliers, hotpost loci can also artificially return into statistically significant comparisons, while in fact the genomic coverage distributions are very similar (except for these outliers)
-
-#the script runs Wilcoxon, Kolmogorov-Smirnov and AOV tests on the downsampled data for each comparison and returns one table for each test.
-#it also return the difference between the median downsampled somy score for each chromosome and for each comparison
-
-#To compare coverage distribution shapes the script generates qqplots (explained here: http://www.r-bloggers.com/exploratory-data-analysis-quantile-quantile-plots-for-new-yorks-ozone-pollution-data/), comparing the quantiles of the two downsampled distributions. If the dots (quantiles) are on the diagonal, then they distributions have the same shape.
-
-#use --pcMapqFiles to remove the bases where the percent of mapping reads with good MAPQ is < 50%
-
-#Tested with R version 3.2.2 , ggplot2_1.0.1 , data.table_1.9.6
-#WARNING: since the coverage vectors of a chromosome in two conditions have the same length, in fact the qqplots is equivalent to sort the two vectors and plot one against the other. So the coordinates x,y of the points are the coverage score in the two conditions (you have as many quantiles as nucleotides, not a fixed quantile interval, like the 25%)
-#WARNING: Version1 of this script wotks perfectly, but uses much more memory. Version2 applys the downsampling immediatly when reading the files. Version3 is a minor improvement adding the --geom and --pooled options, and the ridges plot. Also --ylim now accepts two values, the min and the max coverage range.
-#WARNING: Converting covPerNt scores to somy scores first, and then downsample (e.g. binning) would results in slightly differet results (medians not exactly centered on 2)
-
-#Example:
-#Rscript plotGenomeCoverage_V3.R --DIR ../../../pipeOut/leishield_01072017/WP2/lsdOut --files infMon1_ZK27p51_P5rep1.covPerNt.gz ZK25.covPerNt.gz ZK28.covPerNt.gz infMon1_ZK47p51_P5rep1.covPerNt.gz LIPA60.covPerNt.gz ZK43.covPerNt.gz LIPA68.covPerNt.gz --NAMES ZK27 ZK25 ZK28 ZK47 LIPA60 ZK43 LIPA68 --outName karyotype --ylim 6 --chrs 1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31 32 33 34 35 36 --window 2500 --disomicChr 36 --geom violin
+#############################################################################
+# giptools                                                                  #
+#                                                                           #
+# Authors: Giovanni Bussotti                                                #
+# Copyright (c) 2021  Institut Pasteur                                      #
+#                                                                           #
+#                                                                           #
+# This program is free software: you can redistribute it and/or modify      #
+# it under the terms of the GNU General Public License as                   #
+# published by the Free Software Foundation, either version 3 of the        #
+# License, or (at your option) any later version.                           #
+#                                                                           #
+# This program is distributed in the hope that it will be useful,           #
+# but WITHOUT ANY WARRANTY; without even the implied warranty of            #
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             #
+# GNU General Public License for more details.                              #
+#                                                                           #
+# You should have received a copy of the GNU General Public License         #
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.    #
+#                                                                           #
+#############################################################################
 
 options(bitmapType='cairo')
-
-#################################################
-#		CONFIGURATION
-#################################################
 suppressPackageStartupMessages(library("argparse"))
-# create parser object
 parser <- ArgumentParser()
-# specify our desired options # by default ArgumentParser will add an help option
 parser$add_argument("--files" , nargs="+", required=TRUE, help="List of genome coverage files to load. Files must be gzipped [default %(default)s]" )
 parser$add_argument("--NAMES" , nargs="+", required=TRUE, help="name of the genome coverage files loaded. This determines also the plotting order [default %(default)s]" )
 parser$add_argument("--DIR" , required=TRUE , help="Directory containing the genome coverage files[default %(default)s]" )

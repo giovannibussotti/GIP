@@ -1,44 +1,27 @@
-#Compare genes coverage in two conditions: sample2 over sample1
-#Genes found in just one sample (unique identifier) or with low avg MAPQ will be filtered
-#Alternatively, if --divideByOne, then sample 2 coverage will be just divided by 1 i.e. you can visualize gene coverage of sample 2 alone
+#############################################################################
+# giptools                                                                  #
+#                                                                           #
+# Authors: Giovanni Bussotti                                                #
+# Copyright (c) 2021  Institut Pasteur                                      #
+#                                                                           #
+#                                                                           #
+# This program is free software: you can redistribute it and/or modify      #
+# it under the terms of the GNU General Public License as                   #
+# published by the Free Software Foundation, either version 3 of the        #
+# License, or (at your option) any later version.                           #
+#                                                                           #
+# This program is distributed in the hope that it will be useful,           #
+# but WITHOUT ANY WARRANTY; without even the implied warranty of            #
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             #
+# GNU General Public License for more details.                              #
+#                                                                           #
+# You should have received a copy of the GNU General Public License         #
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.    #
+#                                                                           #
+#############################################################################
 
-##WARNING on lowMAPQ: A gene with 0 coverage has also 0 MAPQ, so it will be filtered by minMAPQ. 
-##WARNING on low MAPQ: A gene truly deleted with very few spurious reads mapping with lowMAPQ. This gene can be filtered depending on minMAPQ 
-
-#######
-#INPUT#
-#######
-#The default is to read cufflinks genes.fpkm_tracking files, but it can read any file as long as:
-#1) The first column contains genes identifiers (regardless the header of the field)
-#2) You specify the locus (--locusFieldName) and fpkm (--scoreFieldName) fields names has in the header of the input files
-#3) the locus must be in the format chromosome:start-end
-
-#########
-#OPTIONS#
-#########
-#You can specify --repeats or --gaps to label the genes that overlap with repetitive elements or gaps. For the moment no filtering is done based on this overlap, just labelling
-#you can specify a minMAPQ score to filter out genes with bad mapping reads
-#you can dump in a data frame the filtered genes
-
-########
-#OUTPUT#
-########
-#a  dataframe recapitulating the scores per gene and 4 plots:
-#PLOT1: Ratio Sample2 over Sample1. The plot shows ratio score (all genes, all chromosomes) coloring orange sample 2 enrichments, and in blue sample 2 depletions (see --highRatio and --lowRatio variables). Genes are sorted by genome position in the chromosomes, but to have sorted chromosomes you need to specify the chromosome order via the --chr variable
-#PLOT2: Plot the log10 score scatterplot (all genes, all chromosomes). Genes are colored by --highRatio and --lowRatio variables as in PLOT1. Genes with log10 score > plot24_max are not shown.
-#PLOT3: One panel per chromosome, score scatterplot. Genes are colored by by ratio as in PLOT1 and 2. If --scaleFree no, the  genes with extreme scores (above >plot3_max) in either condition are not shown, but you can still see them in PLOT 4 since it is log transformed 
-#PLOT4: One panel per chromosome, log10 score scatterplot. Genes are colored by by ratio as in PLOT1 and 2. If --scaleFree no, genes with log10 score > plot24_max are not shown. 
-
-#Example1: Rscript compareGeneCoverage.R --outName test.pdf --samples donovani_MWMLLN4141_P2/genes.fpkm_tracking  donovani_MWMLLN4142_P5/genes.fpkm_tracking --NAMES donovani_MWMLLN4141_P2  donovani_MWMLLN4142_P5 
-#Example2: Rscript compareGeneCoverage.R --outName test.pdf --samples donovani_MWMLLN4141_P2.covPerGe  donovani_MWMLLN4142_P5.covPerGe --NAMES donovani_MWMLLN4141_P2  donovani_MWMLLN4142_P5 --chrs $CHRS --locusFieldName locus --scoreFieldName normalizedMeanCoverage --plot3_max 2 --plot3_max 5 --plot_highRatio 1.5 --plot_lowRatio 0.7 --scoreLabel coverage
-#Example3: Rscript compareGeneCoverage.R  --NAMES fake donP5 --samples ${INDIR}/donovani_MWMLLN4141_P2.covPerGe.gz ${INDIR}/donovani_MWMLLN4142_P5.covPerGe.gz --outName test2 --chrs $CHRS --repeats $REPS --gaps $GAPS $OPT --divideByOne
-#################################################
-#		CONFIGURATION
-#################################################
 suppressPackageStartupMessages(library("argparse"))
-# create parser object
 parser <- ArgumentParser()
-# specify our desired options # by default ArgumentParser will add an help option
 parser$add_argument("--samples" , nargs="+", help="Two cufflinks gene FPKM outputs named genes.fpkm_tracking or any other gene coverage file (read comments)  [default %(default)s]" )
 parser$add_argument("--NAMES"   , nargs="+", help="Two names of the genes.fpkm_tracking samples in the same order [default %(default)s]" )
 parser$add_argument("--outName" , help="out name [default %(default)s]" , default="compareGeneCoverage")

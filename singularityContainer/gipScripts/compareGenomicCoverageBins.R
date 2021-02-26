@@ -1,35 +1,27 @@
-#compare the coverage of genomic bins in two conditions (test vs reference) 
-#Accepts a gcovbin file, which currently is the output of the functions computeCov NOTNORMALIZED (function) followed by gencov2intervals.pl (script) followed by gcovbin_normalizedByChrMedianCov (function) followed by addMapqToGcovbin (function)  
-#You can filter out windows with low MAPQ, low coverage, or on the wrong chromosome
-##WARNING on lowMAPQ: A bin with 0 coverage has also 0 MAPQ, so it will be filtered by minMAPQ. 
-##WARNING on low MAPQ: A region truly deleted with very few spurious reads mapping with lowMAPQ. This region can be filtered depending on minMAPQ 
+#############################################################################
+# giptools                                                                  #
+#                                                                           #
+# Authors: Giovanni Bussotti                                                #
+# Copyright (c) 2021  Institut Pasteur                                      #
+#                                                                           #
+#                                                                           #
+# This program is free software: you can redistribute it and/or modify      #
+# it under the terms of the GNU General Public License as                   #
+# published by the Free Software Foundation, either version 3 of the        #
+# License, or (at your option) any later version.                           #
+#                                                                           #
+# This program is distributed in the hope that it will be useful,           #
+# but WITHOUT ANY WARRANTY; without even the implied warranty of            #
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             #
+# GNU General Public License for more details.                              #
+#                                                                           #
+# You should have received a copy of the GNU General Public License         #
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.    #
+#                                                                           #
+#############################################################################
 
-##OUTPUTS
-#1)	_all: ratio of all windows.The windows are sorted in each chromosome. if you specify the "chrs" option also the chromosome will be ordered
-
-#2)	_byChr: One plot per chromosome, where each dot is a genomic window and group windows into segments (regions) with unbalhaar.
-#extreme ratios genomic windows (>highRatio and <lowRatio) are colored (if the graphical parameter --segment is set to "no"). There is no need to give a p-value to CNVs. The coverage ratio is enough (you can chose the thresholds)
-#In the plot coverageRatios above ylim are replaced by ylim.
-#Genomic windows with MAPQ < minMAPQ aren't shown  
-
-#3)	_faceting: Same as 1) but multipanel (all chromosomes)
-
-#4)	_df.gz: Dataframe corresponding to the plot (but no ylim saturation)
-
-#5)	_extremeRatio.bed.gz: A table with the statistics (chromosome|genome, #genomicWindows, #genomicWindow with ratio > highRatio , #genomicWindow with ratio < lowRatio, #segments, #segments with ratio > highRatio , #segments with ratio < lowRatio , max GenomicWindow coverage ratio , min GenomicWindow coverage ratio , max segment ratio , min segment ratio)
-#WARNING: You might see a discrepancy between the number of segments on a certain chromosome reported in the stats file and in the plot. This is because if there is a segment with a certain ratio level that gets interrupted by an island of low MAPQ windows, and the segment continues with exactly the same ratio after this island, then the script will count correctly just 1 segment in the stats file, but visually in the plot you will see the line interrupted (because unbalhaar is based on input windows, so if you filter lowMAPQ windows the line is interrupted)
-
-#6)	A bed file with the coordinates of genomic windows and segments with coverage ratio above or below highRatio (HR) and lowRatio (LR) (and passing chr and MAPQ filtering). The last field is the rounded coverage ratio
-
-#The script was tested with R 3.2.2 and packages unbalhaar_2.0    ggplot2_2.0.0    data.table_1.9.6
-
-#################################################
-#		CONFIGURATION
-#################################################
 suppressPackageStartupMessages(library("argparse"))
-# create parser object
 parser <- ArgumentParser()
-# specify our desired options # by default ArgumentParser will add an help option
 parser$add_argument("--testFile" , nargs="+", help="test gcovbin file. The file must be gzip or bgzip compressed  [default %(default)s]" )
 parser$add_argument("--referenceFile" , nargs="+", help="reference gcovbin file. The file must be gzip or bgzip compressed [default %(default)s]" )
 parser$add_argument("--testName" , help="test name to use internally [default %(default)s]")

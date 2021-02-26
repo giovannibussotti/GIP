@@ -1,3 +1,25 @@
+#############################################################################
+# giptools                                                                  #
+#                                                                           #
+# Authors: Giovanni Bussotti                                                #
+# Copyright (c) 2021  Institut Pasteur                                      #
+#                                                                           #
+#                                                                           #
+# This program is free software: you can redistribute it and/or modify      #
+# it under the terms of the GNU General Public License as                   #
+# published by the Free Software Foundation, either version 3 of the        #
+# License, or (at your option) any later version.                           #
+#                                                                           #
+# This program is distributed in the hope that it will be useful,           #
+# but WITHOUT ANY WARRANTY; without even the implied warranty of            #
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             #
+# GNU General Public License for more details.                              #
+#                                                                           #
+# You should have received a copy of the GNU General Public License         #
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.    #
+#                                                                           #
+#############################################################################
+
 suppressPackageStartupMessages(library("argparse"))
 parser <- ArgumentParser(description='Example: Rscript karyoplotCovPerGe.R --covPerGe lsdOut/P135_C7BDUACXX.covPerGe.gz --covPerBin lsdOut/P135_C7BDUACXX.covPerBin.gz --chrSize /pasteur/projets/policy01/BioIT/Giovanni/datasets/assemblies/leishmanias/peterMyler/Leishmania_donovani_sudanese.chrSize --CHRS 1 2 3 4 5 6 7 8 9 0 11 12 13 14 15 --REPS /pasteur/projets/policy01/BioIT/Giovanni/datasets/assemblies/leishmanias/peterMyler/repeatMasker/Leishmania_donovani_sudanese/Leishmania_donovani_sudanese.fa.out.gff --amplificationThreshold 2 --depletionThreshold 0.5')
 parser$add_argument("--covPerGe"  , required=TRUE , help="covPerGe file name")
@@ -98,7 +120,6 @@ mcols(repsGr)$strand <- NULL
 #PLOT#
 ######
 plotKP <- function(chr,ymax,repeatRange){
- #see https://bernatgel.github.io/karyoploter_tutorial//Examples/GeneExpression/GeneExpression.html to add markers to genes/dots
  #ymax should be equal to the value you have in the top tick
  system(paste("mkdir -p", outDir))
  png(paste0(outDir,"/",chr,".png") , width = 3000 , height = 1500 , type='cairo')#, width = 2500, height = 1000 , res=700

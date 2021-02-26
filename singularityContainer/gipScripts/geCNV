@@ -1,18 +1,24 @@
-#samples=c("Dog3","Dog1-P2")
-#gipOut="gipOut"
-#clstrGe=TRUE
-#outName=NA
-#chrs=NA
-#MAPQ=50
-#highLowRatio=c(1.5,0.5)
-#pseudocount=0.1
-#debug=FALSE
-#overview_ylim=5
-#multi_min=0
-#multi_max=100
-#multiLog_min=-1
-#multiLog_max=3
-#scaleFree="yes"
+#############################################################################
+# giptools                                                                  #
+#                                                                           #
+# Authors: Giovanni Bussotti                                                #
+# Copyright (c) 2021  Institut Pasteur                                      #
+#                                                                           #
+#                                                                           #
+# This program is free software: you can redistribute it and/or modify      #
+# it under the terms of the GNU General Public License as                   #
+# published by the Free Software Foundation, either version 3 of the        #
+# License, or (at your option) any later version.                           #
+#                                                                           #
+# This program is distributed in the hope that it will be useful,           #
+# but WITHOUT ANY WARRANTY; without even the implied warranty of            #
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             #
+# GNU General Public License for more details.                              #
+#                                                                           #
+# You should have received a copy of the GNU General Public License         #
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.    #
+#                                                                           #
+#############################################################################
 
 suppressPackageStartupMessages(library("argparse"))
 parser <- ArgumentParser(description="Compare gene sequencing coverage in 2 samples")

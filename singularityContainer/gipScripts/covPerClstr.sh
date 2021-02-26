@@ -1,21 +1,28 @@
 #!/bin/bash
+#############################################################################
+# giptools                                                                  #
+#                                                                           #
+# Authors: Giovanni Bussotti                                                #
+# Copyright (c) 2021  Institut Pasteur                                      #
+#                                                                           #
+#                                                                           #
+# This program is free software: you can redistribute it and/or modify      #
+# it under the terms of the GNU General Public License as                   #
+# published by the Free Software Foundation, either version 3 of the        #
+# License, or (at your option) any later version.                           #
+#                                                                           #
+# This program is distributed in the hope that it will be useful,           #
+# but WITHOUT ANY WARRANTY; without even the implied warranty of            #
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the             #
+# GNU General Public License for more details.                              #
+#                                                                           #
+# You should have received a copy of the GNU General Public License         #
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.    #
+#                                                                           #
+#############################################################################
+
 #given a set of covPerGe files it 1) selects genes that are low mapq across all covPerGes 2) cluster them 3) select just the genes belonging to clusters 4) evaluate their coverage without MAPQ filters 5) report average coverage for each cluster
-
 #NOTE: you do not have to remove clusters with members on different chromosomes because differences in ploidy are taken into account by covPerGe_allReads normalizing each gene by chrMedianCov
-
-#dev
-#covPerGeFilesString="CL3_7145.covPerGe.gz CL8_7149.covPerGe.gz"
-#covPerGeNamesString="CL3 CL8"
-#chrCoverageMediansFilesString="chrCoverageMedians_CL3_7145 chrCoverageMedians_CL8_7149"
-#bamFilesString="../../../pipeOut/ld1sSet/lsdOut/CL3_7145.bam ../../../pipeOut/ld1sSet/lsdOut/CL8_7149.bam"
-#minMapq=10
-#geGtf=Ld1S.ge.gtf
-#genome=Leishmania_donovani_sudanese.fa
-#cdHitLenDiffCutoff=0.9
-#cdHitSeqIdCutoff=0.9
-
-#ex
-#bash covPerFam.sh -f "CL3_7145.covPerGe.gz CL8_7149.covPerGe.gz" -n "CL3 CL8" -b "../../../pipeOut/ld1sSet/lsdOut/CL3_7145.bam ../../../pipeOut/ld1sSet/lsdOut/CL8_7149.bam" -c "chrCoverageMedians_CL3_7145 chrCoverageMedians_CL8_7149" -m 10 -g Ld1S.ge.gtf -a Leishmania_donovani_sudanese.fa -l 0.9 -s 0.9
 
 #default
 minMapq=50

@@ -16,11 +16,6 @@ editor_options:
   chunk_output_type: console
 ---
 
-<!--  https://bookdown.org/yihui/bookdown/figures.html
-https://yihui.org/knitr/options/
-fig.align='right', fig.cap='caption'
- -->
-
 
 ```{r setup, cache = FALSE, echo=FALSE, include=FALSE}
 library(knitr)
