@@ -82,10 +82,10 @@ Features
 Requirements
 ------------
 
-* `Singularity`_ 3.5.2+
-* `Nextflow`_ 20.04.1.5335+
+* `Singularity`_ 3.6.4
+* `Nextflow`_ 20.10.0.5430
 
-.. _Singularity: https://sylabs.io/guides/3.5/user-guide/quick_start.html#quick-installation-steps
+.. _Singularity: https://sylabs.io/guides/3.6/user-guide/quick_start.html#quick-installation-steps
 .. _Nextflow: https://www.nextflow.io
 
 These are the specific versions that were tested. Use other versions at your own risk.
@@ -123,7 +123,7 @@ We have a mailing list located at: GIP@google-groups.com
 License
 -------
 
-GIP and giptools modules are licensed under a Creative Commons Attribution-NonCommercial-NoDerivatives 4.0 International (CC BY-NC-ND 4.0) License. These software are provided without any warranty. Third parties software and scripts installed in giptools have their own copyright and license. A list is provided in the next page of this documentation. Users of giptools must take notice and agree with the terms and conditions of all third party software.
+GIP and giptools modules are free software licensed under the GNU General Public License version 3. Third parties software and scripts installed in giptools have their own copyright and license. A list is provided in the next page of this documentation. Users of gip and giptools must take notice and agree with the terms and conditions of all third party software.
 
 
 .. toctree::
