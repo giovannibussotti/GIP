@@ -123,8 +123,12 @@ We have a mailing list located at: GIP@google-groups.com
 License
 -------
 
-GIP and giptools modules are free software licensed under the GNU General Public License version 3. Third parties software and scripts installed in giptools have their own copyright and license. A list is provided in the next page of this documentation. Users of gip and giptools must take notice and agree with the terms and conditions of all third party software.
+GIP and giptools are free software licensed under the GNU General Public License version 3. Third parties software and scripts installed in giptools have their own copyright and license. A list is provided in the next page of this documentation. Users of gip and giptools must take notice and agree with the terms and conditions of all third party software.
 
+Copyright
+---------
+
+Copyright (c) 2021  Institut Pasteur
 
 .. toctree::
    :maxdepth: 2
