@@ -8,27 +8,34 @@ The giptools file can be directly executed and used for the downstream compariso
 Typing ``giptools`` with no options (or with -h or --help) will list the available comparison modules.
 To use any of these modules the syntax is simply ``giptools moduleName``. Each module has its own help documentation accessible with -h or --help. By default all comparison modules generate their output in the **gipOut/sampleComparison** folder.   
 
-gitools modules:
+gipools modules:
 
 +----------------+--------------------------------------------------------------------------+
-| karyotype      | Compare the chromosome sequencing coverage distributions                 |
+| karyotype      |Compare the chromosome sequencing coverage distributions                  |
 +----------------+--------------------------------------------------------------------------+
-| binCNV         | Compare bin sequencing coverage in 2 samples                             |
+| binCNV         |Compare bin sequencing coverage in 2 samples                              |
 +----------------+--------------------------------------------------------------------------+
-| geCNV          | Compare gene sequencing coverage in 2 samples                            |
+| geCNV          |Compare gene sequencing coverage in 2 samples                             |
 +----------------+--------------------------------------------------------------------------+
-| ternary        | Compare gene sequencing coverage in 3 samples                            |
+| ternary        |Compare gene sequencing coverage in 3 samples                             |
 +----------------+--------------------------------------------------------------------------+
-| ternaryBin     | Compare bin sequencing coverage in 3 samples                             |
+| ternaryBin     |Compare bin sequencing coverage in 3 samples                              |
 +----------------+--------------------------------------------------------------------------+
-| SNV            | Compare SNVs in multiple samples                                         |
+| SNV            |Compare SNVs in multiple samples                                          |
 +----------------+--------------------------------------------------------------------------+
-| binDensity     | Density plot of bin sequencing coverage of many samples                  |
+| binDensity     |Density plot of bin sequencing coverage of many samples                   |
 +----------------+--------------------------------------------------------------------------+
-| geInteraction  | Detect CNV genes in many samples and produce correlation-based networks  |
+| geInteraction  |Detect CNV genes in many samples and produce correlation-based networks   |
 +----------------+--------------------------------------------------------------------------+
-| genomeDistance | Compare samples genomic distance                                         |
+| genomeDistance |Compare samples genomic distance                                          |
 +----------------+--------------------------------------------------------------------------+
+| phylogeny      |Extract the SNVs union and infer the phylogenetic tree                    |
++----------------+--------------------------------------------------------------------------+
+| convergentCNV  |Detect convergent CNV gene amplifications                                 |
++----------------+--------------------------------------------------------------------------+
+| overview       |Overview of the sequencing coverage of chromosomes, genomic bins and genes|
++----------------+--------------------------------------------------------------------------+
+
 
 All modules require as an input the ``--gipOut`` parameter specifying the GIP output folder.
 A description of each of the giptools modules and the available options is provided in the following pages of this documentation.

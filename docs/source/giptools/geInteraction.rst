@@ -60,7 +60,7 @@ Options
 |                       |                                                              |                |
 |                       |Show the samples in the same order as in \-\-samplesList      |                |
 +-----------------------+--------------------------------------------------------------+----------------+
-|\-\-clusteringMethod   |Heatmaps clustering method [default complete]                 |[ward.D2|ward   |
+|\-\-clusteringMethod   |Heatmaps clustering method [default complete]                 |[ward.D2|ward.D |
 |                       |                                                              |                |
 |                       |                                                              |single|complete | 
 |                       |                                                              |                |

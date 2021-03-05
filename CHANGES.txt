@@ -1,4 +1,9 @@
 ##################
+#v1.0.7- 05032021#
+##################
+-circos plot coverage is now normalized by median karytype coverage rather than chromosome median coverage
+
+##################
 #v1.0.6- 19022021#
 ##################
 -Improved visualization of covPerGe plots
