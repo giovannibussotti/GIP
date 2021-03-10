@@ -47,6 +47,10 @@ Options
 |                       |                                                              |                |
 |                       |If "NA" colors are automatically assigned [default NA]        |                |
 +-----------------------+--------------------------------------------------------------+----------------+
+|\-\-randomSNVtoShow    |Number of random SNV to show in scatterplots.                 |[integer]       |
+|                       |                                                              |                |
+|                       |If "NA" all SNVs are shown [default NA]                       |                |
++-----------------------+--------------------------------------------------------------+----------------+
 |\-\-debug              |Dump session and quit                                         |                |
 +-----------------------+--------------------------------------------------------------+----------------+
 |\-h, \-\-help          |Show help message                                             |                |
@@ -56,7 +60,8 @@ Description
 -----------
 | The ``SNV`` module aims at comparing the SNV in terms of number, position and frequency for a samples set.
 | For each sample the module loads the GIP files with the filtered SNVs data (singleVariants.df.gz files) and generates multiple plots overlaying in different colors the SNVs sets. 
-
+| Should a sample set present a huge number of SNVs (e.g. cancer samples) the user can specify the ``--randomSNVtoShow`` graphical options to set the maximum number of SNVs to be shown in scatterplots and reduce overplotting. This option does not affects the density profiles, which are in any case estimated using all selected SNVs, i.e. they are never based on a random SNV subset.
+ 
 
 Example
 -------

@@ -1,4 +1,11 @@
 ##################
+#v1.0.8- 10032021#
+##################
+-introduced hexagons and randomSNVtoShow in filterFreebayesOPT to reduce overplotting and deal with samples with huge amount of SNVs
+-improved vcf2variantsFrequency_V4.R replacing for loops with vectorial operations when estimating SNVs context, and introduced randomSNVtoShow and hexagons options
+-introduced randomSNVtoShow also in the SNV giptools module
+
+##################
 #v1.0.7- 05032021#
 ##################
 -circos plot coverage is now normalized by median karytype coverage rather than chromosome median coverage

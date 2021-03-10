@@ -267,13 +267,19 @@ Please refer to the `freebayes manual <https://github.com/ekg/freebayes>`_ for m
 * *--contextSpan*      - Size on each side of SNV genomic context (bp) [int]
 * *--homopolymerFreq*  - Base frequency cut-off to consider a genomic context a homopolymer [num]
 
+| Should a specific sample present a huge number of SNVs (e.g. cancer sample) the user can specify the following graphical options that do not affect the density profiles but help reducing overplotting in scatterplots:
+
+* *--hexagons*        - Replace SNV scatterplots with density hexagons 
+* *--randomSNVtoShow* - Max number of random SNVs to be shown in scatterplots
+
 
 | The parameter default is:
 
 .. code-block:: bash
 
    filterFreebayesOPT="--minFreq 0.1 --maxFreq 1 --minAO 2 --minAOhomopolymer 20 \ 
-   --contextSpan 5 --homopolymerFreq 0.4 --minMQMR 20 --minMQM 20 --MADrange 4"
+   --contextSpan 5 --homopolymerFreq 0.4 --minMQMR 20 --minMQM 20 --MADrange 4 \ 
+   --randomSNVtoShow 50000"
 
 | The results relative to the filtered SNVs are stored in the **gipOut/samples/sampleId/sampleId_freebayesFiltered/** folder including:
 
@@ -410,7 +416,7 @@ Detect and filter structural variants
 
 For circos plot representation the chromosomes of interest are binned in into genomic intervals whose size (bp) is regulated by ``--binSizeCircos`` (default 25000). In the the inner part of circos plot the predicted break ends translocations events are shown as black lines. The karyotype color reflects the mean reads MAPQ score calculated for each genomic bin. Black indicates a MAPQ < 2, gray indicates a MAPQ ≥ 2 and < 20 and white indicates a MAPQ ≥ 20. Ticks positions and ticks labels are automatically assigned by GIP depending on genome size. If any, the position of insetions is indicated by red stripes on the karyotype. 
 
-Moving outwards the circos plot shows the tracks relative to predicted duplications (orange), deletions (blue) and inversions (green). The outmost track shows the genomic bin sequencing coverage (light blue bars) normalized by chromosome median coverage and ranging from 0 to 3. To ease visualization, amplifications with normalized coverage greather than 3 are shown with a value of 3.      
+Moving outwards the circos plot shows the tracks relative to predicted duplications (orange), deletions (blue) and inversions (green). The outmost track shows the genomic bin sequencing coverage (light blue bars) normalized by genome median coverage and ranging from 0 to 3. To ease visualization, amplifications with normalized coverage greather than 3 are shown with a value of 3.      
 
 
 
