@@ -270,7 +270,7 @@ Please refer to the `freebayes manual <https://github.com/ekg/freebayes>`_ for m
 | Should a specific sample present a huge number of SNVs (e.g. cancer sample) the user can specify the following graphical options that do not affect the density profiles but help reducing overplotting in scatterplots:
 
 * *--hexagons*        - Replace SNV scatterplots with density hexagons 
-* *--randomSNVtoShow* - Max number of random SNVs to be shown in scatterplots
+* *--randomSNVtoShow* - Max number of random SNVs to be shown in scatterplots [num]
 
 
 | The parameter default is:
