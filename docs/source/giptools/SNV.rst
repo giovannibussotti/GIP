@@ -29,9 +29,17 @@ Options
 +-----------------------+--------------------------------------------------------------+----------------+
 |\-\-maxVRF             |Discard SNVs with frequency > --maxVRF [default 1]            |[double]        |
 +-----------------------+--------------------------------------------------------------+----------------+
-|\-\-densitySize        |Density plot line thickness [default 1]                       |[double]        |
+|\-\-denLineSize        |Density plot line thickness [default 1]                       |[double]        |
++-----------------------+--------------------------------------------------------------+----------------+
+|\-\-SNValpha           |Transparency value of dots representing SNVs.                 |[double]        |
+|                       |                                                              |                |
+|                       |Max 0, Min 1 [default 1]                                      |                |
 +-----------------------+--------------------------------------------------------------+----------------+
 |\-\-showCoverage       |Overlay sequencing coverage                                   |                |
++-----------------------+--------------------------------------------------------------+----------------+
+|\-\-covLineSize        |Coverage line thickness.                                      |[double]        |
+|                       |                                                              |                |
+|                       |DEPENDENCY --showCoverage [default 0.5]                       |                |
 +-----------------------+--------------------------------------------------------------+----------------+
 |\-\-smoothingFactor    |Merge and average the normalized coverage of this number      |[double]        |
 |                       |                                                              |                |

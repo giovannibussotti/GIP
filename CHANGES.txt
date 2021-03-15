@@ -4,6 +4,7 @@
 -introduced hexagons and randomSNVtoShow in filterFreebayesOPT to reduce overplotting and deal with samples with huge amount of SNVs
 -improved vcf2variantsFrequency_V4.R replacing for loops with vectorial operations when estimating SNVs context, and introduced randomSNVtoShow and hexagons options
 -introduced randomSNVtoShow also in the SNV giptools module
+-Fixed SNV double scale_y_countinuous issue when showing coverage and added new options for thickness and transparency
 
 ##################
 #v1.0.7- 05032021#
