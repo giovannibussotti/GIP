@@ -31,9 +31,9 @@ Options
 +-----------------------+--------------------------------------------------------------+----------------+
 |\-\-denLineSize        |Density plot line thickness [default 1]                       |[double]        |
 +-----------------------+--------------------------------------------------------------+----------------+
-|\-\-SNValpha           |Transparency value of dots representing SNVs.                 |[double]        |
+|\-\-SNVopacity         |Opacity value of the dots representing SNVs.                  |[double]        |
 |                       |                                                              |                |
-|                       |Max 0, Min 1 [default 1]                                      |                |
+|                       |Max 1, Min 0 [default 1]                                      |                |
 +-----------------------+--------------------------------------------------------------+----------------+
 |\-\-showCoverage       |Overlay sequencing coverage                                   |                |
 +-----------------------+--------------------------------------------------------------+----------------+

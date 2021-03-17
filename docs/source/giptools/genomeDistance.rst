@@ -19,7 +19,7 @@ Options
 |                      |                                                      |           |
 |                      |[default gipOut/sampleComparison/genomeDistance]      |           |
 +----------------------+------------------------------------------------------+-----------+
-|\-\-contextGenomes    |Two columns TSV file listing additional genomes.      |[char]     |                
+|\-\-contextGenomes    |Two columns TSV file listing additional genomes.      |[char]     |
 |                      |                                                      |           |
 |                      |Syntax: name<Tab>filePath [default NA]                |           |
 +----------------------+------------------------------------------------------+-----------+
@@ -27,7 +27,7 @@ Options
 |                      |                                                      |           |
 |                      |indicating the color to be used for each sample. If   |           |
 |                      |                                                      |           |
-|                      |"NA" colors are automatically assigned [default NA]   |           |
+|                      |"NA" all samples are shown in black [default NA]      |           |
 +----------------------+------------------------------------------------------+-----------+ 
 |\-\-phylogenyDistance |Distance matrix e.g. the phylogeny.treefile.distMat.gz|[char]     |
 |                      |                                                      |           |
