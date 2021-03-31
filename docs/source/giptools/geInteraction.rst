@@ -92,21 +92,21 @@ Options
 |                       |                                                              |                |
 |                       |width values [default 7 4]                                    |                |
 +-----------------------+--------------------------------------------------------------+----------------+
-|\-\-kmeansClusters     |NETWORK. Use this number of k-means clusters for              |[int]           |
+|\-\-kmeansClusters     |Use this number of k-means clusters for                       |[int]           |
 |                       |                                                              |                |
-|                       |network clustering. If \"NA\" use mclust [default NA]         |                |
+|                       |clustering. If \"NA\" use mclust [default NA]                 |                |
 +-----------------------+--------------------------------------------------------------+----------------+
-|\-\-MCLinflation       |NETWORK. Use this inflation MCL value for network clustering. |[int]           |
+|\-\-MCLinflation       |Use this MCL inflation value for clustering.                  |[int]           |
 |                       |                                                              |                |
 |                       |Higher inflation values result in increased                   |                |
 |                       |                                                              |                |
 |                       |cluster granularity. If \"NA\" use mclust  [default NA]       |                |
 +-----------------------+--------------------------------------------------------------+----------------+
-|\-\-MCLexpansion       |NETWORK. MCL expansion value.                                 |[int]           |
+|\-\-MCLexpansion       |MCL expansion value.                                          |[int]           |
 |                       |                                                              |                |
 |                       |DEPENDENCY \-\-MCLinflation not \"NA\" [default 2]            |                |
 +-----------------------+--------------------------------------------------------------+----------------+
-|\-\-clMaxSDdist        |NETWORK. Gene CNVs with distance from the cluster             |[double]        | 
+|\-\-clMaxSDdist        |Gene CNVs with distance from the cluster                      |[double]        | 
 |                       |                                                              |                |
 |                       |centroid > \-\-clMaxSDdist standard deviations from the       |                |
 |                       |                                                              |                |
@@ -114,7 +114,7 @@ Options
 |                       |                                                              |                |
 |                       |this filter unffective. [default Inf]                         |                |
 +-----------------------+--------------------------------------------------------------+----------------+
-|\-\-clMinSize"         |NETWORK. Min number of members in a cluster [default 2]       |[int]           |
+|\-\-clMinSize          |Min number of members in a cluster [default 2]                |[int]           |
 +-----------------------+--------------------------------------------------------------+----------------+
 |\-\-edgesMeanCorFilter |NETWORK. Remove edges representing CNV correlation scores     |                |
 |                       |                                                              |                |
@@ -134,11 +134,19 @@ Description
 -----------
 
 The ``geInteraction`` module aims at detecting CNV genes across multiple samples and identifying gene interactions using a correlation-based network approach.
-The module loads the GIP files with the gene sequencing coverage values (.covPerGe.gz files) of all samples, then selects CNV genes. These are defined as the genes with a normalized coverage variation within the sample set greater than --minDelta. Next it builds a network and evaluates clusters based on the correlation computed between all CNV gene pairs.
-The heatmapType parameter has 4 options. If \"scaled\" values are first centered subtracting the mean gene normalized coverage across samples, then scaled dividing by the standard deviation. If \"log10\" values are log10 transformed. If \"saturated\" values are saturated at \-\-covSaturation. If \"flatten\" values are first subracted by the min gene normalized coverage across samples, then saturated at \-\-covSaturation. The latter visualization option is useful to appreciate coverage variations of genes that are highly amplified in all samples.
 
-The second part of this module is about producing correlation networks.
-First the module computes a all vs all CNV absolute correlation matrix. Then it predicts gene CNV clusters using mclust, MCL or a kmeans approach. Next, the module applies a filtering routine in which the user can remove small clusters or gene CNVs placed at a significant distance from the cluster centroid. To do that, for each cluster the module measures the centroid, the mean euclidian distance and the standard deviation. Cluster members whose distance from the centroid is greater than ``--clMaxSDdist`` standard deviations from the mean are removed.
+The algorithm steps:
+
+1. Load the GIP files with the gene sequencing coverage values (.covPerGe.gz files) of all samples, 
+2. Select CNV genes. These are defined as the genes with a normalized coverage variation within the sample set greater than --minDelta.
+3. Compute all-VS-all gene coverage correlation
+4. Compute correlation clusters (cc) using one of the clustering algorithms: mclust (default), kmeans (``--kmeansClusters``), MCL (``--MCLinflation``).
+5. Optionally remove CNV genes belonging to small cc (``--clMinSize``), or placed at a significant distance from the cluster centroid. To do that, for each cluster the module measures the centroid, the mean euclidian distance and the standard deviation. Cluster members whose distance from the centroid is greater than ``--clMaxSDdist`` standard deviations from the mean are removed.
+6. Generate the gene normalized coverage heatmap (".CNV.pdf") and table (".CNV.xlsx"). The heatmapType parameter has 4 options. If \"scaled\" values are first centered subtracting the mean gene normalized coverage across samples, then scaled dividing by the standard deviation. If \"log10\" values are log10 transformed. If \"saturated\" values are saturated at \-\-covSaturation. If \"flatten\" values are first subracted by the min gene normalized coverage across samples, then saturated at \-\-covSaturation. The latter visualization option is useful to appreciate coverage variations of genes that are highly amplified in all samples.
+7. Plot the all-VS-all correlation heatmap (".corr.pdf") and table (".corr.xlsx"). The plot file include also a line plot showing the scaled normalized gene coverage of genes in each cc across samples.
+8. Produce PCA scatterplots and standard deviation and entropy histograms as general descriptors of detected CNVs (".overview.pdf").  
+9. Compute static and interactive correlation networks based on all-VS-all CNV **absolute** correlation. The network nodes represent gene CNVs and the edges the absolute correlation value. The higher the correlation the closer the nodes. Edges colors indicate whether the correlation between gene pairs is positive or negative. The color of the nodes reflect the network clusters (nc) computed with either of the clustering algorithms. The same options used to select the cc clustering method (``--kmeansClusters`` and ``--MCLinflation``) and the cc filters (``--clMinSize`` and ``--clMaxSDdist``) apply also to nc. Between cc and nc there are two important differences. The first is that cc are based on pearson correlation values (i.e. including both positive and negative scores), while nc are based on the absolute correlation scores. The difference second is that cc quality remove CNV genes from all results, while nc filters will impact only the network plot and tables.
+
 
 
 Example
@@ -153,7 +161,7 @@ Example
 | The **geInteraction.CNV.pdf** file includes a heatmap showing the normalized coverage of the detected CNV genes. The default is scaling the normalized coverage values but other data transformations are possible (see above). The ``--cutree_samp`` and ``--cutree_cnv`` can be used to split the heatmap at the sample (columns) and CNV (rows) levels respectively. 
 | The figure produced in this example is the following:
 
-.. figure:: ../_static/geInteraction.CNV.png
+.. figure:: ../_static/gssseInteraction.CNV.png
       :width: 100 %
 
 
@@ -184,11 +192,14 @@ Example
 | The **geInteraction.CNV.xlsx** includes thee spreadsheets:
 
 1. sampleInfo. This is a copy of the provided sample meta data showinf the features colors and reporting the sample branch group assignment in the **geInteraction.CNV.pdf** heatmap.
-2. cnvInfo. This table includes the relevant statistics measured for the detected gene CNVs, including the most positivelly and negativelly correated genes partners, and the gene CNV branch group assignment in the **geInteraction.CNV.pdf** and **geInteraction.corr.pdf** heatmaps.
+2. cnvInfo. This table includes the relevant statistics measured for the detected gene CNVs, including the most positivelly and negativelly correated genes partners, the gene CNV branch group and cc assignment in the **geInteraction.CNV.pdf** and **geInteraction.corr.pdf** heatmaps.
 3. normGeneCoverage. This table includes the normalized gene coverage across the samples of interest.
 
+The data in each spreadsheed is sorted the same way as the **geInteraction.CNV.pdf** heatmap.
 
-| The **geInteraction.network.xlsx** includes a different spreadsheet for each predicted network correlation group. Each of them reports the gene members, their functions (if available) and the all vs all correlation values. The last spreadsheet reports the list of genes filtered from the network (if any).
+| The **geInteraction.corr.xlsx** includes a different spreadsheet for each predicted cluster correlation group (cc). Each of them reports the gene members, their functions (if available) and the all vs all correlation values. The latter is sorted as to reflect the **geInteraction.corr.pdf** plot.
+
+| The **geInteraction.network.xlsx** includes a different spreadsheet for each predicted network correlation group (nc). Each of them reports the gene members, their functions (if available) and the all vs all correlation values. The last spreadsheet reports the list of genes filtered from the network (if any).
 
 
 
