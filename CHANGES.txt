@@ -1,4 +1,9 @@
 ##################
+#v1.0.9- 31032021#
+##################
+-new geInteraction. Now it runs clustering (and cluster filters) not just on the network, but also upstream on the correlation heatmap. Genes filtered from the correlation map are filtered from everywhere. The correlation map clustering is based on pearson correlation values, while the network correlation uses absolute correlation scores. They are both interesting. The script now also produces a line plot after the correlation heatmap showing the scaled coverage of the genes in the various predicted correlation clusters 
+
+##################
 #v1.0.8- 10032021#
 ##################
 -introduced hexagons and randomSNVtoShow in filterFreebayesOPT to reduce overplotting and deal with samples with huge amount of SNVs
