@@ -13,7 +13,7 @@ vim: syntax=groovy
 ----------------------------------------------------------------------------------------
 */
 
-version = "1.0.8"
+version = "1.0.9"
 def helpMessage() {
     log.info"""
     =========================================
@@ -432,21 +432,9 @@ process bigWigGenomeCov {
   set val(sampleId), file("${sampleId}.bw") into (bigWigGenomeCov)
 
   """
-  #generate a bedGraph per chr
-  TMP=tmpbw
-  mkdir -p \$TMP
-  for CHR in $chromosomes ; do
-    samtools view  -b $bam \$CHR > \$TMP/\${CHR}.bam    
-    samtools index \$TMP/\${CHR}.bam
-    bamCoverage -b \$TMP/\${CHR}.bam --outFileName \$TMP/\${CHR}.bg --numberOfProcessors $task.cpus --outFileFormat bedgraph --normalizeUsingRPKM --ignoreDuplicates -r \$CHR $bigWigOPT
-  done
-
-  #combine chrs and turn to bigWig
-  mkdir -p \$TMP/sort
-  cat \$TMP/*.bg | sort -k1,1 -k2,2n -T \$TMP/sort > \$TMP/${sampleId}.bg
-  /bin/bedGraphToBigWig \$TMP/${sampleId}.bg $size \$TMP/${sampleId}.bw
-  mv \$TMP/${sampleId}.bw .
-  rm -rf \$TMP
+  #generate bedGraph
+  bamCoverage -b $bam --outFileName ${sampleId}.bg --numberOfProcessors $task.cpus --outFileFormat bedgraph --normalizeUsingRPKM --ignoreDuplicates $bigWigOPT
+  /bin/bedGraphToBigWig ${sampleId}.bg $size ${sampleId}.bw
   """
 }
 

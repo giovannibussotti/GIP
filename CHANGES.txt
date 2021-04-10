@@ -1,4 +1,11 @@
 ##################
+#v1.0.9- 09042021#
+##################
+-covPerGe_normalizedByChrMedianCov and covPerBin_normalizedByChrMedianCov handle chromosomes with zero median coverage (e.g. nullisomy) 
+-the bigwig step does not compute the density tracks on separate chromosomes anymore. This means that aneuploidy between samples of chromosomes will be visible. The main problem before was that chromosomes of the same samples would get different counts because the million mapped reads are different (in the RPKM normalization) simply due to the different chromosome lenght. Now it is fixed and it is a much simpler step
+
+
+##################
 #v1.0.8- 10032021#
 ##################
 -introduced hexagons and randomSNVtoShow in filterFreebayesOPT to reduce overplotting and deal with samples with huge amount of SNVs
