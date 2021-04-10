@@ -161,7 +161,7 @@ Example
 | The **geInteraction.CNV.pdf** file includes a heatmap showing the normalized coverage of the detected CNV genes. The default is scaling the normalized coverage values but other data transformations are possible (see above). The ``--cutree_samp`` and ``--cutree_cnv`` can be used to split the heatmap at the sample (columns) and CNV (rows) levels respectively. 
 | The figure produced in this example is the following:
 
-.. figure:: ../_static/gssseInteraction.CNV.png
+.. figure:: ../_static/geInteraction.CNV.png
       :width: 100 %
 
 
