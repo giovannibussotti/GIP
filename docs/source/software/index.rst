@@ -43,9 +43,9 @@ Software
 | `Source code <https://github.com/samtools/bcftools/releases/download/1.11/bcftools-1.11.tar.bz2>`_         
 
 | **deeptools**        
-| Version 2.4.2      
+| Version 3.5.1      
 | :download:`LICENSE deeptools <LICENSE_deepTools>`
-| `Source code <https://github.com/deeptools/deepTools/archive/2.4.2.tar.gz>`_       
+| `Source code <https://github.com/deeptools/deepTools/archive/refs/tags/3.5.1.tar.gz>`_       
 
 | **RepeatMasker**     
 | Version 4.1.0      
@@ -104,7 +104,7 @@ Software
 
 | **Red**              
 | Version 05/22/2015 
-| `LICENSE Red <https://bmcbioinformatics.biomedcentral.com/articles/10.1186/s12859-015-0654-5>`_                                     
+| `LICENSE Red <https://bmcbioinformatics.biomedcentral.com/articles/10.1186/s12859-015-0654-5>`_
 | `Source code <http://toolsmith.ens.utulsa.edu/red/data/DataSet1Src.tar.gz>`_
 
 | **IQ-tree2**         
