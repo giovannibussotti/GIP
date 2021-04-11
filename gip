@@ -432,9 +432,14 @@ process bigWigGenomeCov {
   set val(sampleId), file("${sampleId}.bw") into (bigWigGenomeCov)
 
   """
-  #generate bedGraph
-  bamCoverage -b $bam --outFileName ${sampleId}.bg --numberOfProcessors $task.cpus --outFileFormat bedgraph --normalizeUsingRPKM --ignoreDuplicates $bigWigOPT
-  /bin/bedGraphToBigWig ${sampleId}.bg $size ${sampleId}.bw
+  #TMPDIR used by deeptools to avoid disk quota error
+  mkdir -p _tmp
+  TMPDIR=./_tmp
+  bamCoverage -b $bam --outFileName ${sampleId}.bg --numberOfProcessors $task.cpus --outFileFormat bedgraph $bigWigOPT
+  #sort bedgraph
+  LC_COLLATE=C sort -k1,1 -k2,2n -T _tmp/ ${sampleId}.bg > bg
+  /bin/bedGraphToBigWig bg $size ${sampleId}.bw
+  rm -rf bg ${sampleId}.bg _tmp
   """
 }
 
