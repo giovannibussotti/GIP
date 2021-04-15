@@ -4,6 +4,7 @@
 -covPerGe_normalizedByChrMedianCov and covPerBin_normalizedByChrMedianCov handle chromosomes with zero median coverage (e.g. nullisomy) 
 -the bigwig step does not compute the density tracks on separate chromosomes anymore. This means that aneuploidy between samples of chromosomes will be visible. The main problem before was that chromosomes of the same samples would get different counts because the million mapped reads are different (in the RPKM normalization) simply due to the different chromosome lenght. Now it is fixed and it is a much simpler step
 -updated deeptols realease 3.5.1
+-Renamed dNdS with the more correct "NS" since the non-synonimous and synonimous counts are absolute and not normalized. In the dNdS form the N and S values are presented as rates (i.e. normalized by all the possible N and S sites) and the ratio it is normalized to 1. It is still informative to perform a N/S ratio analysis on absolute counts (i.e. not rates) as shown in the paper PMID: 22728672. Briefly you can compute the non-normalized N/S ratio for a sample, and then check if individual genes have an N/S ratio above or below the sample value. Anyway, the dNdS analysis would not be much informative for GIP since the primary use is to compare multiple samples of the same species (same reference genome) (see PMID: 19081788). Possibly implement in the future the pNpS analysis (which may be involved since you should look just at exonic DNA).
 
 ##################
 #v1.0.8- 10032021#
