@@ -373,13 +373,13 @@ process snpEff {
   paste ${sampleId}_freebayesFiltered/singleVariants.df ${sampleId}_freebayesFiltered/EFF > ${sampleId}_freebayesFiltered/singleVariants.df2
   mv ${sampleId}_freebayesFiltered/singleVariants.df2 ${sampleId}_freebayesFiltered/singleVariants.df
 
-  #compute dnds
-  Rscript /bin/dndsRatio.R --ALLGEANN $geFun --SNPEFFDF ${sampleId}_freebayesFiltered/singleVariants.df --ID ${sampleId}
+  #compute non-normalized N/S ratio
+  Rscript /bin/NSratio.R --ALLGEANN $geFun --SNPEFFDF ${sampleId}_freebayesFiltered/singleVariants.df --ID ${sampleId}
   mv ${sampleId}_cleanEFF.tsv ${sampleId}_freebayesFiltered/singleVariants.df
   gzip -f ${sampleId}_freebayesFiltered/singleVariants.df  
-  mv ${sampleId}_dNdStables.tsv  ${sampleId}_freebayesFiltered/dNdStable.tsv
-  gzip -f ${sampleId}_freebayesFiltered/dNdStable.tsv
-  mv ${sampleId}_cleanEFF.stats ${sampleId}_freebayesFiltered/dNdS.stats  
+  mv ${sampleId}_NStables.tsv  ${sampleId}_freebayesFiltered/NStable.tsv
+  gzip -f ${sampleId}_freebayesFiltered/NStable.tsv
+  mv ${sampleId}_cleanEFF.stats ${sampleId}_freebayesFiltered/NS.stats  
 
   rm -rf tmpSnpEff_${sampleId}.vcf snpEff_summary_${sampleId}.genes.txt ${sampleId}_freebayesFiltered/singleVariants.df.EFF ${sampleId}_freebayesFiltered/EFF
   """
