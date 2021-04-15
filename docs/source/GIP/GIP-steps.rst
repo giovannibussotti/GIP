@@ -331,9 +331,9 @@ Please refer to the `freebayes manual <https://github.com/ekg/freebayes>`_ for m
 +-------------------------------------------------+------------------------------------------------------------+
 | snpEff_summary_sampleId.html                    | snpEff summary (html)                                      |
 +-------------------------------------------------+------------------------------------------------------------+
-| dNdS.stats                                      | dNdS analysis statistics                                   |
+| NS.stats                                        | NS analysis statistics                                     |
 +-------------------------------------------------+------------------------------------------------------------+
-| dNdStable.tsv.gz                                | dNdS analysis per gene                                     |
+| NStable.tsv.gz                                  | NS analysis per gene                                       |
 +-------------------------------------------------+------------------------------------------------------------+
 | pseudoReference.fa.gz                           | genome sequence incorporating alternate alleles            |
 +-------------------------------------------------+------------------------------------------------------------+
@@ -343,7 +343,7 @@ Please refer to the `freebayes manual <https://github.com/ekg/freebayes>`_ for m
 +-------------------------------------------------+------------------------------------------------------------+
 
 
-| For the dNdS analysis the snpEff effects counting as synonimous substitutions are:
+| For the NS analysis the synonymous (S) and non-synonimous (N) values reflect absolute (i.e. non-normalized) variant counts. The snpEff effects counting as synonimous substitutions are:
 
 * synonymous_variant
 * stop_retained_variant
