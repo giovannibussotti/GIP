@@ -35,7 +35,8 @@ gipools modules:
 +----------------+--------------------------------------------------------------------------+
 | overview       |Overview of the sequencing coverage of chromosomes, genomic bins and genes|
 +----------------+--------------------------------------------------------------------------+
-
+| panel          |Extract genomic information of a gene panel                               |
++----------------+--------------------------------------------------------------------------+
 
 All modules require as an input the ``--gipOut`` parameter specifying the GIP output folder.
 A description of each of the giptools modules and the available options is provided in the following pages of this documentation.

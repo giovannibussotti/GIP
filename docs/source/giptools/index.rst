@@ -18,3 +18,4 @@
    phylogeny
    convergentCNV
    overview
+   panel
