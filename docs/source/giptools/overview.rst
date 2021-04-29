@@ -81,12 +81,13 @@ Example
 
 | This will generate the overview output files in the **gipOut/sampleComparison** folder. 
 
-| The output consists in four files: 
+| The output consists of five files: 
 
 * The .chrCov.pdf file represents the normalized chromosome coverage
 * The .binCov.pdf file represents the normalized genomic bin coverage
 * The .geCov.pdf file represents the normalized gene coverage. The first heatmap reports scaled values. The second heatmap shows the actual normalized gene coverage, but values greather than --ylim are reported as --ylim. 
-* The geCov.xlsx file is an excel table reporting the normalized gene coverage with the associated function (if available) 
+* The .geCov.xlsx file is an excel table reporting the normalized gene coverage with the associated function (if available) 
+* The .alignmentMetrics.xlsx is an excel table reporting the mapping statistics of all samples as estimated by picard CollectAlignmentSummaryMetrics.
 
 | In the genomic bins plot is possible to center the coverage to 1, limit the y-axis to 2.5 and remove bin coloring by adding the options  ``--ploidy 1 --ylim 2.5 --highLowCovThresh 100 -1`` to the command. This gives the following plot:
 
