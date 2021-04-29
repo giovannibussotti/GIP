@@ -63,4 +63,30 @@ Example
 
 | This will generate the panel output files in the **gipOut/sampleComparison** folder. 
 
+| The sampleList.tsv is a Tab Separated Value table like :download:`this <../_static/sampleListExample.pdf>`.
+
+| The panel.tsv is a separate Tab Separated Value table listing a panel of genes of interest, in this example :download:`68 amastin genes <../_static/panelExample.pdf>`.
+
+
+| The output consists of three files: 
+
+* The .coverage.pdf file includes multiple plots showing the sequencing coverage of the genes in the panel normalized by median genomic coverage
+* The .variants.pdf file represents the counts of N and S mutations for each gene in the panel
+* The panel.xlsx file is an excel table reporting the normalized coverage, the N and S counts for each gene.
+
+| For example, one of the coverage plot produced shows the distribution of coverage for each gene (boxes) together with the coverage in individual samples (dots) colored by sample set (first-episode vs relapse infection in this example):
+
+.. figure:: ../_static/panel.coverage.png
+      :width: 100 %
+ 
+| The .variants.pdf file offers alternative visualizations of the N and S mutations. For instance, a stacked barplot showing the mean N and S counts for each gene:
+
+ .. figure:: ../_static/panel.variants.png
+      :width: 100 %
+
+
+
+
+
+
 
