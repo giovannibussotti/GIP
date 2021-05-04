@@ -52,7 +52,7 @@ Example
 | ``giptools binCNV --samples ZK43 LIPA83 --highLowRatio 1.25 0.75``
 
 | This will generate the binCNV output files in the **gipOut/sampleComparison** folder.
-| The output consists in four files. 
+| The output represents the LIPA83/ZK43 genomic bin normalized coverage ratio, and consists in four files. 
 
 
 | The **binCNV.overview.pdf** file shows the bin coverage ratio of all chromosomes in a row
@@ -67,15 +67,13 @@ Example
       :width: 100 %
 
 
-| The **binCNV.byChr.pdf** file contains multiple plots, on for each chromsome separatelly. As an example, the plot produced for chromosome 22 is the following:
+| The **binCNV.byChr.pdf** file contains multiple plots, on for each chromsome separatelly. As an example, the plot produced for chromosome 33 is the following:
 
-.. figure:: ../_static/binCNV_ZK43_LIPA83_chr22.png
+.. figure:: ../_static/binCNV_ZK43_LIPA83_chr33.png
       :width: 100 %
 
 
 | The **binCNV.xlsx** file reports for each genomic bin the genomic coordinates, the computed ratio value and the color used for its representation.
-
-
 
 
 
