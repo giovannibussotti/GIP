@@ -8,7 +8,9 @@ Options
 +-------------------+------------------------------------------------------------------+----------------+
 |Option             |Description                                                       |Argument        |
 +===================+==================================================================+================+
-|\-\-samples        |Sample names. It determines the plotting order [**required**]     |[char ...]      |
+|\-\-samples        |Two sample names. The ratio is computed Sample2/Sample1           |[char,char]     |
+|                   |                                                                  |                |
+|                   |[**required**]                                                    |                |
 +-------------------+------------------------------------------------------------------+----------------+ 
 |\-\-gipOut         |GIP output directory [default gipOut]                             |[char]          |
 +-------------------+------------------------------------------------------------------+----------------+
@@ -24,13 +26,13 @@ Options
 |                   |                                                                  |                |   
 |                   |threshold are shown as --ylim [default 3]                         |                |
 +-------------------+------------------------------------------------------------------+----------------+
-|\-\-highLowRatio   | Provide 2 numbers. Bins with ratio scores > num1                 |[double,double] |
+|\-\-highLowRatio   |Provide 2 numbers. Bins with ratio scores > num1                  |[double,double] |
 |                   |                                                                  |                |
-|                   | or < num2 will be colored differently [default 1.5  0.5]         |                |
+|                   |or < num2 will be colored differently [default 1.5  0.5]          |                |
 +-------------------+------------------------------------------------------------------+----------------+
-|\-\-pseudocount    | Normalized mean coverage pseudo count value preventing           |[double]        |
+|\-\-pseudocount    |Normalized mean coverage pseudo count value preventing            |[double]        |
 |                   |                                                                  |                |
-|                   |  infinite (1/0) and NaN (0/0) ratio values [default 0.1]         |                |
+|                   |infinite (1/0) and NaN (0/0) ratio values [default 0.1]           |                |
 +-------------------+------------------------------------------------------------------+----------------+  
 |\-\-debug          |Dump session and quit                                             |                |
 +-------------------+------------------------------------------------------------------+----------------+
@@ -47,7 +49,7 @@ Example
 -------
 | From the GIP worked example folder execute
 
-| ``giptools binCNV --samples ZK43 LIPA83``
+| ``giptools binCNV --samples ZK43 LIPA83 --highLowRatio 1.25 0.75``
 
 | This will generate the binCNV output files in the **gipOut/sampleComparison** folder.
 | The output consists in four files. 
