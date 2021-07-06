@@ -96,7 +96,7 @@ Installation
 
 1) Download GIP
 
-    ``github download command...``
+    ``git clone https://github.com/giovannibussotti/GIP.git``
 
 2) Pull the container
 
@@ -121,8 +121,7 @@ Contribute
 Support
 -------
 
-If you are having issues, please let us know.
-We have a mailing list located at: GIP@google-groups.com
+If you are having issues, please let us
 
 License
 -------
