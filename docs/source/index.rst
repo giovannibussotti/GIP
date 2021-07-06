@@ -117,7 +117,8 @@ Contribute
 Support
 -------
 
-If you are having issues, please let us
+If you are having issues, please let us know
+
 - Issue Tracker: https://github.com/giovannibussotti/GIP/issues
 
 
