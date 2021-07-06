@@ -111,15 +111,15 @@ Installation
 Contribute
 ----------
 
-- Source Code: https://github.com/giovannibussotti/GIP
-- Discussions: https://github.com/giovannibussotti/GIP/discussions
+- Source Code: `https://github.com/giovannibussotti/GIP <https://github.com/giovannibussotti/GIP>`_
+- Discussions: `https://github.com/giovannibussotti/GIP/discussions <https://github.com/giovannibussotti/GIP/discussions>`_
 
 Support
 -------
 
 If you are having issues, please let us know
 
-- Issue Tracker: https://github.com/giovannibussotti/GIP/issues
+- Issue Tracker: `https://github.com/giovannibussotti/GIP/issues <https://github.com/giovannibussotti/GIP/issues>`_
 
 
 License
