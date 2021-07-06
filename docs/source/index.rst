@@ -102,10 +102,6 @@ Installation
 
     ``singularity pull library://giovannibussotti/default/giptools``
 
-or download it from 
-
-     ``https://cloud.sylabs.io/library/giovannibussotti/default/giptools``
-
 3) Move **giptools** to /usr/local/bin/. If the user does not have permission on the folder she/he can keep giptools in any other location, and just update the "container" parameter in the gip.config: ``container='/Path/To/giptools'``
 
 | Done!
@@ -115,13 +111,15 @@ or download it from
 Contribute
 ----------
 
-- Issue Tracker: github.com/GIP/issues
-- Source Code: github.com/GIP
+- Source Code: https://github.com/giovannibussotti/GIP
+- Discussions: https://github.com/giovannibussotti/GIP/discussions
 
 Support
 -------
 
 If you are having issues, please let us
+- Issue Tracker: https://github.com/giovannibussotti/GIP/issues
+
 
 License
 -------
