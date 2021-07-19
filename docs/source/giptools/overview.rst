@@ -85,7 +85,7 @@ Example
 
 * The .chrCov.pdf file represents the normalized chromosome coverage
 * The .binCov.pdf file represents the normalized genomic bin coverage
-* The .geCov.pdf file represents the normalized gene coverage. The first heatmap reports scaled values. The second heatmap shows the actual normalized gene coverage, but values greather than --ylim are reported as --ylim. 
+* The .geCov.pdf file represents the normalized gene coverage. The first heatmap reports scaled values. Genes with 0 standard deviation cannot be scaled and are not shown in the hetmap. The second heatmap shows all the normalized gene coverages increased by a pseudocount of 0.1 and log2 transformed. The third heatmap shows the actual normalized gene coverage, but values greather than --ylim are reported as --ylim. 
 * The .geCov.xlsx file is an excel table reporting the normalized gene coverage with the associated function (if available) 
 * The .alignmentMetrics.xlsx is an excel table reporting the mapping statistics of all samples as estimated by picard CollectAlignmentSummaryMetrics.
 
