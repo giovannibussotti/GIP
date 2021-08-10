@@ -112,4 +112,48 @@ Software
 | `GNU-GPL License <http://www.iqtree.org/about/>`_       
 
 
+Additionally giptools includes the following R packages:
+ape,
+argparse,
+Biostrings,
+bisoreg,
+data.table,
+dplyr,
+entropy,
+FactoMineR,
+fastcluster,
+fields,
+fitdistrplus,
+GenomicRanges,
+ggExtra,
+ggplot2,
+ggridges,
+ggtern,
+ggtree,
+gplots,
+gridExtra,
+gtools,
+igraph,
+IRanges,
+karyoploteR,
+knitr,
+MASS,
+MCL,
+mclust,
+mixtools,
+networkD3,
+openxlsx,
+pheatmap,
+plot3D,
+png,
+RColorBrewer,
+reshape2,
+scales,
+seqLogo,
+session,
+VariantAnnotation,
+venn,
+
+These packages and their dependencies are available at the container location: /usr/local/lib/R/library/
+
 
