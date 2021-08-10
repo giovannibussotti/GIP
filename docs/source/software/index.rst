@@ -24,42 +24,42 @@ Software
 
 | **htslib**         
 | Version 1.8        
-| :download:`LICENSE htslib <LICENSE_htslib>`
+| :download:`License <LICENSE_htslib>`
 | `Source code <https://github.com/samtools/htslib/archive/1.8.tar.gz>`_
 
 | **bedtools**      
 | Version 2.29.2     
-| :download:`LICENSE bedtools <LICENSE_bedtools>`
+| :download:`License <LICENSE_bedtools>`
 | `Source code <https://github.com/arq5x/bedtools2/archive/v2.29.2.tar.gz>`_
 
 | **Python3**       
 | Version 3.7.0      
-| :download:`LICENSE Python3 <LICENSE_Python3>`
+| :download:`License <LICENSE_Python3>`
 | `Source code <https://www.python.org/ftp/python/3.7.0/Python-3.7.0.tgz>`_
 
 | **bcftools**         
 | Version 1.11      
-| :download:`LICENSE bcftools <LICENSE_bcftools>`
+| :download:`License <LICENSE_bcftools>`
 | `Source code <https://github.com/samtools/bcftools/releases/download/1.11/bcftools-1.11.tar.bz2>`_         
 
 | **deeptools**        
 | Version 3.5.1      
-| :download:`LICENSE deeptools <LICENSE_deepTools>`
+| :download:`License <LICENSE_deepTools>`
 | `Source code <https://github.com/deeptools/deepTools/archive/refs/tags/3.5.1.tar.gz>`_       
 
 | **RepeatMasker**     
 | Version 4.1.0      
-| :download:`LICENSE RepeatMasker <LICENSE_RepeatMasker>` 
+| :download:`License <LICENSE_RepeatMasker>` 
 | `Source code <http://www.repeatmasker.org/RepeatMasker/RepeatMasker-4.1.0.tar.gz>`_
 
 | **rmblast**          
 | Version 2.10.0+    
-| :download:`LICENSE rmblast <LICENSE_rmblast>`           
+| :download:`License <LICENSE_rmblast>`           
 | `Source code <ftp://ftp.ncbi.nlm.nih.gov/blast/executables/blast+/2.10.0/ncbi-blast-2.10.0+-src.tar.gz>`_
 
 | **trf**              
 | Version 4.09.1     
-| :download:`COPYING trf <COPYING_trf>`                   
+| :download:`Copyright <COPYING_trf>`                   
 | `Source code <https://github.com/Benson-Genomics-Lab/TRF/archive/v4.09.1.tar.gz>`_
 
 | **mummer**           
@@ -100,16 +100,16 @@ Software
 
 | **bedGraphToBigWig** 
 | Version 2.8        
-| `LICENSE bedGraphToBigWig <https://genome.ucsc.edu/license/>`_                            
+| `License <https://genome.ucsc.edu/license/>`_                            
 
 | **Red**              
 | Version 05/22/2015 
-| `LICENSE Red <https://bmcbioinformatics.biomedcentral.com/articles/10.1186/s12859-015-0654-5>`_
+| `License <https://bmcbioinformatics.biomedcentral.com/articles/10.1186/s12859-015-0654-5>`_
 | `Source code <http://toolsmith.ens.utulsa.edu/red/data/DataSet1Src.tar.gz>`_
 
 | **IQ-tree2**         
 | Version 2.1.2      
-| `GNU-GPL license <http://www.iqtree.org/about/>`_       
+| `GNU-GPL License <http://www.iqtree.org/about/>`_       
 
 
 
