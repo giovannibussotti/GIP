@@ -361,7 +361,7 @@ Please refer to the `freebayes manual <https://github.com/ekg/freebayes>`_ for m
 Detect and filter structural variants
 -------------------------------------
  
-| The genomic structural variants (SVs) are detected in the *delly* process using the `delly <https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3436805/>_` program. The SVs are predicted based on pair-end mapping orientation and split-read information, and include unbalanced reaffangements (i.e. CNV deletions, amplifications and insertions), as well as balanced rearrangements (inversions and break ends translocations). delly is used to predict the five SV types using just the reads passing the ``--MAPQ`` filter. The outputs are the .vcf bgzip compressed file  **gipOut/samples/sampleId/sampleId.delly.vcf.gz** and its tabix index with .tbi extension.
+| The genomic structural variants (SVs) are detected in the *delly* process using the `delly <https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3436805/>`_ program. The SVs are predicted based on pair-end mapping orientation and split-read information, and include unbalanced reaffangements (i.e. CNV deletions, amplifications and insertions), as well as balanced rearrangements (inversions and break ends translocations). *delly* is used to predict the five SV types using just the reads passing the ``--MAPQ`` filter. The outputs are the .vcf bgzip compressed file  **gipOut/samples/sampleId/sampleId.delly.vcf.gz** and its tabix index with .tbi extension.
 | GIP allows to apply custom quality filters and select a short-list of SV predictions using the ``--filterDellyOPT`` parameter, and setting the following variables:
 
 * *--minMAPQ*      - min median mapping quality of paired-ends supporting the SV [int]
