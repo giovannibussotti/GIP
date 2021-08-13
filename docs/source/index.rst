@@ -100,7 +100,7 @@ Installation
 
 2) Pull the container
 
-    ``singularity pull library://giovannibussotti/default/giptools``
+    ``singularity pull --disable-cache giptools library://giovannibussotti/default/giptools``
 
 3) Move **giptools** to /usr/local/bin/. If the user does not have permission on the folder she/he can keep giptools in any other location, and just update the "container" parameter in the gip.config: ``container='/Path/To/giptools'``
 
