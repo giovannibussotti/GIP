@@ -74,7 +74,7 @@ Then there are 3 more steps to install Singularity:
 
 
 Installing GIP
------------
+--------------
 
 The following code will create a copy of GIP and giptools in the local folder.
 
@@ -176,18 +176,37 @@ GIP configuration
 The user should prepare the index file indicating the sample names and the respective sequencing data files.
 The index is a tab separated file with the following heading row: sampleId	read1	read2 
 In this example we will use the sample names as reported in `PRJNA607007 <https://www.ncbi.nlm.nih.gov/sra/?term=PRJNA607007>`_ and the data file paths as they are in the host system.  
-So if the fastq files are stored in the ``/pasteur/data/fq`` the end the index file should look like :download:`this <../_static/sampleIndexExample.pdf>`.
+So if the fastq files are stored in the ``/pasteur/tutorial/fastqs`` the end the index file should look like :download:`this <../_static/sampleIndexExample.pdf>`.
 
 
 Next, the user must edit the GIP configuration file (i.e. **gip.config**) according to the available computing resources, and most importantly, binding an up-level directory containing all the data paths. In this example the ``/pasteur`` would be a good choice. 
-Assuming that the user copied giptools locally as ``/pasteur/p2p5/gip/giptools``, and that he/she wants to execute GIP on a slurm cluster with special partition and quality of service options ``-p aTeam --qos fast`` while keeping the default for all the rest, the parameters that need to be updated are:
+Assuming that the user copied giptools locally as ``/pasteur/tutorial/giptools``, and that he/she wants to execute GIP on a slurm cluster with special partition and quality of service options ``-p aTeam --qos fast`` while keeping the default for all the rest, the parameters that need to be updated are:
 
 * ``executor='slurm'``
-* ``container='/pasteur/p2p5/gip/giptools'`` 
 * ``clusterOptions='-p aTeam --qos fast'``
+* ``container='/pasteur/tutorial/giptools'`` 
 * ``runOptions = '--bind /pasteur'``
 
-The edited configuration file should look like :download:`this <../_static/gip.config.workedExample.pdf>`.
+The edited configuration file using default parametrization should look like :download:`this <../_static/gip.config.workedExample.pdf>`.
+In this example all processes will run with 1 CPU and max 40 Gb of memory.
+It is possible to adjust the cpu and memory parameter for individual processes using the ``withName`` Nextflow option and specifying the process name and the desired resources. For instance adding ``withName: map { cpus=4 }`` in the process section will execute the map processes with 4 cpus.
+The executed processes are:
+
+| processGeneFunction
+| prepareGenome
+| map 
+| mappingStats
+| covPerChr 
+| covPerBin 
+| covPerGe 
+| freebayes 
+| snpEff 
+| delly 
+| bigWigGenomeCov 
+| covPerClstr       
+| report 
+
+The processes that can  benefit from multi CPU parallelization are: prepareGenome, map and bigWigGenomeCov.
 If instead the user cannot take advantage of a computing cluster, then he/she can run GIP locally by simply specifying ``executor='local'``.
 
 
@@ -198,9 +217,9 @@ To run GIP:
 
 .. code-block:: bash
 
- nextflow gip --genome /mnt/Leishmania_infantum_gca_900500625.LINF.dna.toplevel.fa.gz \
-              --annotation /mnt/annotation.gtf \
-              --geneFunctions /mnt/geneFunction.tsv \
+ ./nextflow GIP/gip --genome /pasteur/tutorial/data/Leishmania_infantum_gca_900500625.LINF.dna.toplevel.fa.gz \
+              --annotation /pasteur/tutorial/data/annotation.gtf \
+              --geneFunctions /pasteur/tutorial/data/geneFunction.tsv \
               --index index.tsv \
               -c gip.config
 
