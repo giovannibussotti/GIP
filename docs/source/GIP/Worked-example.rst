@@ -189,8 +189,8 @@ Assuming that the user copied giptools locally as ``/pasteur/tutorial/giptools``
 
 The edited configuration file using default parametrization should look like :download:`this <../_static/gip.config.workedExample.pdf>`.
 In this example all processes will run with 1 CPU and max 40 Gb of memory.
-It is possible to adjust the cpu and memory parameter for individual processes using the ``withName`` Nextflow option and specifying the process name and the desired resources. For instance adding ``withName: map { cpus=4 }`` in the process section will execute the map processes with 4 cpus.
-The executed processes are:
+It is possible to adjust the cpu and memory parameter for individual processes using the ``withName`` Nextflow option specifying the process name and the desired resources. For instance adding ``withName: map { cpus=4 }`` in the process section will execute the map process with 4 cpus.
+The complete list of GIP processes includes:
 
 | processGeneFunction
 | prepareGenome
@@ -207,6 +207,15 @@ The executed processes are:
 | report 
 
 The processes that can  benefit from multi CPU parallelization are: prepareGenome, map and bigWigGenomeCov.
+The map process that has by far the highest memory requirements and execution time:
+
+.. figure:: ../_static/memory.png
+      :width: 100 %
+
+.. figure:: ../_static/time.png
+      :width: 100 %
+
+
 If instead the user cannot take advantage of a computing cluster, then he/she can run GIP locally by simply specifying ``executor='local'``.
 
 
