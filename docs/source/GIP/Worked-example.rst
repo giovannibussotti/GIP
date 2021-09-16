@@ -3,6 +3,90 @@ Worked example
 ##############
 
 
+
+Installing Dependencies
+-----------------------
+GIP dependencies are Nextflow and Singularity. 
+Instructions to install these software can be found on the respective websites:
+
+| `Nextflow <https://www.nextflow.io/docs/latest/getstarted.html>`_
+| `Singularity <https://sylabs.io/guides/3.8/user-guide/quick_start.html#install>`_
+
+To install Nextflow on a local folder:
+
+.. code-block:: bash
+
+ wget -qO- https://get.nextflow.io | bash
+ chmod +x nextflow
+
+
+To install Singularity You must first install development libraries to your host. Assuming Ubuntu:
+
+.. code-block:: bash
+
+ sudo apt-get update && sudo apt-get install -y \
+    build-essential \
+    libssl-dev \
+    uuid-dev \
+    libgpgme11-dev \
+    squashfs-tools \
+    libseccomp-dev \
+    wget \
+    pkg-config \
+    git \
+    cryptsetup
+
+
+Then there are 3 more steps to install Singularity:
+
+
+1) Installing Go (following instructions at https://golang.org/doc/install)
+
+.. code-block:: bash
+
+ wget https://golang.org/dl/go1.17.1.linux-amd64.tar.gz
+ sudo rm -rf /usr/local/go
+ sudo tar -C /usr/local -xzf go1.17.1.linux-amd64.tar.gz
+ #add to your .bashrc the following lines:
+ export GOPATH=${HOME}/go
+ export PATH=/usr/local/go/bin:${PATH}:${GOPATH}/bin
+
+
+2) Downloading Singularity
+
+.. code-block:: bash
+
+ export VERSION=3.8.1 && # adjust this as necessary \
+    wget https://github.com/sylabs/singularity/releases/download/v${VERSION}/singularity-ce-${VERSION}.tar.gz && \
+    tar -xzf singularity-ce-${VERSION}.tar.gz && \
+    cd singularity-ce-${VERSION}
+
+
+3) Compiling Singularity Source Code
+
+.. code-block:: bash
+
+ ./mconfig && \
+    make -C builddir && \
+    sudo make -C builddir install
+ cd ..
+
+
+
+Installing GIP
+-----------
+
+The following code will create a copy of GIP and giptools in the local folder.
+
+.. code-block:: bash
+
+ #download GIP
+ git clone https://github.com/giovannibussotti/GIP.git
+ #download giptools
+ singularity pull giptools library://giovannibussotti/default/giptools
+
+
+
 Data acquisition
 ----------------
 
@@ -18,7 +102,18 @@ The resulting file will contain the following accessions:
 | SRR11098647
 | SRR11098648
 
-The following code snippet requires the `SRA Toolkit <https://trace.ncbi.nlm.nih.gov/Traces/sra/sra.cgi?view=toolkit_doc>`_ and can be copy/pasted in a bash terminal to recursively download each of the 7 WGS experiment:
+To download these datasets the user can use the `SRA Toolkit <https://trace.ncbi.nlm.nih.gov/Traces/sra/sra.cgi?view=toolkit_doc>`_. Installation instructions are available from `this page <https://github.com/ncbi/sra-tools/wiki/02.-Installing-SRA-Toolkit>`_, and involve:
+
+.. code-block:: bash
+
+ #downloading sratoolkit
+ wget http://ftp-trace.ncbi.nlm.nih.gov/sra/sdk/current/sratoolkit.current-ubuntu64.tar.gz
+ tar -xzf sratoolkit.current-ubuntu64.tar.gz
+ #configure enabling remote access, local file caching and remote cloud instance identity using
+ ./sratoolkit.2.11.1-ubuntu64/bin/vdb-config --interactive
+
+
+The following code snippet can be copy/pasted in a bash terminal to recursively download each of the 7 WGS experiment with SRA Toolkit:
 
 .. code-block:: bash
 
@@ -27,9 +122,9 @@ The following code snippet requires the `SRA Toolkit <https://trace.ncbi.nlm.nih
  cd fastqs
  for X in "${accessions[@]}" ; do
    #download from accession
-   prefetch $X
+   ../sratoolkit.2.11.1-ubuntu64/bin/prefetch $X
    #convert to fastq
-   fastq-dump --split-files $X
+   ../sratoolkit.2.11.1-ubuntu64/bin/fastq-dump --split-files $X
    #compress
    gzip ${X}*fastq
    #remove .sra file
