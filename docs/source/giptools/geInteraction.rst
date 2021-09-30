@@ -26,7 +26,7 @@ Options
 +-----------------------+--------------------------------------------------------------+----------------+
 |\-\-minMAPQ            |Remove genes with MAPQ < --MAPQ [default 0]                   |[int]           |
 +-----------------------+--------------------------------------------------------------+----------------+
-|\-\-minDelta           |Min normalized coverage delta between samples [default 1]     |[int]           |
+|\-\-minDelta           |Min normalized coverage delta between samples [default 1]     |[double]        |
 +-----------------------+--------------------------------------------------------------+----------------+
 |\-\-minMaxCov          |Use only genes with normalized coverage >Value1 or <Value2    |[num num]       |
 |                       |                                                              |                |
