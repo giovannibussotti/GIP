@@ -207,17 +207,17 @@ The complete list of GIP processes includes:
 
 | processGeneFunction
 | prepareGenome
-| map 
+| map
 | mappingStats
-| covPerChr 
-| covPerBin 
-| covPerGe 
-| freebayes 
-| snpEff 
-| delly 
-| bigWigGenomeCov 
-| covPerClstr       
-| report 
+| covPerChr
+| covPerBin
+| covPerGe
+| freebayes
+| snpEff
+| delly
+| bigWigGenomeCov
+| covPerClstr
+| report
 
 The processes that can  benefit from multi CPU parallelization are: prepareGenome, map and bigWigGenomeCov.
 The map process that has by far the highest memory requirements and execution time:
@@ -245,10 +245,8 @@ To run GIP:
               --index index.tsv \
               -c gip.config
 
-Assuming that the user now wants to test a stricter parametrization for the SNV filtering he/che can edit the filterFreebayesOPT parameter and increase the \-\-minFreq value to 0.3. Then, when re-exeute GIP, it is possible to add the ``-resume`` option to the command line to compute just the processes affected by the parameter change. GIP will re-use the cached results of all the other processes.
+If executed on a computing cluster, `it is recommended not to run nextflow on the submission node directly <https://www.nextflow.io/blog/2021/5_tips_for_hpc_users.html>`_).
+For instance, if the executor is slurm, the above command-line should be executed via sbatch.
 
-
-
-
-
+Assuming that the user now wants to test a stricter parametrization for the SNV filtering he/she can edit the filterFreebayesOPT parameter and increase the \-\-minFreq value to 0.3. Then, when re-execute GIP, it is possible to add the ``-resume`` option to the command line to compute just the processes affected by the parameter change. GIP will re-use the cached results of all the other processes.
 
