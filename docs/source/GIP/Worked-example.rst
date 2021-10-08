@@ -6,7 +6,7 @@ Worked example
 
 Installing Dependencies
 -----------------------
-GIP dependencies are Nextflow and Singularity. 
+GIP dependencies are Nextflow and Singularity.
 Instructions to install these software can be found on the respective websites:
 
 | `Nextflow <https://www.nextflow.io/docs/latest/getstarted.html>`_
@@ -133,8 +133,8 @@ The following code snippet can be copy/pasted in a bash terminal to recursively 
  cd ..
  
 
-Depending on your species of interest the user may need to refer to different specialized genomic data banks to retrieve the genome sequence and the gene coordinates, which are both required GIP inputs (respectively --genome and --annotation).
-Additionally, the user may want to specify gene function annotations (--geneFunction parameter). Depending on the species, gene function annotation may be not completely available, and manual curation or data integration from different repositories may be needed.
+Depending on your species of interest the user may need to refer to different specialized genomic data banks to retrieve the genome sequence and the gene coordinates, which are both required GIP inputs (respectively \-\-genome and \-\-annotation).
+Additionally, the user may want to specify gene function annotations (\-\-geneFunction parameter). Depending on the species, gene function annotation may be not completely available, and manual curation or data integration from different repositories may be needed.
 In the code snipped below we use the ENSEMBL protists FTP server to download the latest *Leishmaina infantum* genome sequence and annotations in .gff3 format, then reformat the latter to obtain both the gene coordinates file (.gtf format) and the gene function files.
 
 .. code-block:: bash
@@ -174,9 +174,22 @@ GIP configuration
 -----------------
 
 The user should prepare the index file indicating the sample names and the respective sequencing data files.
-The index is a tab separated file with the following heading row: sampleId	read1	read2 
-In this example we will use the sample names as reported in `PRJNA607007 <https://www.ncbi.nlm.nih.gov/sra/?term=PRJNA607007>`_ and the data file paths as they are in the host system.  
-So if the fastq files are stored in the ``/pasteur/tutorial/fastqs`` the end the index file should look like :download:`this <../_static/sampleIndexExample.pdf>`.
+The index is a tab separated file with the following heading row: sampleId	read1	read2
+In this example we will use the sample names as reported in `PRJNA607007 <https://www.ncbi.nlm.nih.gov/bioproject/PRJNA607007>`_ and the data file paths as they are in the host system.
+
+In this particular case, sample names retrieval can be automated using `NCBI E-utils <https://www.ncbi.nlm.nih.gov/books/NBK179288>`_):
+
+.. code-block:: bash
+
+  accessions=(SRR11098642 SRR11098643 SRR11098644 SRR11098645 SRR11098646 SRR11098647 SRR11098648)
+  cd fastqs
+  for X in "${accessions[@]}" ; do
+    esearch -db sra -query "$X" | efetch -format runinfo | cut -f1,12 -d,
+  done | grep -v "^Run" | awk -F',' 'BEGIN {OFS="\t"; print "sampleId\tread1\tread2"} {print $2,ENVIRON["PWD"]"/"$1"_1.fastq.gz",ENVIRON["PWD"]"/"$1"_2.fastq.gz"}'> sample_ids.tsv
+  cd ..
+
+
+So if the fastq files are stored in the ``/pasteur/tutorial/fastqs``, the index file should look like :download:`this <../_static/sampleIndexExample.pdf>`.
 
 
 Next, the user must edit the GIP configuration file (i.e. **gip.config**) according to the available computing resources, and most importantly, binding an up-level directory containing all the data paths. In this example the ``/pasteur`` would be a good choice. 
@@ -194,17 +207,17 @@ The complete list of GIP processes includes:
 
 | processGeneFunction
 | prepareGenome
-| map 
+| map
 | mappingStats
-| covPerChr 
-| covPerBin 
-| covPerGe 
-| freebayes 
-| snpEff 
-| delly 
-| bigWigGenomeCov 
-| covPerClstr       
-| report 
+| covPerChr
+| covPerBin
+| covPerGe
+| freebayes
+| snpEff
+| delly
+| bigWigGenomeCov
+| covPerClstr
+| report
 
 The processes that can  benefit from multi CPU parallelization are: prepareGenome, map and bigWigGenomeCov.
 The map process that has by far the highest memory requirements and execution time:
@@ -232,10 +245,8 @@ To run GIP:
               --index index.tsv \
               -c gip.config
 
-Assuming that the user now wants to test a stricter parametrization for the SNV filtering he/che can edit the filterFreebayesOPT parameter and increase the --minFreq value to 0.3. Then, when re-exeute GIP, it is possible to add the ``-resume`` option to the command line to compute just the processes affected by the parameter change. GIP will re-use the cached results of all the other processes.
+If executed on a computing cluster, `it is recommended not to run nextflow on the submission node directly <https://www.nextflow.io/blog/2021/5_tips_for_hpc_users.html>`_).
+For instance, if the executor is slurm, the above command-line should be executed via sbatch.
 
-
-
-
-
+Assuming that the user now wants to test a stricter parametrization for the SNV filtering he/she can edit the filterFreebayesOPT parameter and increase the \-\-minFreq value to 0.3. Then, when re-execute GIP, it is possible to add the ``-resume`` option to the command line to compute just the processes affected by the parameter change. GIP will re-use the cached results of all the other processes.
 

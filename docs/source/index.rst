@@ -18,7 +18,7 @@ Genome Instability Pipeline
 
 | The results of GIP are summarized in a *report* page providing sequencing experiment and mapping statistics, graphical representations of genomic features quantifications, and excel tables.
 
-GIP also enables **giptools**, a tool-suite allowing to  **Detect**, **Compare** and **Visualize** 
+GIP also enables **giptools**, a tool-suite allowing to  **Detect**, **Compare** and **Visualize**
 
 * Aneuploidy changes
 * Gene copy number variants (CNVs)
@@ -38,7 +38,7 @@ Compare the genomic bin CNVs in 2 specific isolates
 
 
 .. figure:: _static/binCNV.multiPanel.png
-      :width: 100 % 
+      :width: 100 %
 
 
 
@@ -48,7 +48,7 @@ Visualize SNV frequency together with sequencing depth in 3 isolates
 
 
 .. figure:: _static/SNV.byChr_chr8.png
-      :width: 100 % 
+      :width: 100 %
 
 
 
@@ -106,8 +106,8 @@ Installation
 
 | Done!
 | To make GIP available anywhere, the user can place **gip** in a directory that is in PATH.
-  
-    
+
+
 Contribute
 ----------
 
@@ -117,7 +117,7 @@ Contribute
 Support
 -------
 
-If you are having issues, please let us know
+If you are having issues, please let us know.
 
 - Issue Tracker: `https://github.com/giovannibussotti/GIP/issues <https://github.com/giovannibussotti/GIP/issues>`_
 
