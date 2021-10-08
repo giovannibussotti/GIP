@@ -185,7 +185,7 @@ In this particular case, sample names retrieval can be automated using `NCBI E-u
   cd fastqs
   for X in "${accessions[@]}" ; do
     esearch -db sra -query "$X" | efetch -format runinfo | cut -f1,12 -d,
-  done | grep -v "^Run" | awk -F',' 'BEGIN {OFS="\t"; print "SampleId\tread1\tread2"} {print $2,ENVIRON["PWD"]"/"$1"_1.fastq.gz",ENVIRON["PWD"]"/"$1"_2.fastq.gz"}'> sample_ids.tsv
+  done | grep -v "^Run" | awk -F',' 'BEGIN {OFS="\t"; print "sampleId\tread1\tread2"} {print $2,ENVIRON["PWD"]"/"$1"_1.fastq.gz",ENVIRON["PWD"]"/"$1"_2.fastq.gz"}'> sample_ids.tsv
   cd ..
 
 
