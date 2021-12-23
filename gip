@@ -370,7 +370,8 @@ process snpEff {
   gunzip ${sampleId}_freebayesFiltered/singleVariants.df.gz 
   gunzip ${sampleId}_freebayesFiltered/singleVariants.df.EFF
   awk '{print \$NF}' ${sampleId}_freebayesFiltered/singleVariants.df.EFF > ${sampleId}_freebayesFiltered/EFF
-  paste ${sampleId}_freebayesFiltered/singleVariants.df ${sampleId}_freebayesFiltered/EFF > ${sampleId}_freebayesFiltered/singleVariants.df2
+  sort -k1,1n -k2,2n ${sampleId}_freebayesFiltered/singleVariants.df > ${sampleId}_freebayesFiltered/singleVariants.df_numsorted
+  paste ${sampleId}_freebayesFiltered/singleVariants.df_numsorted ${sampleId}_freebayesFiltered/EFF > ${sampleId}_freebayesFiltered/singleVariants.df2
   mv ${sampleId}_freebayesFiltered/singleVariants.df2 ${sampleId}_freebayesFiltered/singleVariants.df
 
   #compute non-normalized N/S ratio
@@ -381,7 +382,7 @@ process snpEff {
   gzip -f ${sampleId}_freebayesFiltered/NStable.tsv
   mv ${sampleId}_cleanEFF.stats ${sampleId}_freebayesFiltered/NS.stats  
 
-  rm -rf tmpSnpEff_${sampleId}.vcf snpEff_summary_${sampleId}.genes.txt ${sampleId}_freebayesFiltered/singleVariants.df.EFF ${sampleId}_freebayesFiltered/EFF
+  rm -rf tmpSnpEff_${sampleId}.vcf snpEff_summary_${sampleId}.genes.txt ${sampleId}_freebayesFiltered/singleVariants.df.EFF ${sampleId}_freebayesFiltered/EFF ${sampleId}_freebayesFiltered/singleVariants.df_numsorted
   """
 }
 
