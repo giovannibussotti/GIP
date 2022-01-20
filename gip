@@ -13,7 +13,7 @@ vim: syntax=groovy
 ----------------------------------------------------------------------------------------
 */
 
-version = "1.0.9"
+version = "1.1.0"
 def helpMessage() {
     log.info"""
     =========================================
@@ -369,7 +369,8 @@ process snpEff {
   #update the singleVariants.df table with the EFF field
   gunzip ${sampleId}_freebayesFiltered/singleVariants.df.gz 
   gunzip ${sampleId}_freebayesFiltered/singleVariants.df.EFF
-  awk '{print \$NF}' ${sampleId}_freebayesFiltered/singleVariants.df.EFF > ${sampleId}_freebayesFiltered/EFF
+  #ensure that SNV and EFF tables have the same order before pasting 
+  /bin/matchSNVandEFForder.pl $sampleId
   paste ${sampleId}_freebayesFiltered/singleVariants.df ${sampleId}_freebayesFiltered/EFF > ${sampleId}_freebayesFiltered/singleVariants.df2
   mv ${sampleId}_freebayesFiltered/singleVariants.df2 ${sampleId}_freebayesFiltered/singleVariants.df
 
