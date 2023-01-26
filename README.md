@@ -18,3 +18,8 @@ https://gip.readthedocs.io/en/latest/
 pre-print:
 bioRxiv 2021.06.15.448580; doi: https://doi.org/10.1101/2021.06.15.448580 
 
+Citation:
+If you are using GIP results in your upcoming publication(s), please always cite:
+Späth, Gerald F., and Giovanni Bussotti. "GIP: an open-source computational pipeline for mapping genomic instability from protists to cancer cells." Nucleic Acids Research 50.6 (2022): e36-e36
+
+
